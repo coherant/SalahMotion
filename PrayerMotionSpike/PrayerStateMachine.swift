@@ -6,6 +6,14 @@ import AudioToolbox
 import UIKit
 #endif
 
+// MARK: - Audio route (source: docs/global-configurations.md)
+
+enum AudioRoute {
+    case speakerOnly  // forces built-in speaker even when AirPods connected
+    case headphones   // routes to AirPods if connected, speaker otherwise (default)
+    case auto         // iOS decides — same as headphones in practice
+}
+
 // MARK: - Session sample
 
 private struct SessionSample {
@@ -42,14 +50,18 @@ final class PrayerStateMachine {
     private var sessionSamples: [SessionSample] = []
     private var sessionStartDate: Date?
     private let participantName: String
+    private let audioRoute: AudioRoute
     private let holdWindow: Double = 1.5
 
     var isAvailable: Bool { headphoneManager.isDeviceMotionAvailable }
     var currentState: PrayerState { states[currentStateIndex] }
 
-    init(sequence: [PrayerState] = PrayerSequenceGenerator.generate(), participantName: String = "") {
+    init(sequence: [PrayerState] = PrayerSequenceGenerator.generate(),
+         participantName: String = "",
+         audioRoute: AudioRoute = .headphones) {
         states = sequence
         self.participantName = participantName
+        self.audioRoute = audioRoute
         synthesizer.delegate = speechDelegate
     }
 
@@ -179,16 +191,15 @@ final class PrayerStateMachine {
 
     @MainActor
     private func runMotionPhase(_ state: PrayerState) async {
-        if let speech = state.entrySpeech { await speak(speech) }
+        await waitForMotion(state)
         guard !Task.isCancelled else { return }
+        if let speech = state.entrySpeech { await speak(speech) }
         for prayer in state.prayers {
             guard !Task.isCancelled else { return }
             if !prayer.utterance.isEmpty { await speak(prayer.utterance) }
             guard !Task.isCancelled else { return }
             if prayer.duration > 0 { try? await Task.sleep(for: .seconds(prayer.duration)) }
         }
-        guard !Task.isCancelled else { return }
-        await waitForMotion(state)
         guard !Task.isCancelled else { return }
         if let speech = state.exitSpeech { await speak(speech) }
     }
@@ -298,24 +309,26 @@ final class PrayerStateMachine {
     private func isMotionSatisfied(_ trigger: MotionTrigger, pitch: Double, roll: Double, yaw: Double) -> Bool {
         switch trigger {
         case .ruku:
-            return pitch >= -80 && pitch <= -65
+            return pitch >= -82 && pitch <= -48
 
         case .sujood:
-            // Angular distance handles Euler-angle wraparound near ±180°.
-            return angularDistance(roll, 162.5) <= 12.5
+            // angDist handles Euler-angle wraparound. Calibrated: 88% coverage, 0.3% false-positive vs upright.
+            return angularDistance(roll, 180) <= 35
 
         case .upright:
-            // Pitch alone distinguishes upright from ruku (~-73°) and sujood (roll ~163°).
+            // Pitch alone distinguishes upright from ruku (~-73°) and sujood (roll ~180°).
             // Roll is NOT a hard gate — sequence position disambiguates standing vs sitting.
-            return pitch >= -30 && pitch <= 25
+            return pitch >= -40 && pitch <= 6
 
         case .headTurnRight:
-            guard let baseline = qiyamYawBaseline else { return false }
-            return yaw - baseline >= 30
-
-        case .headTurnLeft:
+            // Right turn = yaw decreases from baseline. Calibrated: baseline − yaw ≥ 30°.
             guard let baseline = qiyamYawBaseline else { return false }
             return baseline - yaw >= 30
+
+        case .headTurnLeft:
+            // Left turn = yaw increases from baseline. Calibrated: yaw − baseline ≥ 30°.
+            guard let baseline = qiyamYawBaseline else { return false }
+            return yaw - baseline >= 30
         }
     }
 
@@ -369,7 +382,9 @@ final class PrayerStateMachine {
     // MARK: - Audio
 
     private func configureAudioSession() {
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: .duckOthers)
+        var options: AVAudioSession.CategoryOptions = .duckOthers
+        if audioRoute == .speakerOnly { options.insert(.defaultToSpeaker) }
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: options)
         try? AVAudioSession.sharedInstance().setActive(true)
     }
 

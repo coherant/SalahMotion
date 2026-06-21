@@ -21,7 +21,7 @@ struct ContentView: View {
 
 struct GuidedRecordingView: View {
     @State private var participantName: String = ""
-    @State private var session = PrayerStateMachine()
+    @State private var session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate())
     @State private var sessionFiles: [URL] = []
     @State private var shareURL: URL?
 
@@ -70,7 +70,7 @@ struct GuidedRecordingView: View {
                 .autocorrectionDisabled()
             Button("Begin Calibration") {
                 let name = participantName.trimmingCharacters(in: .whitespaces)
-                session = PrayerStateMachine(participantName: name)
+                session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate(), participantName: name)
                 session.start()
             }
             .buttonStyle(.borderedProminent)
@@ -188,7 +188,7 @@ struct GuidedRecordingView: View {
             Text("Session saved to History.").foregroundStyle(.secondary)
             Spacer()
             Button("Done") {
-                session = PrayerStateMachine()
+                session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate())
             }
             .buttonStyle(.borderedProminent)
             .font(.title3.weight(.semibold))
@@ -206,7 +206,7 @@ struct GuidedRecordingView: View {
             Text("Session cancelled").foregroundStyle(.secondary)
             Spacer()
             Button("Try Again") {
-                session = PrayerStateMachine()
+                session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate())
             }
             .buttonStyle(.borderedProminent).frame(maxWidth: .infinity)
         }

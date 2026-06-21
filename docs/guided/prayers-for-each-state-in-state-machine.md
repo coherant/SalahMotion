@@ -15,6 +15,8 @@ Roles:
 
 ## Prayer Library
 
+### Guided Prayers
+
 See [`docs/prayers/prayers.md`](../../prayers/prayers.md) for the full prayer library.
 Add prayers there and reference them here by `prayer-id` (e.g. `P-1`).
 
@@ -37,10 +39,13 @@ When reading this file to generate Swift code or utterance arrays:
 
 | role | utterance | duration |
 |---|---|---|
-| entry | Listen to the Athan.  Give niyet. | 5s | #Stand upright for Qiyam.
+| entry | Start | 5s | #Stand upright for Qiyam.
+| prayer | Listen to the Ezan. | 5s |
+| prayer | Give niyet | 5s |
 | prayer | P-0 | 3s | # Allah huekber
-| prayer | P-7 | 20s | # Al-Fatiha
-| exit | P-0 | 3s | # Allah huekber
+| prayer | Al-Fatiha | 5s | # Al-Fatiha
+| prayer | P-0 | 3s | # Allah huekber
+| exit |  |  | # Allah huekber
 
 ---
 
@@ -48,12 +53,12 @@ When reading this file to generate Swift code or utterance arrays:
 
 | role | utterance | duration |
 |---|---|---|
-| entry |  | 3s | #Bow forward into Ruku.
+| entry | | 3s | #Bow forward into Ruku.
 | reprompt | Please bow into Ruku | |
+| prayer | P-1 | 1s |
+| prayer | P-1 | 1s |
 | prayer | P-1 | 3s |
-| prayer | P-1 | 3s |
-| prayer | P-1 | 3s |
-| exit | P-3  | 4s |
+| exit | P-3  | |
 
 
 ---
@@ -62,10 +67,10 @@ When reading this file to generate Swift code or utterance arrays:
 
 | role | utterance | duration |
 |---|---|---|
-| entry |  | 3s | # Return to standing.
+| entry | | 3s | # Return to standing.
 | reprompt | Please return to standing | |
-| prayer | P-4 | 4s |
-| exit | P-0 | 3s |
+| prayer | P-4 | 3s |
+| exit | P-0 | |
 
 
 ---
@@ -76,10 +81,10 @@ When reading this file to generate Swift code or utterance arrays:
 |---|---|---|
 | entry |  | 3s | #Prostrate into Sujood.
 | reprompt | Please lower into Sujood | |
-| prayer | P-2 | 3s |
-| prayer | P-2 | 3s |
-| prayer | P-2 | 3s |
-| exit | P-0 | 3s |
+| prayer | P-2 | 1s |
+| prayer | P-2 | 1s |
+| prayer | P-2 | 1s |
+| exit | P-0 | |
 
 
 ---
@@ -90,9 +95,9 @@ When reading this file to generate Swift code or utterance arrays:
 |---|---|---|
 | entry |  | 3s | #Sit upright.
 | reprompt | Please sit up | |
-| prayer | P-5 | 3s |
-| prayer | P-5 | 3s |
-| exit | P-0 | 3s |
+| prayer | P-5 | 1.5s |
+| prayer | P-5 | 1.5s |
+| exit | P-0 | |
 
 
 ---
@@ -103,10 +108,10 @@ When reading this file to generate Swift code or utterance arrays:
 |---|---|---|
 | entry |  | 3s | #Prostrate into Sujood again.
 | reprompt | Please lower into Sujood again | |
-| prayer | P-2 | 3s |
-| prayer | P-2 | 3s |
-| prayer | P-2 | 3s |
-| exit | P-0 | 3s |
+| prayer | P-2 | 1s |
+| prayer | P-2 | 1s |
+| prayer | P-2 | 1s |
+| exit | P-0 | |
 
 
 ---
@@ -117,8 +122,8 @@ When reading this file to generate Swift code or utterance arrays:
 |---|---|---|
 | entry |  | 3s | #Stand for the second rakat.
 | reprompt | Please stand for the next rakat | |
-| prayer | P-7 | 20s |
-| exit | P-0 | 3s |
+| prayer | Al Fatiha | 5s |
+| exit | P-0 | |
 
 
 ---
@@ -129,10 +134,10 @@ When reading this file to generate Swift code or utterance arrays:
 |---|---|---|
 | entry |  | 3s | #Bow forward into Ruku.
 | reprompt | Please bow into Ruku | |
+| prayer | P-1 | 1s |
+| prayer | P-1 | 1s |
 | prayer | P-1 | 3s |
-| prayer | P-1 | 3s |
-| prayer | P-1 | 3s |
-| exit | P-3  | 4s |
+| exit | P-3  | |
 
 
 ---
@@ -146,7 +151,7 @@ When reading this file to generate Swift code or utterance arrays:
 | entry |  | 3s | #Return to standing.
 | reprompt | Please return to standing | |
 | prayer | P-4 | 3s |
-| exit | P-0 | 3s |
+| exit | P-0 | |
 
 
 ---
@@ -157,10 +162,10 @@ When reading this file to generate Swift code or utterance arrays:
 |---|---|---|
 | entry |  | 3s | #Prostrate into Sujood.
 | reprompt | Please lower into Sujood | |
-| prayer | P-2 | 3s |
-| prayer | P-2 | 3s |
-| prayer | P-2 | 3s |
-| exit | P-0 | 3s |
+| prayer | P-2 | 1s |
+| prayer | P-2 | 1s |
+| prayer | P-2 | 1s |
+| exit | P-0 | |
 
 
 ---
@@ -171,9 +176,9 @@ When reading this file to generate Swift code or utterance arrays:
 |---|---|---|
 | entry |  | 3s | # Sit upright.
 | reprompt | Please sit up | |
-| prayer | P-5 | 3s |
-| prayer | P-5 | 3s |
-| exit | P-0 | 3s |
+| prayer | P-5 | 1.5s |
+| prayer | P-5 | 1.5s |
+| exit | P-0 | |
 
 ---
 
@@ -183,10 +188,10 @@ When reading this file to generate Swift code or utterance arrays:
 |---|---|---|
 | entry |  | 3s | #Prostrate into Sujood again.
 | reprompt | Please lower into Sujood again | |
-| prayer | P-2 | 3s |
-| prayer | P-2 | 3s |
-| prayer | P-2 | 3s |
-| exit | P-0 | 3s |
+| prayer | P-2 | 1s |
+| prayer | P-2 | 1s |
+| prayer | P-2 | 1s |
+| exit | P-0 | |
 
 
 ---
@@ -197,9 +202,12 @@ When reading this file to generate Swift code or utterance arrays:
 |---|---|---|
 | entry |  | | #Sit for Tashahhud.
 | reprompt | Please sit for Tashahhud | |
-| prayer | P-8 | 15s |
-| prayer | P-9 | 7s |
-| prayer | P-10 | 7s |
+| prayer | Tashahhud | 2s |
+| prayer | Honour Muhammad | 2s |
+| prayer | Bless Muhammad | 2s |
+| prayer | Grant me the good of this world | 2s |
+| prayer | Forgive me and my parents | 2s |
+| prayer | Ive greatly wronged myself | 2s |
 | exit |  | |
 
 
@@ -211,7 +219,7 @@ When reading this file to generate Swift code or utterance arrays:
 |---|---|---|
 | entry |  | 3s | #Turn your head to the right.
 | reprompt | Please turn your head to the right | |
-| prayer | P-6 | 5s |
+| prayer | P-6  | 3s |
 | exit |  | |
 
 
@@ -223,6 +231,6 @@ When reading this file to generate Swift code or utterance arrays:
 |---|---|---|
 | entry |  | 3s | #Turn your head to the left.
 | reprompt | Please turn your head to the left | |
-| prayer | P-6 | 5s |
+| prayer | P-6 | 3s |
 | exit | Oh Allah, you are peace and pease comes from you | 8s |
 

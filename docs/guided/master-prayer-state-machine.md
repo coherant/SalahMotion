@@ -1,10 +1,15 @@
 # Master Prayer State Machine
 
+## Guided
+This is the guided state machine
+
 This is the single source of truth for the prayer sequence used by both the
 Guided and Calibration tabs. All other documentation and all source files
 reference this document.
 
 ## Source files
+
+### Guided Master Prayer State Machine
 
 | File | Purpose |
 |---|---|
@@ -19,7 +24,7 @@ reference this document.
 |---|---|
 | `auto` | Plays entry speech, plays exit speech, advances immediately — no timer, no motion gate |
 | `timed` | Plays entry speech, plays prayer rows in sequence, plays exit speech |
-| `motion` | Plays entry speech, plays prayer rows in sequence, waits indefinitely for confirmed motion (reprompts every reprompt interval), plays exit speech |
+| `motion` | Waits indefinitely for confirmed motion (reprompts every reprompt interval), plays entry speech, plays prayer rows in sequence, plays exit speech |
 | `timed-motion` | Plays entry speech, plays prayer rows in sequence (each followed by its duration pause), plays exit speech — motion detection runs throughout; reprompts fire every reprompt interval if position not yet confirmed |
 
 ## Timing ownership
@@ -37,21 +42,21 @@ Defines which file or constant controls each timing parameter.
 
 | position-id | Label | Mode | Motion Trigger | Reprompt Interval |
 |---|---|---|---|---|
-| 1 | Standing (Qiyam) - Start | `auto` | — | — |
-| 2 | Bowing (Ruku) - First | `motion` | pitch (ruku) | 8s |
-| 3 | Standing (Qiyam) - After Ruku (Rakat 1) | `motion` | pitch (upright) | 8s |
-| 4 | Prostration (Sujood) - First | `motion` | roll (sujood) | 8s |
-| 5 | Sitting (Julus) - Between Prostrations (Rakat 1) | `motion` | pitch (upright) | 8s |
-| 6 | Prostration (Sujood) - Second | `motion` | roll (sujood) | 8s |
-| 7 | Standing (Qiyam) - Rakat 2 | `motion` | pitch (upright) | 8s |
-| 8 | Bowing (Ruku) - Second | `motion` | pitch (ruku) | 8s |
-| 9 | Standing (Qiyam) - After Ruku (Rakat 2) | `motion` | pitch (upright) | 8s |
-| 10 | Prostration (Sujood) - Third | `motion` | roll (sujood) | 8s |
-| 11 | Sitting (Julus) - Between Prostrations (Rakat 2) | `motion` | pitch (upright) | 8s |
-| 12 | Prostration (Sujood) - Fourth | `motion` | roll (sujood) | 8s |
-| 13 | Sitting (Julus) - Tashahhud | `motion` | pitch (upright) | 8s |
-| 14 | Tasleem - Look Right | `motion` | yaw delta (right) | 8s |
-| 15 | Tasleem - Look Left | `motion` | yaw delta (left) | 8s |
+| 1 | Standing (Qiyam) - Start | `timed` | — | — |
+| 2 | Bowing (Ruku) - First | `motion` | pitch (ruku) | 5s |
+| 3 | Standing (Qiyam) - After Ruku (Rakat 1) | `motion` | pitch (upright) | 5s |
+| 4 | Prostration (Sujood) - First | `motion` | roll (sujood) | 5s |
+| 5 | Sitting (Julus) - Between Prostrations (Rakat 1) | `motion` | pitch (upright) | 5s |
+| 6 | Prostration (Sujood) - Second | `motion` | roll (sujood) | 5s |
+| 7 | Standing (Qiyam) - Rakat 2 | `motion` | pitch (upright) | 5s |
+| 8 | Bowing (Ruku) - Second | `motion` | pitch (ruku) | 5s |
+| 9 | Standing (Qiyam) - After Ruku (Rakat 2) | `motion` | pitch (upright) | 5s |
+| 10 | Prostration (Sujood) - Third | `motion` | roll (sujood) | 5s |
+| 11 | Sitting (Julus) - Between Prostrations (Rakat 2) | `motion` | pitch (upright) | 5s |
+| 12 | Prostration (Sujood) - Fourth | `motion` | roll (sujood) | 5s |
+| 13 | Sitting (Julus) - Tashahhud | `motion` | pitch (upright) | 5s |
+| 14 | Tasleem - Look Right | `motion` | yaw delta (right) | 5s |
+| 15 | Tasleem - Look Left | `motion` | yaw delta (left) | 5s |
 
 ## Parameter definitions
 

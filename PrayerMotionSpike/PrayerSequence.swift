@@ -3,7 +3,7 @@
 enum PhaseMode: String {
     case auto         // speak entry, play prayers, speak exit, advance immediately
     case timed        // speak entry, play prayers with durations, speak exit
-    case motion       // speak entry, play prayers, wait indefinitely for motion, speak exit
+    case motion       // wait for confirmed motion, speak entry, play prayers with durations, speak exit
     case timedMotion  // speak entry, play prayers with durations (motion detection runs throughout), speak exit
 }
 
@@ -118,135 +118,190 @@ enum PrayerSequenceGenerator {
 
     static func generate() -> [PrayerState] { masterSequence() }
 
+    // Prayer library — resolved from docs/prayers/prayers.md
+    private static let P0  = "Allah Hoo-ekber"
+    private static let P1  = "Glory be to Allah the most great!"
+    private static let P2  = "Glory be to Allah the most high!"
+    private static let P3  = "Allah hears those who praise him."
+    private static let P4  = "O Allah, all praise is due onto you."
+    private static let P5  = "O Allah, forgive me."
+    private static let P6  = "Peace and blessing be onto you"
+
     private static func masterSequence() -> [PrayerState] { [
 
         // Position 1
-        .init(id: .qiyamStart, mode: .auto,
+        .init(id: .qiyamStart, mode: .timed,
               displayLabel: "Standing (Qiyam) - Start",
-              entrySpeech: "Stand upright for Qiyam.",
-              prayers: [("", 4.0)]),
+              entrySpeech: "Start",
+              prayers: [
+                  ("Listen to the Ezan.", 5.0),
+                  ("Give niyet", 5.0),
+                  (P0, 3.0),
+                  ("Al-Fatiha", 5.0),
+                  (P0, 3.0),
+              ]),
 
         // Position 2
-        .init(id: .rukuFirst, mode: .timedMotion,
+        .init(id: .rukuFirst, mode: .motion,
               displayLabel: "Bowing (Ruku) - First",
-              entrySpeech: "Bow forward into Ruku.",
-              prayers: [("", 4.0)],
+              prayers: [
+                  (P1, 1.0),
+                  (P1, 1.0),
+                  (P1, 3.0),
+              ],
+              exitSpeech: P3,
               motionTrigger: .ruku,
-              repromptAudio: "Please bow into Ruku"),
+              repromptAudio: "Please bow into Ruku",
+              repromptInterval: 5),
 
         // Position 3
-        .init(id: .qiyamAfterRukuFirst, mode: .timedMotion,
+        .init(id: .qiyamAfterRukuFirst, mode: .motion,
               displayLabel: "Standing (Qiyam) - After Ruku (Rakat 1)",
-              entrySpeech: "Return to standing.",
-              prayers: [("", 5.0)],
-              motionTrigger: .upright,
-              repromptAudio: "Please return to standing"),
-
-        // Position 4
-        .init(id: .sujoodFirst, mode: .timedMotion,
-              displayLabel: "Prostration (Sujood) - First",
-              entrySpeech: "Prostrate into Sujood.",
-              prayers: [("", 5.0)],
-              exitSpeech: "Allahu Akbar",
-              motionTrigger: .sujood,
-              repromptAudio: "Please lower into Sujood"),
-
-        // Position 5
-        .init(id: .julusFirst, mode: .timedMotion,
-              displayLabel: "Sitting (Julus) - Between Prostrations (Rakat 1)",
-              entrySpeech: "Sit upright.",
-              prayers: [("", 5.0)],
-              exitSpeech: "Allahu Akbar",
-              motionTrigger: .upright,
-              repromptAudio: "Please sit up"),
-
-        // Position 6
-        .init(id: .sujoodSecond, mode: .timedMotion,
-              displayLabel: "Prostration (Sujood) - Second",
-              entrySpeech: "Prostrate into Sujood again.",
-              prayers: [("", 5.0)],
-              exitSpeech: "Allahu Akbar",
-              motionTrigger: .sujood,
-              repromptAudio: "Please lower into Sujood again"),
-
-        // Position 7
-        .init(id: .qiyamRakat2, mode: .timedMotion,
-              displayLabel: "Standing (Qiyam) - Rakat 2",
-              entrySpeech: "Stand for the second rakat.",
-              prayers: [("", 5.0)],
-              exitSpeech: "Allahu Akbar",
-              motionTrigger: .upright,
-              repromptAudio: "Please stand for the next rakat"),
-
-        // Position 8
-        .init(id: .rukuSecond, mode: .timedMotion,
-              displayLabel: "Bowing (Ruku) - Second",
-              entrySpeech: "Bow forward into Ruku.",
-              prayers: [("", 5.0)],
-              exitSpeech: "Sami Allahu liman hamidah",
-              motionTrigger: .ruku,
-              repromptAudio: "Please bow into Ruku"),
-
-        // Position 9 — yaw baseline captured here for Tasleem
-        .init(id: .qiyamAfterRukuSecond, mode: .timedMotion,
-              displayLabel: "Standing (Qiyam) - After Ruku (Rakat 2)",
-              entrySpeech: "Return to standing.",
-              prayers: [("", 5.0)],
-              exitSpeech: "Allahu Akbar",
+              prayers: [(P4, 3.0)],
+              exitSpeech: P0,
               motionTrigger: .upright,
               repromptAudio: "Please return to standing",
+              repromptInterval: 5),
+
+        // Position 4
+        .init(id: .sujoodFirst, mode: .motion,
+              displayLabel: "Prostration (Sujood) - First",
+              prayers: [
+                  (P2, 1.0),
+                  (P2, 1.0),
+                  (P2, 1.0),
+              ],
+              exitSpeech: P0,
+              motionTrigger: .sujood,
+              repromptAudio: "Please lower into Sujood",
+              repromptInterval: 5),
+
+        // Position 5
+        .init(id: .julusFirst, mode: .motion,
+              displayLabel: "Sitting (Julus) - Between Prostrations (Rakat 1)",
+              prayers: [
+                  (P5, 1.5),
+                  (P5, 1.5),
+              ],
+              exitSpeech: P0,
+              motionTrigger: .upright,
+              repromptAudio: "Please sit up",
+              repromptInterval: 5),
+
+        // Position 6
+        .init(id: .sujoodSecond, mode: .motion,
+              displayLabel: "Prostration (Sujood) - Second",
+              prayers: [
+                  (P2, 1.0),
+                  (P2, 1.0),
+                  (P2, 1.0),
+              ],
+              exitSpeech: P0,
+              motionTrigger: .sujood,
+              repromptAudio: "Please lower into Sujood again",
+              repromptInterval: 5),
+
+        // Position 7
+        .init(id: .qiyamRakat2, mode: .motion,
+              displayLabel: "Standing (Qiyam) - Rakat 2",
+              prayers: [("Al Fatiha", 5.0)],
+              exitSpeech: P0,
+              motionTrigger: .upright,
+              repromptAudio: "Please stand for the next rakat",
+              repromptInterval: 5),
+
+        // Position 8
+        .init(id: .rukuSecond, mode: .motion,
+              displayLabel: "Bowing (Ruku) - Second",
+              prayers: [
+                  (P1, 1.0),
+                  (P1, 1.0),
+                  (P1, 3.0),
+              ],
+              exitSpeech: P3,
+              motionTrigger: .ruku,
+              repromptAudio: "Please bow into Ruku",
+              repromptInterval: 5),
+
+        // Position 9 — yaw baseline captured here for Tasleem
+        .init(id: .qiyamAfterRukuSecond, mode: .motion,
+              displayLabel: "Standing (Qiyam) - After Ruku (Rakat 2)",
+              prayers: [(P4, 3.0)],
+              exitSpeech: P0,
+              motionTrigger: .upright,
+              repromptAudio: "Please return to standing",
+              repromptInterval: 5,
               capturesYawBaseline: true),
 
         // Position 10
-        .init(id: .sujoodThird, mode: .timedMotion,
+        .init(id: .sujoodThird, mode: .motion,
               displayLabel: "Prostration (Sujood) - Third",
-              entrySpeech: "Prostrate into Sujood.",
-              prayers: [("", 5.0)],
-              exitSpeech: "Allahu Akbar",
+              prayers: [
+                  (P2, 1.0),
+                  (P2, 1.0),
+                  (P2, 1.0),
+              ],
+              exitSpeech: P0,
               motionTrigger: .sujood,
-              repromptAudio: "Please lower into Sujood"),
+              repromptAudio: "Please lower into Sujood",
+              repromptInterval: 5),
 
         // Position 11
-        .init(id: .julusSecond, mode: .timedMotion,
+        .init(id: .julusSecond, mode: .motion,
               displayLabel: "Sitting (Julus) - Between Prostrations (Rakat 2)",
-              entrySpeech: "Sit upright.",
-              prayers: [("", 5.0)],
-              exitSpeech: "Allahu Akbar",
+              prayers: [
+                  (P5, 1.5),
+                  (P5, 1.5),
+              ],
+              exitSpeech: P0,
               motionTrigger: .upright,
-              repromptAudio: "Please sit up"),
+              repromptAudio: "Please sit up",
+              repromptInterval: 5),
 
         // Position 12
-        .init(id: .sujoodFourth, mode: .timedMotion,
+        .init(id: .sujoodFourth, mode: .motion,
               displayLabel: "Prostration (Sujood) - Fourth",
-              entrySpeech: "Prostrate into Sujood again.",
-              prayers: [("", 5.0)],
-              exitSpeech: "Allahu Akbar",
+              prayers: [
+                  (P2, 1.0),
+                  (P2, 1.0),
+                  (P2, 1.0),
+              ],
+              exitSpeech: P0,
               motionTrigger: .sujood,
-              repromptAudio: "Please lower into Sujood again"),
+              repromptAudio: "Please lower into Sujood again",
+              repromptInterval: 5),
 
         // Position 13
-        .init(id: .julusTashahhud, mode: .timedMotion,
+        .init(id: .julusTashahhud, mode: .motion,
               displayLabel: "Sitting (Julus) - Tashahhud",
-              entrySpeech: "Sit for Tashahhud.",
-              prayers: [("", 5.0)],
+              prayers: [
+                  ("Tashahhud", 2.0),
+                  ("Honour Muhammad", 2.0),
+                  ("Bless Muhammad", 2.0),
+                  ("Grant me the good of this world", 2.0),
+                  ("Forgive me and my parents", 2.0),
+                  ("Ive greatly wronged myself", 2.0),
+              ],
               motionTrigger: .upright,
-              repromptAudio: "Please sit for Tashahhud"),
+              repromptAudio: "Please sit for Tashahhud",
+              repromptInterval: 5),
 
         // Position 14
-        .init(id: .tasleemRight, mode: .timedMotion,
+        .init(id: .tasleemRight, mode: .motion,
               displayLabel: "Tasleem - Look Right",
-              entrySpeech: "Turn your head to the right.",
-              prayers: [("", 4.0)],
+              prayers: [(P6, 3.0)],
               motionTrigger: .headTurnRight,
-              repromptAudio: "Please turn your head to the right"),
+              repromptAudio: "Please turn your head to the right",
+              repromptInterval: 5),
 
         // Position 15
-        .init(id: .tasleemLeft, mode: .timedMotion,
+        .init(id: .tasleemLeft, mode: .motion,
               displayLabel: "Tasleem - Look Left",
-              entrySpeech: "Turn your head to the left.",
-              prayers: [("", 4.0)],
+              prayers: [(P6, 3.0)],
+              exitSpeech: "Oh Allah, you are peace and pease comes from you",
               motionTrigger: .headTurnLeft,
-              repromptAudio: "Please turn your head to the left"),
+              repromptAudio: "Please turn your head to the left",
+              repromptInterval: 5),
     ] }
 }
 
@@ -264,7 +319,7 @@ enum GuidedSequenceGenerator {
     private static let P3  = "Allah hears those who praise him."
     private static let P4  = "O Allah, all praise is due onto you."
     private static let P5  = "O Allah, forgive me."
-    private static let P6  = "Pease and blessing be onto you"
+    private static let P6  = "Peace and blessing be onto you"
     private static let P7  = "All praise be to Allah, the lord of the worlds, the most compationate, the most merciful. Master of the day of judgement. You alone do we worship and you alone do we turn to for help. Guide us on the straight path, the path of those whom you have favoured and not the path of those who earn your anger, nor of those who go astray."
     private static let P8  = "All compliments, prayers and beauitiful expressions are for Allah. Please and blessing be upon you oh muhammad, and Allahs mercy and blessings. Pease be upon us, ans all righteous servants of Allah."
     private static let P9  = "Oh Allah, honor muhammad and muhammads family as you have honoured ismail and ismails family"
@@ -275,158 +330,177 @@ enum GuidedSequenceGenerator {
     private static func masterSequence() -> [PrayerState] { [
 
         // Position 1
-        .init(id: .qiyamStart, mode: .auto,
+        .init(id: .qiyamStart, mode: .timed,
               displayLabel: "Standing (Qiyam) - Start",
-              entrySpeech: "Listen to the Athan. Give niyet.",
+              entrySpeech: "Start",
               prayers: [
+                  ("Listen to the Athan.", 5.0),
+                  ("Give niyet", 5.0),
                   (P0, 3.0),
-                  (P7, 20.0),
-              ],
-              exitSpeech: P0),
+                  ("Al-Fatiha", 5.0),
+                  (P0, 3.0),
+              ]),
 
         // Position 2
-        .init(id: .rukuFirst, mode: .timedMotion,
+        .init(id: .rukuFirst, mode: .motion,
               displayLabel: "Bowing (Ruku) - First",
               prayers: [
-                  (P1, 3.0),
-                  (P1, 3.0),
+                  (P1, 1.0),
+                  (P1, 1.0),
                   (P1, 3.0),
               ],
               exitSpeech: P3,
               motionTrigger: .ruku,
-              repromptAudio: "Please bow into Ruku"),
+              repromptAudio: "Please bow into Ruku",
+              repromptInterval: 5),
 
         // Position 3
-        .init(id: .qiyamAfterRukuFirst, mode: .timedMotion,
+        .init(id: .qiyamAfterRukuFirst, mode: .motion,
               displayLabel: "Standing (Qiyam) - After Ruku (Rakat 1)",
-              prayers: [(P4, 4.0)],
+              prayers: [(P4, 3.0)],
               exitSpeech: P0,
               motionTrigger: .upright,
-              repromptAudio: "Please return to standing"),
+              repromptAudio: "Please return to standing",
+              repromptInterval: 5),
 
         // Position 4
-        .init(id: .sujoodFirst, mode: .timedMotion,
+        .init(id: .sujoodFirst, mode: .motion,
               displayLabel: "Prostration (Sujood) - First",
               prayers: [
-                  (P2, 3.0),
-                  (P2, 3.0),
-                  (P2, 3.0),
+                  (P2, 1.0),
+                  (P2, 1.0),
+                  (P2, 1.0),
               ],
               exitSpeech: P0,
               motionTrigger: .sujood,
-              repromptAudio: "Please lower into Sujood"),
+              repromptAudio: "Please lower into Sujood",
+              repromptInterval: 5),
 
         // Position 5
-        .init(id: .julusFirst, mode: .timedMotion,
+        .init(id: .julusFirst, mode: .motion,
               displayLabel: "Sitting (Julus) - Between Prostrations (Rakat 1)",
               prayers: [
-                  (P5, 3.0),
-                  (P5, 3.0),
+                  (P5, 1.5),
+                  (P5, 1.5),
               ],
               exitSpeech: P0,
               motionTrigger: .upright,
-              repromptAudio: "Please sit up"),
+              repromptAudio: "Please sit up",
+              repromptInterval: 5),
 
         // Position 6
-        .init(id: .sujoodSecond, mode: .timedMotion,
+        .init(id: .sujoodSecond, mode: .motion,
               displayLabel: "Prostration (Sujood) - Second",
               prayers: [
-                  (P2, 3.0),
-                  (P2, 3.0),
-                  (P2, 3.0),
+                  (P2, 1.0),
+                  (P2, 1.0),
+                  (P2, 1.0),
               ],
               exitSpeech: P0,
               motionTrigger: .sujood,
-              repromptAudio: "Please lower into Sujood again"),
+              repromptAudio: "Please lower into Sujood again",
+              repromptInterval: 5),
 
         // Position 7
-        .init(id: .qiyamRakat2, mode: .timedMotion,
+        .init(id: .qiyamRakat2, mode: .motion,
               displayLabel: "Standing (Qiyam) - Rakat 2",
-              prayers: [(P7, 20.0)],
+              prayers: [("Al Fatiha", 5.0)],
               exitSpeech: P0,
               motionTrigger: .upright,
-              repromptAudio: "Please stand for the next rakat"),
+              repromptAudio: "Please stand for the next rakat",
+              repromptInterval: 5),
 
         // Position 8
-        .init(id: .rukuSecond, mode: .timedMotion,
+        .init(id: .rukuSecond, mode: .motion,
               displayLabel: "Bowing (Ruku) - Second",
               prayers: [
-                  (P1, 3.0),
-                  (P1, 3.0),
+                  (P1, 1.0),
+                  (P1, 1.0),
                   (P1, 3.0),
               ],
               exitSpeech: P3,
               motionTrigger: .ruku,
-              repromptAudio: "Please bow into Ruku"),
+              repromptAudio: "Please bow into Ruku",
+              repromptInterval: 5),
 
         // Position 9 — yaw baseline captured here for Tasleem
-        .init(id: .qiyamAfterRukuSecond, mode: .timedMotion,
+        .init(id: .qiyamAfterRukuSecond, mode: .motion,
               displayLabel: "Standing (Qiyam) - After Ruku (Rakat 2)",
               prayers: [(P4, 3.0)],
               exitSpeech: P0,
               motionTrigger: .upright,
               repromptAudio: "Please return to standing",
+              repromptInterval: 5,
               capturesYawBaseline: true),
 
         // Position 10
-        .init(id: .sujoodThird, mode: .timedMotion,
+        .init(id: .sujoodThird, mode: .motion,
               displayLabel: "Prostration (Sujood) - Third",
               prayers: [
-                  (P2, 3.0),
-                  (P2, 3.0),
-                  (P2, 3.0),
+                  (P2, 1.0),
+                  (P2, 1.0),
+                  (P2, 1.0),
               ],
               exitSpeech: P0,
               motionTrigger: .sujood,
-              repromptAudio: "Please lower into Sujood"),
+              repromptAudio: "Please lower into Sujood",
+              repromptInterval: 5),
 
         // Position 11
-        .init(id: .julusSecond, mode: .timedMotion,
+        .init(id: .julusSecond, mode: .motion,
               displayLabel: "Sitting (Julus) - Between Prostrations (Rakat 2)",
               prayers: [
-                  (P5, 3.0),
-                  (P5, 3.0),
+                  (P5, 1.5),
+                  (P5, 1.5),
               ],
               exitSpeech: P0,
               motionTrigger: .upright,
-              repromptAudio: "Please sit up"),
+              repromptAudio: "Please sit up",
+              repromptInterval: 5),
 
         // Position 12
-        .init(id: .sujoodFourth, mode: .timedMotion,
+        .init(id: .sujoodFourth, mode: .motion,
               displayLabel: "Prostration (Sujood) - Fourth",
               prayers: [
-                  (P2, 3.0),
-                  (P2, 3.0),
-                  (P2, 3.0),
+                  (P2, 1.0),
+                  (P2, 1.0),
+                  (P2, 1.0),
               ],
               exitSpeech: P0,
               motionTrigger: .sujood,
-              repromptAudio: "Please lower into Sujood again"),
+              repromptAudio: "Please lower into Sujood again",
+              repromptInterval: 5),
 
         // Position 13
-        .init(id: .julusTashahhud, mode: .timedMotion,
+        .init(id: .julusTashahhud, mode: .motion,
               displayLabel: "Sitting (Julus) - Tashahhud",
               prayers: [
-                  (P8, 15.0),
-                  (P9,  7.0),
-                  (P10, 7.0),
+                  ("Tashahhud", 2.0),
+                  ("Honour Muhammad", 2.0),
+                  ("Bless Muhammad", 2.0),
+                  ("Grant me the good of this world", 2.0),
+                  ("Forgive me and my parents", 2.0),
+                  ("Ive greatly wronged myself", 2.0),
               ],
               motionTrigger: .upright,
-              repromptAudio: "Please sit for Tashahhud"),
+              repromptAudio: "Please sit for Tashahhud",
+              repromptInterval: 5),
 
         // Position 14
-        .init(id: .tasleemRight, mode: .timedMotion,
+        .init(id: .tasleemRight, mode: .motion,
               displayLabel: "Tasleem - Look Right",
-              prayers: [(P6, 5.0)],
+              prayers: [(P6, 3.0)],
               motionTrigger: .headTurnRight,
-              repromptAudio: "Please turn your head to the right"),
+              repromptAudio: "Please turn your head to the right",
+              repromptInterval: 5),
 
         // Position 15
-        .init(id: .tasleemLeft, mode: .timedMotion,
+        .init(id: .tasleemLeft, mode: .motion,
               displayLabel: "Tasleem - Look Left",
-              prayers: [(P6, 5.0)],
+              prayers: [(P6, 3.0)],
               exitSpeech: "Oh Allah, you are peace and pease comes from you",
               motionTrigger: .headTurnLeft,
-              repromptAudio: "Please turn your head to the left"),
+              repromptAudio: "Please turn your head to the left",
+              repromptInterval: 5),
     ] }
 }
