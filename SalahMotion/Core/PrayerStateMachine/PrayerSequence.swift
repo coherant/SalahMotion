@@ -310,7 +310,7 @@ enum GuidedSequenceGenerator {
 
         // Position 1
         .init(id: .qiyamStart, mode: .timed,
-              displayLabel: "Standing (Qiyam) - Start",
+              displayLabel: "Qiyam",
               entrySpeech: "Start",
               prayers: [
                   ("Listen to the Athan.", 5.0),
@@ -322,7 +322,7 @@ enum GuidedSequenceGenerator {
 
         // Position 2
         .init(id: .rukuFirst, mode: .motion,
-              displayLabel: "Bowing (Ruku) - First",
+              displayLabel: "Ruku",
               prayers: [
                   (P1, 1.0),
                   (P1, 1.0),
@@ -335,7 +335,7 @@ enum GuidedSequenceGenerator {
 
         // Position 3
         .init(id: .qiyamAfterRukuFirst, mode: .motion,
-              displayLabel: "Standing (Qiyam) - After Ruku (Rakat 1)",
+              displayLabel: "Qiyam",
               prayers: [(P4, 3.0)],
               exitSpeech: P0,
               motionTrigger: .upright,
@@ -344,7 +344,7 @@ enum GuidedSequenceGenerator {
 
         // Position 4
         .init(id: .sujoodFirst, mode: .motion,
-              displayLabel: "Prostration (Sujood) - First",
+              displayLabel: "Sujood",
               prayers: [
                   (P2, 1.0),
                   (P2, 1.0),
@@ -357,7 +357,7 @@ enum GuidedSequenceGenerator {
 
         // Position 5
         .init(id: .julusFirst, mode: .motion,
-              displayLabel: "Sitting (Julus) - Between Prostrations (Rakat 1)",
+              displayLabel: "Julus",
               prayers: [
                   (P5, 1.5),
                   (P5, 1.5),
@@ -369,7 +369,7 @@ enum GuidedSequenceGenerator {
 
         // Position 6
         .init(id: .sujoodSecond, mode: .motion,
-              displayLabel: "Prostration (Sujood) - Second",
+              displayLabel: "Sujood",
               prayers: [
                   (P2, 1.0),
                   (P2, 1.0),
@@ -382,7 +382,7 @@ enum GuidedSequenceGenerator {
 
         // Position 7
         .init(id: .qiyamRakat2, mode: .motion,
-              displayLabel: "Standing (Qiyam) - Rakat 2",
+              displayLabel: "Qiyam",
               prayers: [("Al Fatiha", 5.0)],
               exitSpeech: P0,
               motionTrigger: .upright,
@@ -391,7 +391,7 @@ enum GuidedSequenceGenerator {
 
         // Position 8
         .init(id: .rukuSecond, mode: .motion,
-              displayLabel: "Bowing (Ruku) - Second",
+              displayLabel: "Ruku",
               prayers: [
                   (P1, 1.0),
                   (P1, 1.0),
@@ -404,7 +404,7 @@ enum GuidedSequenceGenerator {
 
         // Position 9 — yaw baseline captured here for Tasleem
         .init(id: .qiyamAfterRukuSecond, mode: .motion,
-              displayLabel: "Standing (Qiyam) - After Ruku (Rakat 2)",
+              displayLabel: "Qiyam",
               prayers: [(P4, 3.0)],
               exitSpeech: P0,
               motionTrigger: .upright,
@@ -414,7 +414,7 @@ enum GuidedSequenceGenerator {
 
         // Position 10
         .init(id: .sujoodThird, mode: .motion,
-              displayLabel: "Prostration (Sujood) - Third",
+              displayLabel: "Sujood",
               prayers: [
                   (P2, 1.0),
                   (P2, 1.0),
@@ -427,7 +427,7 @@ enum GuidedSequenceGenerator {
 
         // Position 11
         .init(id: .julusSecond, mode: .motion,
-              displayLabel: "Sitting (Julus) - Between Prostrations (Rakat 2)",
+              displayLabel: "Julus",
               prayers: [
                   (P5, 1.5),
                   (P5, 1.5),
@@ -439,7 +439,7 @@ enum GuidedSequenceGenerator {
 
         // Position 12
         .init(id: .sujoodFourth, mode: .motion,
-              displayLabel: "Prostration (Sujood) - Fourth",
+              displayLabel: "Sujood",
               prayers: [
                   (P2, 1.0),
                   (P2, 1.0),
@@ -452,7 +452,7 @@ enum GuidedSequenceGenerator {
 
         // Position 13
         .init(id: .julusTashahhud, mode: .motion,
-              displayLabel: "Sitting (Julus) - Tashahhud",
+              displayLabel: "Julus",
               prayers: [
                   ("Tashahhud", 2.0),
                   ("Honour Muhammad", 2.0),
@@ -467,7 +467,7 @@ enum GuidedSequenceGenerator {
 
         // Position 14
         .init(id: .tasleemRight, mode: .motion,
-              displayLabel: "Tasleem - Look Right",
+              displayLabel: "Tasleem",
               prayers: [(P6, 3.0)],
               motionTrigger: .headTurnRight,
               repromptAudio: "Please turn your head to the right",
@@ -475,7 +475,7 @@ enum GuidedSequenceGenerator {
 
         // Position 15
         .init(id: .tasleemLeft, mode: .motion,
-              displayLabel: "Tasleem - Look Left",
+              displayLabel: "Tasleem",
               prayers: [(P6, 3.0)],
               exitSpeech: "Oh Allah, you are peace and pease comes from you",
               motionTrigger: .headTurnLeft,

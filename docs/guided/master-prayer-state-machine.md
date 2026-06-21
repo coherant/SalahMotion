@@ -42,21 +42,21 @@ Defines which file or constant controls each timing parameter.
 
 | position-id | Label | Mode | Motion Trigger | Reprompt Interval |
 |---|---|---|---|---|
-| 1 | Standing (Qiyam) - Start | `timed` | — | — |
-| 2 | Bowing (Ruku) - First | `motion` | pitch (ruku) | 5s |
-| 3 | Standing (Qiyam) - After Ruku (Rakat 1) | `motion` | pitch (upright) | 5s |
-| 4 | Prostration (Sujood) - First | `motion` | roll (sujood) | 5s |
-| 5 | Sitting (Julus) - Between Prostrations (Rakat 1) | `motion` | pitch (upright) | 5s |
-| 6 | Prostration (Sujood) - Second | `motion` | roll (sujood) | 5s |
-| 7 | Standing (Qiyam) - Rakat 2 | `motion` | pitch (upright) | 5s |
-| 8 | Bowing (Ruku) - Second | `motion` | pitch (ruku) | 5s |
-| 9 | Standing (Qiyam) - After Ruku (Rakat 2) | `motion` | pitch (upright) | 5s |
-| 10 | Prostration (Sujood) - Third | `motion` | roll (sujood) | 5s |
-| 11 | Sitting (Julus) - Between Prostrations (Rakat 2) | `motion` | pitch (upright) | 5s |
-| 12 | Prostration (Sujood) - Fourth | `motion` | roll (sujood) | 5s |
-| 13 | Sitting (Julus) - Tashahhud | `motion` | pitch (upright) | 5s |
-| 14 | Tasleem - Look Right | `motion` | yaw delta (right) | 5s |
-| 15 | Tasleem - Look Left | `motion` | yaw delta (left) | 5s |
+| 1 | Qiyam | `timed` | — | — | # Standing (Qiyam) - Start
+| 2 | Ruku | `motion` | pitch (ruku) | 5s | # Bowing (Ruku) - First
+| 3 | Qiyam | `motion` | pitch (upright) | 5s | #Standing (Qiyam) - After Ruku (Rakat 1)
+| 4 | Sujood | `motion` | roll (sujood) | 5s | # Prostration (Sujood) - First
+| 5 | Julus | `motion` | pitch (upright) | 5s | # Sitting (Julus) - Between Prostrations (Rakat 1)
+| 6 | Sujood | `motion` | roll (sujood) | 5s | # Prostration (Sujood) - Second
+| 7 | Qiyam | `motion` | pitch (upright) | 5s | # Standing (Qiyam) - Rakat 2
+| 8 | Ruku | `motion` | pitch (ruku) | 5s | # Bowing (Ruku) - Second
+| 9 | Qiyam | `motion` | pitch (upright) | 5s | # Standing (Qiyam) - After Ruku (Rakat 2)
+| 10 | Sujood | `motion` | roll (sujood) | 5s | # Prostration (Sujood) - Third
+| 11 | Julus | `motion` | pitch (upright) | 5s | # Sitting (Julus) - Between Prostrations (Rakat 2)
+| 12 | Sujood | `motion` | roll (sujood) | 5s | # Prostration (Sujood) - Fourth
+| 13 | Julus | `motion` | pitch (upright) | 5s | # Sitting (Julus) - Tashahhud
+| 14 | Tasleem | `motion` | yaw delta (right) | 5s | # Tasleem - Look Right
+| 15 | Tasleem | `motion` | yaw delta (left) | 5s | # Tasleem - Look Left
 
 ## Parameter definitions
 
