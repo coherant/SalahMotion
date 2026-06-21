@@ -1,5 +1,4 @@
 import Foundation
-import CoreMotion
 import AVFoundation
 import AudioToolbox
 #if canImport(UIKit)
@@ -39,22 +38,21 @@ final class PrayerStateMachine {
     private(set) var roll:  Double = 0
     private(set) var yaw:   Double = 0
 
-    nonisolated(unsafe) private let headphoneManager = CMHeadphoneMotionManager()
-    nonisolated(unsafe) private let synthesizer      = AVSpeechSynthesizer()
-    nonisolated(unsafe) private let speechDelegate   = PrayerSpeechDelegate()
-    nonisolated(unsafe) private let motionQueue      = OperationQueue()
+    nonisolated(unsafe) private let synthesizer = AVSpeechSynthesizer()
+    private let speechDelegate = PrayerSpeechDelegate()
 
-    private var sensorReadings     = SensorReadings()
+    private let detector       = HeadphoneMotionDetector()
+    private var thresholds: MotionThresholds
+
     private var qiyamYawBaseline: Double? = nil
     private var sessionTask: Task<Void, Never>?
     private(set) var sessionSamples: [SessionSample] = []
-    private var userProfile: UserCalibrationProfile? = UserCalibrationProfile.load()
     private var sessionStartDate: Date?
     private let participantName: String
     private let audioRoute: AudioRoute
     private let holdWindow: Double = 1.5
 
-    var isAvailable: Bool { headphoneManager.isDeviceMotionAvailable }
+    var isAvailable: Bool { detector.isAvailable }
     var currentState: PrayerState { states[currentStateIndex] }
 
     init(sequence: [PrayerState] = PrayerSequenceGenerator.generate(),
@@ -63,6 +61,7 @@ final class PrayerStateMachine {
         states = sequence
         self.participantName = participantName
         self.audioRoute = audioRoute
+        self.thresholds = MotionThresholds(profile: UserCalibrationProfile.load())
         synthesizer.delegate = speechDelegate
     }
 
@@ -83,7 +82,7 @@ final class PrayerStateMachine {
     func cancel() {
         sessionTask?.cancel()
         synthesizer.stopSpeaking(at: .immediate)
-        headphoneManager.stopDeviceMotionUpdates()
+        detector.stop()
 #if canImport(UIKit)
         UIApplication.shared.isIdleTimerDisabled = false
 #endif
@@ -93,23 +92,16 @@ final class PrayerStateMachine {
     // MARK: - Motion updates
 
     private func startMotionUpdates() {
-        headphoneManager.startDeviceMotionUpdates(to: motionQueue) { [weak self] motion, _ in
-            guard let motion else { return }
-            let p = motion.attitude.pitch * 180 / .pi
-            let r = motion.attitude.roll  * 180 / .pi
-            let y = motion.attitude.yaw   * 180 / .pi
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                self.sensorReadings.add(pitch: p, roll: r, yaw: y)
-                self.pitch = self.sensorReadings.smoothedPitch
-                self.roll  = self.sensorReadings.smoothedRoll
-                self.yaw   = self.sensorReadings.smoothedYaw
-                let elapsed = Date().timeIntervalSince(self.sessionStartDate ?? Date())
-                let stateID = self.states[self.currentStateIndex].id.rawValue
-                self.sessionSamples.append(SessionSample(
-                    timestamp: elapsed, stateID: stateID, pitch: p, roll: r, yaw: y
-                ))
-            }
+        detector.start { [weak self] p, r, y in
+            guard let self else { return }
+            self.pitch = self.detector.smoothedPitch
+            self.roll  = self.detector.smoothedRoll
+            self.yaw   = self.detector.smoothedYaw
+            let elapsed = Date().timeIntervalSince(self.sessionStartDate ?? Date())
+            let stateID = self.states[self.currentStateIndex].id.rawValue
+            self.sessionSamples.append(SessionSample(
+                timestamp: elapsed, stateID: stateID, pitch: p, roll: r, yaw: y
+            ))
         }
     }
 
@@ -134,13 +126,13 @@ final class PrayerStateMachine {
             }
 
             if state.capturesYawBaseline {
-                qiyamYawBaseline = sensorReadings.smoothedYaw
+                qiyamYawBaseline = yaw
                 print(String(format: "[PrayerSM] 📐 Yaw baseline: %.1f° (%@)",
                              qiyamYawBaseline!, state.id.rawValue))
             }
         }
 
-        headphoneManager.stopDeviceMotionUpdates()
+        detector.stop()
 #if canImport(UIKit)
         UIApplication.shared.isIdleTimerDisabled = false
 #endif
@@ -228,15 +220,12 @@ final class PrayerStateMachine {
                     if elapsed >= prayer.duration { break }
 
                     if let trigger = state.motionTrigger {
-                        let p = sensorReadings.smoothedPitch
-                        let r = sensorReadings.smoothedRoll
-                        let y = sensorReadings.smoothedYaw
-
-                        if isMotionSatisfied(trigger, pitch: p, roll: r, yaw: y) {
+                        if thresholds.isSatisfied(trigger, pitch: pitch, roll: roll, yaw: yaw,
+                                                  yawBaseline: qiyamYawBaseline) {
                             if motionHoldStart == nil {
                                 motionHoldStart = Date()
                                 print(String(format: "[PrayerSM] ◌ Motion: %@ p:%.1f° r:%.1f°",
-                                             state.id.rawValue, p, r))
+                                             state.id.rawValue, pitch, roll))
                             }
                             let held = Date().timeIntervalSince(motionHoldStart!)
                             if held >= holdWindow {
@@ -275,11 +264,8 @@ final class PrayerStateMachine {
         var lastRepromptAt = Date()
 
         while !Task.isCancelled {
-            let p = sensorReadings.smoothedPitch
-            let r = sensorReadings.smoothedRoll
-            let y = sensorReadings.smoothedYaw
-
-            if isMotionSatisfied(trigger, pitch: p, roll: r, yaw: y) {
+            if thresholds.isSatisfied(trigger, pitch: pitch, roll: roll, yaw: yaw,
+                                      yawBaseline: qiyamYawBaseline) {
                 if holdStart == nil { holdStart = Date() }
                 let held = Date().timeIntervalSince(holdStart!)
                 confirmProgress = min(held / holdWindow, 1.0)
@@ -304,43 +290,6 @@ final class PrayerStateMachine {
 
             try? await Task.sleep(for: .milliseconds(50))
         }
-    }
-
-    // MARK: - Motion detection
-
-    private func isMotionSatisfied(_ trigger: MotionTrigger, pitch: Double, roll: Double, yaw: Double) -> Bool {
-        switch trigger {
-        case .ruku:
-            let lo = userProfile?.rukuPitchLow  ?? -82
-            let hi = userProfile?.rukuPitchHigh ?? -48
-            return pitch >= lo && pitch <= hi
-
-        case .sujood:
-            // angDist handles Euler-angle wraparound; fallback radius calibrated at 88% coverage.
-            let radius = userProfile?.sujoodRollRadius ?? 35
-            return angularDistance(roll, 180) <= radius
-
-        case .upright:
-            // Roll is NOT a hard gate — sequence position disambiguates standing vs sitting.
-            let lo = userProfile?.uprightPitchLow  ?? -40
-            let hi = userProfile?.uprightPitchHigh ?? 6
-            return pitch >= lo && pitch <= hi
-
-        case .headTurnRight:
-            guard let baseline = qiyamYawBaseline else { return false }
-            let offset = userProfile?.tasleemYawOffset ?? 30
-            return baseline - yaw >= offset
-
-        case .headTurnLeft:
-            guard let baseline = qiyamYawBaseline else { return false }
-            let offset = userProfile?.tasleemYawOffset ?? 30
-            return yaw - baseline >= offset
-        }
-    }
-
-    private func angularDistance(_ a: Double, _ b: Double) -> Double {
-        let diff = abs(a - b).truncatingRemainder(dividingBy: 360)
-        return min(diff, 360 - diff)
     }
 
     // MARK: - Session saving

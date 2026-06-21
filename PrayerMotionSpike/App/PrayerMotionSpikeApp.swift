@@ -1,17 +1,13 @@
-//
-//  PrayerMotionSpikeApp.swift
-//  PrayerMotionSpike
-//
-//  Created by Oscar Huseyin on 20/6/2026.
-//
-
 import SwiftUI
 
 @main
 struct PrayerMotionSpikeApp: App {
+    @State private var router = Router()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(router)
         }
     }
 }

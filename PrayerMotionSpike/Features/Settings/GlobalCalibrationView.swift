@@ -1,22 +1,5 @@
 import SwiftUI
 
-// MARK: - Root
-
-struct ContentView: View {
-    var body: some View {
-        TabView {
-            ReactivePrayerView()
-                .tabItem { Label("Guided", systemImage: "moon.stars.fill") }
-            CalibrationView()
-                .tabItem { Label("Calibration", systemImage: "person.crop.circle.badge.checkmark") }
-            GuidedRecordingView()
-                .tabItem { Label("Global Calibration", systemImage: "figure.stand") }
-}
-    }
-}
-
-// MARK: - Calibration (Guided Recording)
-
 struct GuidedRecordingView: View {
     @State private var participantName: String = ""
     @State private var session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate())
@@ -231,7 +214,6 @@ struct GuidedRecordingView: View {
 
     private func sessionDate(from url: URL) -> String {
         let stem = url.deletingPathExtension().lastPathComponent
-        // filename: prayer_calibration_<slug>_<timestamp>
         if let ts = Double(stem.components(separatedBy: "_").last ?? "") {
             return DateFormatter.localizedString(
                 from: Date(timeIntervalSince1970: ts),
@@ -257,22 +239,4 @@ struct GuidedRecordingView: View {
             Text(String(format: "%+.1f°", value)).fontWeight(.semibold)
         }
     }
-}
-
-// MARK: - Shared
-
-extension URL: @retroactive Identifiable {
-    public var id: String { absoluteString }
-}
-
-struct ShareSheet: UIViewControllerRepresentable {
-    let url: URL
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: [url], applicationActivities: nil)
-    }
-    func updateUIViewController(_: UIActivityViewController, context: Context) {}
-}
-
-#Preview {
-    ContentView()
 }
