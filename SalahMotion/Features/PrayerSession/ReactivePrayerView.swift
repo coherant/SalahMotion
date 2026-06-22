@@ -3,7 +3,8 @@ import SwiftUI
 struct ReactivePrayerView: View {
     var prayerTime: PrayerTime = .isha
 
-    @State private var session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate())
+    @State private var selectedLanguage = UserPreferences.shared.language
+    @State private var session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate(language: UserPreferences.shared.language))
     @State private var isSilenced = false
     @State private var shareURL: URL?
     @State private var sessionFiles: [URL] = []
@@ -54,6 +55,35 @@ struct ReactivePrayerView: View {
                 }
                 Spacer()
 
+                // Language picker
+                Menu {
+                    ForEach(Language.allCases) { lang in
+                        Button {
+                            selectedLanguage = lang
+                            UserPreferences.shared.language = lang
+                            session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate(language: lang))
+                        } label: {
+                            if lang == selectedLanguage {
+                                Label(lang.displayName, systemImage: "checkmark")
+                            } else {
+                                Text(lang.displayName)
+                            }
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "globe")
+                        Text(selectedLanguage.displayName)
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 10))
+                    }
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.75))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(Capsule().strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                }
+
                 Button("Begin Prayer") { session.start() }
                     .buttonStyle(.borderedProminent)
                     .font(.title3.weight(.semibold))
@@ -102,7 +132,7 @@ struct ReactivePrayerView: View {
                     PositionTrackerView(
                         positions: trackerPositions,
                         prayerTime: prayerTime,
-                        progress: session.confirmProgress,
+                        progress: session.guidanceLevel.showsTimer ? session.confirmProgress : 0,
                         isSpeaking: session.isSpeaking
                     )
                     .padding(.leading, 24)
@@ -142,7 +172,7 @@ struct ReactivePrayerView: View {
                 Text("Session saved to History.").foregroundStyle(.white.opacity(0.55))
                 Spacer()
                 Button("Done") {
-                    session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate())
+                    session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate(language: selectedLanguage))
                 }
                 .buttonStyle(.borderedProminent)
                 .font(.title3.weight(.semibold))
@@ -175,7 +205,7 @@ struct ReactivePrayerView: View {
                 Text("Prayer cancelled").foregroundStyle(.white.opacity(0.55))
                 Spacer()
                 Button("Try Again") {
-                    session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate())
+                    session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate(language: selectedLanguage))
                 }
                 .buttonStyle(.borderedProminent)
                 .frame(maxWidth: .infinity)

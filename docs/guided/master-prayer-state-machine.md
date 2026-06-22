@@ -1,94 +1,157 @@
 # Master Prayer State Machine
 
-## Guided
-This is the guided state machine
+Single source of truth for all guided prayer sequences.
+Block definitions: `rakats.md`
+Prayer content: `prayer-sets/{prayer}.md`
+Prayer text library: `../prayers/prayers.md`
 
-This is the single source of truth for the prayer sequence used by both the
-Guided and Calibration tabs. All other documentation and all source files
-reference this document.
+## Notes
+- The first Qiyam of any prayer session is `timed` (includes Ezan + niyet)
+- All subsequent Qiyams within a session are `motion`
+- Yaw baseline is always captured at the last qiyam-after-ruku before TASLEEM
 
-## Source files
+---
 
-### Guided Master Prayer State Machine
+## Fajr
 
-| File | Purpose |
-|---|---|
-| `PrayerMotionSpike/PrayerSequence.swift` | `PhaseMode`, `PrayerState`, `MotionTrigger`, `SensorReadings`, `PrayerSequenceGenerator` — **edit this file to change the sequence** |
-| `PrayerMotionSpike/PrayerStateMachine.swift` | Runtime engine — handles all four modes, session recording, TTS, idle timer |
-| `PrayerMotionSpike/ReactivePrayerView.swift` | Guided tab UI |
-| `PrayerMotionSpike/ContentView.swift` | Calibration tab UI (`GuidedRecordingView`) and Manual tab |
+### Fajr Sunnah (2 rakats — before Fard)
 
-## Phase modes
+| # | Block | Rakat |
+|---|---|---|
+| 1 | RAKAT_FULL | 1 |
+| 2 | RAKAT_FULL | 2 · yaw baseline |
+| 3 | FULL_TASHAHHUD | 2 |
+| 4 | TASLEEM | 2 |
+
+Content: `prayer-sets/fajr.md` · Phase count: 15
+
+---
+
+### Fajr Fard (2 rakats)
+
+| # | Block | Rakat |
+|---|---|---|
+| 1 | RAKAT_FULL | 1 |
+| 2 | RAKAT_FULL | 2 · yaw baseline |
+| 3 | FULL_TASHAHHUD | 2 |
+| 4 | TASLEEM | 2 |
+
+Content: `prayer-sets/fajr.md` · Phase count: 15
+
+---
+
+## Dhuhr
+
+### Dhuhr Sunnah Before (4 rakats — before Fard)
+
+| # | Block | Rakat |
+|---|---|---|
+| 1 | RAKAT_FULL | 1 |
+| 2 | RAKAT_FULL | 2 |
+| 3 | SHORT_TASHAHHUD | 2 |
+| 4 | RAKAT_FATIHA_ONLY | 3 |
+| 5 | RAKAT_FATIHA_ONLY | 4 · yaw baseline |
+| 6 | FULL_TASHAHHUD | 4 |
+| 7 | TASLEEM | 4 |
+
+Content: `prayer-sets/dhuhr.md` · Phase count: 28
+
+---
+
+### Dhuhr Fard (4 rakats)
+
+Same block sequence as Dhuhr Sunnah Before.
+Content: `prayer-sets/dhuhr.md` · Phase count: 28
+
+---
+
+### Dhuhr Sunnah After (2 rakats — after Fard)
+
+Same block sequence as Fajr Fard.
+Content: `prayer-sets/dhuhr.md` · Phase count: 15
+
+---
+
+## Asr
+
+### Asr Sunnah (4 rakats — before Fard · Ghair Mu'akkadah)
+
+Same block sequence as Dhuhr Fard.
+Content: `prayer-sets/asr.md` · Phase count: 28
+
+---
+
+### Asr Fard (4 rakats)
+
+Same block sequence as Dhuhr Fard.
+Content: `prayer-sets/asr.md` · Phase count: 28
+
+---
+
+## Maghrib
+
+### Maghrib Fard (3 rakats)
+
+| # | Block | Rakat |
+|---|---|---|
+| 1 | RAKAT_FULL | 1 |
+| 2 | RAKAT_FULL | 2 |
+| 3 | SHORT_TASHAHHUD | 2 |
+| 4 | RAKAT_FATIHA_ONLY | 3 · yaw baseline |
+| 5 | FULL_TASHAHHUD | 3 |
+| 6 | TASLEEM | 3 |
+
+Content: `prayer-sets/maghrib.md` · Phase count: 22
+
+---
+
+### Maghrib Sunnah After (2 rakats — after Fard)
+
+Same block sequence as Fajr Fard.
+Content: `prayer-sets/maghrib.md` · Phase count: 15
+
+---
+
+## Isha
+
+### Isha Fard (4 rakats)
+
+Same block sequence as Dhuhr Fard.
+Content: `prayer-sets/isha.md` · Phase count: 28
+
+---
+
+### Isha Sunnah After (2 rakats — after Fard)
+
+Same block sequence as Fajr Fard.
+Content: `prayer-sets/isha.md` · Phase count: 15
+
+---
+
+### Witr (3 rakats — after Isha Sunnah)
+
+| # | Block | Rakat |
+|---|---|---|
+| 1 | RAKAT_FULL | 1 |
+| 2 | RAKAT_FULL | 2 |
+| 3 | SHORT_TASHAHHUD | 2 |
+| 4 | RAKAT_FATIHA_ONLY | 3 · yaw baseline |
+| 5 | FULL_TASHAHHUD | 3 |
+| 6 | TASLEEM | 3 |
+
+Content: `prayer-sets/witr.md` · Phase count: 22
+
+Note: Witr includes Qunut dua in the final Qiyam — unique to this prayer set.
+
+---
+
+## Phase mode definitions
 
 | Mode | Behaviour |
 |---|---|
-| `auto` | Plays entry speech, plays exit speech, advances immediately — no timer, no motion gate |
 | `timed` | Plays entry speech, plays prayer rows in sequence, plays exit speech |
 | `motion` | Waits indefinitely for confirmed motion (reprompts every reprompt interval), plays entry speech, plays prayer rows in sequence, plays exit speech |
-| `motion` | Plays entry speech, plays prayer rows in sequence (each followed by its duration pause), plays exit speech — motion detection runs throughout; reprompts fire every reprompt interval if position not yet confirmed |
-
-## Timing ownership
-
-Defines which file or constant controls each timing parameter.
-
-| Timer | Controlled by | Location |
-|---|---|---|
-| Phase duration (how long each position lasts) | Prayer row `duration` values | `prayers-for-each-state-in-state-machine.md` |
-| Motion confirmation hold window | Fixed code constant | `PrayerStateMachine.swift` — 1.5s |
-| Reprompt interval | Master sequence table | `master-prayer-state-machine.md` — `Reprompt Interval` column |
-| Reprompt utterance | Prayer role row | `prayers-for-each-state-in-state-machine.md` — `reprompt` role |
-
-## Master phase sequence
-
-| position-id | Label | Arabic | English Meaning | Mode | Motion Trigger | Reprompt Interval |
-|---|---|---|---|---|---|---|
-| 1 | Qiyam | قِيَام | Standing | `timed` | — | — |
-| 2 | Ruku | رُكُوع | Bowing | `motion` | pitch (ruku) | 5s |
-| 3 | Qiyam | قِيَام | Standing | `motion` | pitch (upright) | 5s |
-| 4 | Sujood | سُجُود | Prostration | `motion` | roll (sujood) | 5s |
-| 5 | Julus | جُلُوس | Sitting | `motion` | pitch (upright) | 5s |
-| 6 | Sujood | سُجُود | Prostration | `motion` | roll (sujood) | 5s |
-| 7 | Qiyam | قِيَام | Standing | `motion` | pitch (upright) | 5s |
-| 8 | Ruku | رُكُوع | Bowing | `motion` | pitch (ruku) | 5s |
-| 9 | Qiyam | قِيَام | Standing | `motion` | pitch (upright) | 5s |
-| 10 | Sujood | سُجُود | Prostration | `motion` | roll (sujood) | 5s |
-| 11 | Julus | جُلُوس | Sitting | `motion` | pitch (upright) | 5s |
-| 12 | Sujood | سُجُود | Prostration | `motion` | roll (sujood) | 5s |
-| 13 | Julus | جُلُوس | Sitting | `motion` | pitch (upright) | 5s |
-| 14 | Tasleem | تَسْلِيم | Salutation | `motion` | yaw delta (right) | 5s |
-| 15 | Tasleem | تَسْلِيم | Salutation | `motion` | yaw delta (left) | 5s |
-
-## Parameter definitions
-
-| Parameter | Applies to | Meaning |
-|---|---|---|
-| `Motion Trigger` | `motion`, `motion` | Sensor condition that must be satisfied to confirm the position |
-| `Reprompt Interval` | `motion`, `motion` | How often the reprompt fires while waiting for motion confirmation |
 
 ## Motion detection thresholds
 
-Threshold values are updated by calibration runs. The `Initial` column records the
-hand-tuned starting point; `Calibrated` records the value derived from data.
-The Swift implementation in `PrayerStateMachine.swift` always uses the calibrated value.
-
-| Position | Signal | Initial | Calibrated | Source |
-|---|---|---|---|---|
-| Ruku | Pitch | [-80°, -65°] | [-82°, -48°] | 3 participants, Jun 2026 |
-| Sujood | Roll | angDist(roll, 162.5°) ≤ 12.5° | angDist(roll, 180°) ≤ 30° | 3 participants, Jun 2026 |
-| Upright (standing or sitting) | Pitch | [-30°, +25°] | [-40°, +6°] | 3 participants, Jun 2026 |
-| Tasleem right | Yaw delta | yaw − baseline ≥ +30° | baseline − yaw ≥ 30° | 3 participants, Jun 2026 |
-| Tasleem left | Yaw delta | baseline − yaw ≥ 30° | yaw − baseline ≥ 30° | 3 participants, Jun 2026 |
-
-Notes:
-- Upright: sequence position disambiguates standing vs sitting — roll is NOT a hard gate
-- Sujood: angular distance handles the ±180° Euler-angle wraparound
-- Tasleem: yaw is session-relative; baseline captured at phase 9. Right/left directions confirmed by calibration data (right turn = negative yaw delta)
-
-## Sensor smoothing
-7-sample moving average applied to pitch, roll, yaw before threshold evaluation.
-Reduces sensor jitter without masking real transitions.
-
-## Yaw baseline
-Captured at phase 9 (Standing — After Ruku, Rakat 2) — the most recent confirmed
-standing position before Tasleem. Yaw is session-relative so must be captured within
-the same session.
+See `../calibration/master-prayer-state-machine.md` for calibrated threshold values.

@@ -287,17 +287,19 @@ enum PrayerSequenceGenerator {
 
 enum GuidedSequenceGenerator {
 
-    private static let P0  = "Allah Hoo-ekber"
-    private static let P1  = "Glory be to Allah the most great!"
-    private static let P2  = "Glory be to Allah the most high!"
-    private static let P3  = "Allah hears those who praise him."
-    private static let P4  = "O Allah, all praise is due onto you."
-    private static let P5  = "O Allah, forgive me."
-    private static let P6  = "Peace and blessing be onto you"
+    static func generate(language: Language = UserPreferences.shared.language) -> [PrayerState] {
+        masterSequence(language: language)
+    }
 
-    static func generate() -> [PrayerState] { masterSequence() }
-
-    private static func masterSequence() -> [PrayerState] { [
+    private static func masterSequence(language: Language) -> [PrayerState] {
+        let P0 = PrayerLibrary.text(.p0, language)
+        let P1 = PrayerLibrary.text(.p1, language)
+        let P2 = PrayerLibrary.text(.p2, language)
+        let P3 = PrayerLibrary.text(.p3, language)
+        let P4 = PrayerLibrary.text(.p4, language)
+        let P5 = PrayerLibrary.text(.p5, language)
+        let P6 = PrayerLibrary.text(.p6, language)
+        return [
 
         // Position 1 — Rakat 1
         .init(id: .qiyamStart, rakatNumber: 1, mode: .timed,
@@ -442,7 +444,8 @@ enum GuidedSequenceGenerator {
               motionTrigger: .headTurnLeft,
               repromptAudio: "Please turn your head to the left",
               repromptInterval: 5),
-    ] }
+        ]
+    }
 }
 
 // MARK: - Calibration sequence
