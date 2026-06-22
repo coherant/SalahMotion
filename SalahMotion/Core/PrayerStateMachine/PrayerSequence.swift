@@ -292,25 +292,32 @@ enum GuidedSequenceGenerator {
     }
 
     private static func masterSequence(language: Language) -> [PrayerState] {
-        let P0 = PrayerLibrary.text(.p0, language)
-        let P1 = PrayerLibrary.text(.p1, language)
-        let P2 = PrayerLibrary.text(.p2, language)
-        let P3 = PrayerLibrary.text(.p3, language)
-        let P4 = PrayerLibrary.text(.p4, language)
-        let P5 = PrayerLibrary.text(.p5, language)
-        let P6 = PrayerLibrary.text(.p6, language)
+        let P0  = PrayerLibrary.text(.p0,  language)
+        let P1  = PrayerLibrary.text(.p1,  language)
+        let P2  = PrayerLibrary.text(.p2,  language)
+        let P3  = PrayerLibrary.text(.p3,  language)
+        let P4  = PrayerLibrary.text(.p4,  language)
+        let P5  = PrayerLibrary.text(.p5,  language)
+        let P6  = PrayerLibrary.text(.p6,  language)
+        let P7  = PrayerLibrary.text(.p7,  language)
+        let P8  = PrayerLibrary.text(.p8,  language)
+        let P9  = PrayerLibrary.text(.p9,  language)
+        let P10 = PrayerLibrary.text(.p10, language)
+        let P11 = PrayerLibrary.text(.p11, language)
+        let P12 = PrayerLibrary.text(.p12, language)
         return [
 
-        // Position 1 — Rakat 1
+        // Position 1 — Rakat 1 (Fajr Fard — 2 rakats)
         .init(id: .qiyamStart, rakatNumber: 1, mode: .timed,
               displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
-              entrySpeech: "Start",
+              entrySpeech: "Stand upright and raise your hands to your ears",
               prayers: [
                   ("Listen to the Athan.", 5.0),
-                  ("Give niyet", 5.0),
-                  (P0, 3.0),
-                  ("Al-Fatiha", 5.0),
-                  (P0, 3.0),
+                  ("Give your niyet for Fajr", 5.0),
+                  (P0,  3.0),
+                  (P7,  15.0),
+                  (P11, 8.0),
+                  (P0,  2.0),
               ]),
 
         // Position 2
@@ -361,10 +368,9 @@ enum GuidedSequenceGenerator {
         // Position 7 — Rakat 2
         .init(id: .qiyamRakat2, rakatNumber: 2, mode: .motion,
               displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
-              prayers: [("Al Fatiha", 5.0)],
-              exitSpeech: P0,
+              prayers: [(P7, 10.0), (P12, 8.0), (P0, 2.0)],
               motionTrigger: .upright,
-              repromptAudio: "Please stand for the next rakat",
+              repromptAudio: "Please stand for the second rak'ah",
               repromptInterval: 5),
 
         // Position 8
@@ -416,14 +422,7 @@ enum GuidedSequenceGenerator {
         // Position 13
         .init(id: .julusTashahhud, rakatNumber: 2, mode: .motion,
               displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
-              prayers: [
-                  ("Tashahhud", 2.0),
-                  ("Honour Muhammad", 2.0),
-                  ("Bless Muhammad", 2.0),
-                  ("Grant me the good of this world", 2.0),
-                  ("Forgive me and my parents", 2.0),
-                  ("Ive greatly wronged myself", 2.0),
-              ],
+              prayers: [(P8, 0), (P9, 0), (P10, 0)],
               motionTrigger: .upright,
               repromptAudio: "Please sit for Tashahhud",
               repromptInterval: 5),

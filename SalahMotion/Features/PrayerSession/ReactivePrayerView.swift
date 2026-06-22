@@ -3,7 +3,6 @@ import SwiftUI
 struct ReactivePrayerView: View {
     var prayerTime: PrayerTime = .isha
 
-    @State private var selectedLanguage = UserPreferences.shared.language
     @State private var session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate(language: UserPreferences.shared.language))
     @State private var isSilenced = false
     @State private var shareURL: URL?
@@ -55,34 +54,64 @@ struct ReactivePrayerView: View {
                 }
                 Spacer()
 
-                // Language picker
-                Menu {
-                    ForEach(Language.allCases) { lang in
-                        Button {
-                            selectedLanguage = lang
-                            UserPreferences.shared.language = lang
-                            session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate(language: lang))
-                        } label: {
-                            if lang == selectedLanguage {
-                                Label(lang.displayName, systemImage: "checkmark")
-                            } else {
-                                Text(lang.displayName)
+                // Language + Pace pickers
+                HStack(spacing: 12) {
+                    // Language
+                    Menu {
+                        ForEach(Language.allCases) { lang in
+                            Button {
+                                UserPreferences.shared.language = lang
+                                session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate(language: lang))
+                            } label: {
+                                if lang == UserPreferences.shared.language {
+                                    Label(lang.displayName, systemImage: "checkmark")
+                                } else {
+                                    Text(lang.displayName)
+                                }
                             }
                         }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "globe")
+                            Text(UserPreferences.shared.language.displayName)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 10))
+                        }
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.75))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(Capsule().strokeBorder(.white.opacity(0.25), lineWidth: 1))
                     }
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "globe")
-                        Text(selectedLanguage.displayName)
-                        Image(systemName: "chevron.up.chevron.down")
-                            .font(.system(size: 10))
+
+                    // Pace
+                    Menu {
+                        ForEach(PrayerPace.allCases) { pace in
+                            Button {
+                                UserPreferences.shared.pace = pace
+                            } label: {
+                                if pace == UserPreferences.shared.pace {
+                                    Label(pace.displayName, systemImage: "checkmark")
+                                } else {
+                                    Text(pace.displayName)
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "gauge.medium")
+                            Text(UserPreferences.shared.pace.displayName)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 10))
+                        }
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.75))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(Capsule().strokeBorder(.white.opacity(0.25), lineWidth: 1))
                     }
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.75))
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(Capsule().strokeBorder(.white.opacity(0.25), lineWidth: 1))
                 }
+                .padding(.horizontal, 24)
 
                 Button("Begin Prayer") { session.start() }
                     .buttonStyle(.borderedProminent)
@@ -172,7 +201,7 @@ struct ReactivePrayerView: View {
                 Text("Session saved to History.").foregroundStyle(.white.opacity(0.55))
                 Spacer()
                 Button("Done") {
-                    session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate(language: selectedLanguage))
+                    session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate(language: UserPreferences.shared.language))
                 }
                 .buttonStyle(.borderedProminent)
                 .font(.title3.weight(.semibold))
@@ -205,7 +234,7 @@ struct ReactivePrayerView: View {
                 Text("Prayer cancelled").foregroundStyle(.white.opacity(0.55))
                 Spacer()
                 Button("Try Again") {
-                    session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate(language: selectedLanguage))
+                    session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate(language: UserPreferences.shared.language))
                 }
                 .buttonStyle(.borderedProminent)
                 .frame(maxWidth: .infinity)

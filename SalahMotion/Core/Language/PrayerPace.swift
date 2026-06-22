@@ -1,6 +1,6 @@
 import Foundation
 
-enum PrayerPace: String, CaseIterable, Identifiable {
+enum PrayerPace: String, CaseIterable, Identifiable, Equatable {
     case slow   = "slow"
     case medium = "medium"
     case fast   = "fast"

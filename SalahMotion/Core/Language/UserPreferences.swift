@@ -1,37 +1,32 @@
 import Foundation
+import Observation
 
+@Observable
 final class UserPreferences {
     static let shared = UserPreferences()
-    private init() {}
-
-    private let languageKey     = "selectedPrayerLanguage"
-    private let paceKey         = "selectedPrayerPace"
-    private let guidanceKey     = "selectedGuidanceLevel"
 
     var language: Language {
-        get {
-            guard let raw = UserDefaults.standard.string(forKey: languageKey),
-                  let lang = Language(rawValue: raw) else { return .english }
-            return lang
-        }
-        set { UserDefaults.standard.set(newValue.rawValue, forKey: languageKey) }
+        didSet { UserDefaults.standard.set(language.rawValue, forKey: Keys.language) }
     }
 
     var pace: PrayerPace {
-        get {
-            guard let raw = UserDefaults.standard.string(forKey: paceKey),
-                  let pace = PrayerPace(rawValue: raw) else { return .medium }
-            return pace
-        }
-        set { UserDefaults.standard.set(newValue.rawValue, forKey: paceKey) }
+        didSet { UserDefaults.standard.set(pace.rawValue, forKey: Keys.pace) }
     }
 
     var guidanceLevel: GuidanceLevel {
-        get {
-            guard let raw = UserDefaults.standard.string(forKey: guidanceKey),
-                  let level = GuidanceLevel(rawValue: raw) else { return .full }
-            return level
-        }
-        set { UserDefaults.standard.set(newValue.rawValue, forKey: guidanceKey) }
+        didSet { UserDefaults.standard.set(guidanceLevel.rawValue, forKey: Keys.guidance) }
+    }
+
+    private init() {
+        let defaults = UserDefaults.standard
+        language     = Language(rawValue:      defaults.string(forKey: Keys.language) ?? "") ?? .english
+        pace         = PrayerPace(rawValue:    defaults.string(forKey: Keys.pace)     ?? "") ?? .medium
+        guidanceLevel = GuidanceLevel(rawValue: defaults.string(forKey: Keys.guidance) ?? "") ?? .full
+    }
+
+    private enum Keys {
+        static let language = "selectedPrayerLanguage"
+        static let pace     = "selectedPrayerPace"
+        static let guidance = "selectedGuidanceLevel"
     }
 }

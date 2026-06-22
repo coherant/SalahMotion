@@ -166,26 +166,32 @@ final class PrayerStateMachine {
 
     @MainActor
     private func runTimedPhase(_ state: PrayerState) async {
-        if let speech = state.entrySpeech { await audioManager.speak(speech) }
+        let pace = UserPreferences.shared.pace
+        if guidanceLevel.playsEntryGuidance, let speech = state.entrySpeech {
+            await audioManager.speak(speech)
+        }
         guard !Task.isCancelled else { return }
         if !state.prayers.isEmpty { AudioServicesPlaySystemSound(1108) }
-        for prayer in state.prayers {
-            guard !Task.isCancelled else { return }
-            if !prayer.utterance.isEmpty { await audioManager.speak(prayer.utterance) }
-            guard !Task.isCancelled else { return }
-            if prayer.duration > 0 {
+        if guidanceLevel.playsPrayers {
+            for prayer in state.prayers {
+                guard !Task.isCancelled else { return }
+                if !prayer.utterance.isEmpty { await audioManager.speak(prayer.utterance) }
+                guard !Task.isCancelled else { return }
+                let duration = pace.pauseDuration
                 let start = Date()
                 while !Task.isCancelled {
                     let elapsed = Date().timeIntervalSince(start)
-                    confirmProgress = min(elapsed / prayer.duration, 1.0)
-                    if elapsed >= prayer.duration { break }
+                    confirmProgress = min(elapsed / duration, 1.0)
+                    if elapsed >= duration { break }
                     try? await Task.sleep(for: .milliseconds(50))
                 }
                 confirmProgress = 0
             }
         }
         guard !Task.isCancelled else { return }
-        if let speech = state.exitSpeech { await audioManager.speak(speech) }
+        if guidanceLevel.playsPrayers, let speech = state.exitSpeech {
+            await audioManager.speak(speech)
+        }
     }
 
     @MainActor
