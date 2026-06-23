@@ -4,23 +4,34 @@ import Foundation
 final class PrayerTimesViewModel {
 
     private(set) var prayerTime: PrayerTime = .current
+    private(set) var now: Date = Date()
     let location = LocationManager()
-    private var timer: Timer?
+
+    private var minuteTimer: Timer?
+    private var secondTimer: Timer?
 
     var cityName: String { location.cityName }
 
     init() {
-        timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+        // 60s — refreshes which prayer period we're in
+        minuteTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
             self?.prayerTime = .current
+        }
+        // 1s — drives countdown and all time-sensitive computed properties
+        secondTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            self?.now = Date()
         }
     }
 
-    deinit { timer?.invalidate() }
+    deinit {
+        minuteTimer?.invalidate()
+        secondTimer?.invalidate()
+    }
 
     var hijriDate: String {
         var cal = Calendar(identifier: .islamicCivil)
         cal.locale = Locale(identifier: "en")
-        let c = cal.dateComponents([.day, .month, .year], from: Date())
+        let c = cal.dateComponents([.day, .month, .year], from: now)
         guard let day = c.day, let month = c.month, let year = c.year,
               (1...12).contains(month) else { return "" }
         let months = ["Muḥarram","Ṣafar","Rabīʿ al-Awwal","Rabīʿ al-Thānī",
@@ -32,11 +43,10 @@ final class PrayerTimesViewModel {
     var gregorianDate: String {
         let f = DateFormatter()
         f.dateFormat = "EEEE, d MMMM"
-        return f.string(from: Date())
+        return f.string(from: now)
     }
 
     var isInPrayerWindow: Bool {
-        let now = Date()
         let start = prayerTime.scheduledDate
         return now >= start && now < start.addingTimeInterval(15 * 60)
     }
@@ -49,29 +59,20 @@ final class PrayerTimesViewModel {
 
     var isBeforeNextPrayer: Bool {
         var nextDate = nextPrayer.scheduledDate
-        // If wrapping from Isha to Fajr, next Fajr is tomorrow
         if prayerTime == .isha && nextPrayer == .fajr {
             nextDate = nextDate.addingTimeInterval(24 * 60 * 60)
         }
         let windowStart = nextDate.addingTimeInterval(-15 * 60)
-        let now = Date()
         return now >= windowStart && now < nextDate
     }
 
     var ctaLabel: String {
-        let now = Date()
-
-        // State 4 — 15 mins before next prayer
         if isBeforeNextPrayer {
             return "Prepare for \(nextPrayer.displayName)"
         }
-
-        // States 2 & 3 — during or after the prayer window
         if now >= prayerTime.scheduledDate {
             return "Pray \(prayerTime.displayName)"
         }
-
-        // State 1 — before the prayer has happened yet
         if prayerTime == .fajr {
             return "Waiting for sunrise"
         }
@@ -79,7 +80,7 @@ final class PrayerTimesViewModel {
     }
 
     var countdown: String {
-        let interval = prayerTime.scheduledDate.timeIntervalSince(Date())
+        let interval = prayerTime.scheduledDate.timeIntervalSince(now)
         guard interval > 0 else { return "now" }
         let totalMinutes = Int(interval / 60)
         let hours = totalMinutes / 60
@@ -90,24 +91,17 @@ final class PrayerTimesViewModel {
         return "in \(minutes)m"
     }
 
-    // Continuous rail fill — interpolates between prayer node positions
-    // based on actual clock time so the marker drifts in real time.
-    //
-    // Node visual positions: Fajr=5%, Dhuhr=38%, Asr=56%, Maghrib=72%, Isha=90%
-    // Segments: midnight→Fajr, Fajr→Dhuhr, Dhuhr→Asr, Asr→Maghrib, Maghrib→Isha, Isha→midnight
     var continuousRailFill: Double {
-        let cal = Calendar.current
-        let now = cal.dateComponents([.hour, .minute], from: Date())
-        let nowMinutes = (now.hour ?? 0) * 60 + (now.minute ?? 0)
+        let c = Calendar.current.dateComponents([.hour, .minute], from: now)
+        let nowMinutes = (c.hour ?? 0) * 60 + (c.minute ?? 0)
 
-        // Prayer times in minutes from midnight (matches PrayerTime.scheduledDate)
         let segments: [(start: Int, end: Int, fillStart: Double, fillEnd: Double)] = [
-            (0,    292,  0.00, 0.05),   // midnight  → Fajr    4:52
-            (292,  741,  0.05, 0.38),   // Fajr      → Dhuhr  12:21
-            (741,  947,  0.38, 0.56),   // Dhuhr     → Asr     3:47
-            (947,  1138, 0.56, 0.72),   // Asr       → Maghrib 6:58
-            (1138, 1224, 0.72, 0.90),   // Maghrib   → Isha    8:24
-            (1224, 1440, 0.90, 1.00),   // Isha      → midnight
+            (0,    292,  0.00, 0.05),
+            (292,  741,  0.05, 0.38),
+            (741,  947,  0.38, 0.56),
+            (947,  1138, 0.56, 0.72),
+            (1138, 1224, 0.72, 0.90),
+            (1224, 1440, 0.90, 1.00),
         ]
 
         for seg in segments {
