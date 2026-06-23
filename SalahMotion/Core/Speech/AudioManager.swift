@@ -17,7 +17,7 @@ final class AudioManager {
     }
 
     @MainActor
-    func speak(_ text: String) async {
+    func speak(_ text: String, language: Language = UserPreferences.shared.language) async {
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             isSpeaking = true
             delegate.onFinish = { [weak self] in
@@ -26,6 +26,7 @@ final class AudioManager {
             }
             let u = AVSpeechUtterance(string: text)
             u.rate = AVSpeechUtteranceDefaultSpeechRate * 0.85
+            u.voice = AVSpeechSynthesisVoice(language: language.voiceCode)
             synthesizer.speak(u)
         }
     }

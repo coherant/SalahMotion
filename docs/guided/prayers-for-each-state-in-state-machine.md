@@ -39,7 +39,7 @@ When reading this file to generate Swift code or utterance arrays:
 
 | role | utterance | duration |
 |---|---|---|
-| entry | Start | 5s | #Stand upright for Qiyam.
+| entry |  |  | #Stand upright for Qiyam.
 | prayer | Listen to the Ezan. | 5s |
 | prayer | Give niyet | 5s |
 | prayer | P-0 | 3s | # Allah huekber

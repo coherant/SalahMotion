@@ -1,22 +1,18 @@
-# Master Prayer State Machine
+# Calibration Master Prayer State Machine
 
-## Guided
-This is the guided state machine
-
-This is the single source of truth for the prayer sequence used by both the
-Guided and Calibration tabs. All other documentation and all source files
-reference this document.
+Single source of truth for the calibration sequence and validated motion thresholds.
+Guided prayer sequence: `../guided/master-prayer-state-machine.md`
 
 ## Source files
 
-### Calibration Master Prayer State Machine 
-
 | File | Purpose |
 |---|---|
-| `PrayerMotionSpike/PrayerSequence.swift` | `PhaseMode`, `PrayerState`, `MotionTrigger`, `SensorReadings`, `PrayerSequenceGenerator` — **edit this file to change the sequence** |
-| `PrayerMotionSpike/PrayerStateMachine.swift` | Runtime engine — handles all four modes, session recording, TTS, idle timer |
-| `PrayerMotionSpike/ReactivePrayerView.swift` | Guided tab UI |
-| `PrayerMotionSpike/ContentView.swift` | Calibration tab UI (`GuidedRecordingView`) and Manual tab |
+| `SalahMotion/Core/PrayerStateMachine/PrayerSequence.swift` | `CalibrationSequenceGenerator` — edit here to change the sequence |
+| `SalahMotion/Core/PrayerStateMachine/PrayerStateMachine.swift` | Runtime engine — all four modes, session recording, TTS, idle timer |
+| `SalahMotion/Core/PrayerStateMachine/CalibrationAnalyzer.swift` | Derives `UserCalibrationProfile` from recorded session samples |
+| `SalahMotion/Core/PrayerStateMachine/UserCalibrationProfile.swift` | Persists calibrated thresholds to UserDefaults |
+| `SalahMotion/Features/Settings/CalibrationView.swift` | Personal calibration UI |
+| `SalahMotion/Features/Settings/GlobalCalibrationView.swift` | Researcher recording tool (multi-participant data collection) |
 
 ## Phase modes
 
@@ -40,23 +36,23 @@ Defines which file or constant controls each timing parameter.
 
 ## Master phase sequence
 
-| position-id | Label | Mode | Motion Trigger | Reprompt Interval |
-|---|---|---|---|---|
-| 1 | Standing (Qiyam) - Start | `timed` | — | — |
-| 2 | Bowing (Ruku) - First | `motion` | pitch (ruku) | 5s |
-| 3 | Standing (Qiyam) - After Ruku (Rakat 1) | `motion` | pitch (upright) | 5s |
-| 4 | Prostration (Sujood) - First | `motion` | roll (sujood) | 5s |
-| 5 | Sitting (Julus) - Between Prostrations (Rakat 1) | `motion` | pitch (upright) | 5s |
-| 6 | Prostration (Sujood) - Second | `motion` | roll (sujood) | 5s |
-| 7 | Standing (Qiyam) - Rakat 2 | `motion` | pitch (upright) | 5s |
-| 8 | Bowing (Ruku) - Second | `motion` | pitch (ruku) | 5s |
-| 9 | Standing (Qiyam) - After Ruku (Rakat 2) | `motion` | pitch (upright) | 5s |
-| 10 | Prostration (Sujood) - Third | `motion` | roll (sujood) | 5s |
-| 11 | Sitting (Julus) - Between Prostrations (Rakat 2) | `motion` | pitch (upright) | 5s |
-| 12 | Prostration (Sujood) - Fourth | `motion` | roll (sujood) | 5s |
-| 13 | Sitting (Julus) - Tashahhud | `motion` | pitch (upright) | 5s |
-| 14 | Tasleem - Look Right | `motion` | yaw delta (right) | 5s |
-| 15 | Tasleem - Look Left | `motion` | yaw delta (left) | 5s |
+| position-id | Label | Arabic | English Meaning | Mode | Motion Trigger | Reprompt Interval |
+|---|---|---|---|---|---|---|
+| 1 | Qiyam | قِيَام | Standing | `timed` | — | — |
+| 2 | Ruku | رُكُوع | Bowing | `motion` | pitch (ruku) | 5s |
+| 3 | Qiyam | قِيَام | Standing | `motion` | pitch (upright) | 5s |
+| 4 | Sujood | سُجُود | Prostration | `motion` | roll (sujood) | 5s |
+| 5 | Julus | جُلُوس | Sitting | `motion` | pitch (upright) | 5s |
+| 6 | Sujood | سُجُود | Prostration | `motion` | roll (sujood) | 5s |
+| 7 | Qiyam | قِيَام | Standing | `motion` | pitch (upright) | 5s |
+| 8 | Ruku | رُكُوع | Bowing | `motion` | pitch (ruku) | 5s |
+| 9 | Qiyam | قِيَام | Standing | `motion` | pitch (upright) | 5s |
+| 10 | Sujood | سُجُود | Prostration | `motion` | roll (sujood) | 5s |
+| 11 | Julus | جُلُوس | Sitting | `motion` | pitch (upright) | 5s |
+| 12 | Sujood | سُجُود | Prostration | `motion` | roll (sujood) | 5s |
+| 13 | Julus | جُلُوس | Sitting | `motion` | pitch (upright) | 5s |
+| 14 | Tasleem | تَسْلِيم | Salutation | `motion` | yaw delta (right) | 5s |
+| 15 | Tasleem | تَسْلِيم | Salutation | `motion` | yaw delta (left) | 5s |
 
 ## Parameter definitions
 

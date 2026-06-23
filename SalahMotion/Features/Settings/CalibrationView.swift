@@ -7,19 +7,21 @@ struct CalibrationView: View {
     @State private var activeProfile: UserCalibrationProfile? = UserCalibrationProfile.load()
     @State private var calibrationProfile: UserCalibrationProfile?
 
+    private let prayerTime = PrayerTime.current
+
     var body: some View {
         NavigationStack {
             Group {
                 switch session.status {
                 case .idle:      idleView
                 case .running:   runningView
-                case .complete:  completeView
-                case .cancelled: cancelledView
+                case .complete:  completeView.padding()
+                case .cancelled: cancelledView.padding()
                 }
             }
-            .padding()
             .animation(.default, value: session.status)
-            .navigationTitle("Calibration")
+            .navigationTitle(session.status == .running ? "" : "Calibration")
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .sheet(item: $shareURL) { ShareSheet(url: $0) }
             .onAppear { loadSessionFiles() }
             .onChange(of: session.status) {
@@ -39,45 +41,54 @@ struct CalibrationView: View {
     // MARK: - Idle
 
     private var idleView: some View {
-        VStack(spacing: 20) {
-            Spacer()
-            if !session.isAvailable {
-                Image(systemName: "exclamationmark.triangle")
-                    .font(.system(size: 60)).foregroundStyle(.orange)
-                Text("Headphone motion unavailable").font(.title3.weight(.semibold))
-                Text("Run on a physical device with AirPods connected.")
-                    .foregroundStyle(.secondary).multilineTextAlignment(.center)
-            } else {
-                Image(systemName: "person.crop.circle.badge.checkmark")
-                    .font(.system(size: 72)).foregroundStyle(.teal)
-                Text("Personal Calibration").font(.title.weight(.semibold))
-                Text("\(session.states.count) phases · motion detection")
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-            Button("Begin Calibration") { session.start() }
-                .buttonStyle(.borderedProminent)
-                .font(.title3.weight(.semibold))
-                .frame(maxWidth: .infinity)
-                .disabled(!session.isAvailable)
+        ZStack {
+            prayerTime.backgroundGradient
+            .ignoresSafeArea()
 
-            if activeProfile != nil {
-                VStack(spacing: 6) {
-                    Label("Personal calibration active", systemImage: "checkmark.seal.fill")
-                        .font(.caption).foregroundStyle(.teal)
-                    Button("Reset to Global Calibration", role: .destructive) {
-                        UserCalibrationProfile.reset()
-                        activeProfile = nil
-                    }
-                    .font(.caption)
+            VStack(spacing: 20) {
+                Spacer()
+                if !session.isAvailable {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 60)).foregroundStyle(.orange)
+                    Text("Headphone motion unavailable")
+                        .font(.title3.weight(.semibold)).foregroundStyle(.white)
+                    Text("Run on a physical device with AirPods connected.")
+                        .foregroundStyle(.white.opacity(0.6)).multilineTextAlignment(.center)
+                } else {
+                    Image(systemName: "person.crop.circle.badge.checkmark")
+                        .font(.system(size: 72)).foregroundStyle(prayerTime.theme.orbGlow)
+                    Text("Personal Calibration")
+                        .font(.title.weight(.semibold)).foregroundStyle(.white)
+                    Text("\(session.states.count) phases · motion detection")
+                        .foregroundStyle(.white.opacity(0.55))
                 }
-                .padding(.top, 4)
-            }
+                Spacer()
 
-            if !sessionFiles.isEmpty {
-                Divider().padding(.top, 8)
-                historySection
+                Button("Begin Calibration") { session.start() }
+                    .buttonStyle(.borderedProminent)
+                    .font(.title3.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .disabled(!session.isAvailable)
+
+                if activeProfile != nil {
+                    VStack(spacing: 6) {
+                        Label("Personal calibration active", systemImage: "checkmark.seal.fill")
+                            .font(.caption).foregroundStyle(prayerTime.theme.accent)
+                        Button("Reset to Global Calibration", role: .destructive) {
+                            UserCalibrationProfile.reset()
+                            activeProfile = nil
+                        }
+                        .font(.caption).foregroundStyle(.white.opacity(0.7))
+                    }
+                    .padding(.top, 4)
+                }
+
+                if !sessionFiles.isEmpty {
+                    Divider().overlay(.white.opacity(0.2)).padding(.top, 8)
+                    historySection
+                }
             }
+            .padding()
         }
     }
 
@@ -115,37 +126,71 @@ struct CalibrationView: View {
     // MARK: - Running
 
     private var runningView: some View {
-        let state = session.currentState
-        return VStack(spacing: 20) {
-            Text("Phase \(session.currentStateIndex + 1) of \(session.states.count)")
-                .font(.subheadline).foregroundStyle(.secondary)
+        let prayerTime = PrayerTime.current
+        let state      = session.currentState
+        let trackerPositions = session.visitedStates.enumerated().map { i, s in
+            TrackerPosition(id: i, transliteration: s.displayLabel, arabic: s.arabic)
+        }
 
-            Text(state.displayLabel)
-                .font(.largeTitle.weight(.bold))
-                .multilineTextAlignment(.center)
-                .minimumScaleFactor(0.5)
-                .frame(maxWidth: .infinity)
+        return ZStack {
+            prayerTime.backgroundGradient
+            .ignoresSafeArea()
 
-            modeBadge(for: state)
-
-            if session.confirmProgress > 0 {
-                VStack(spacing: 6) {
-                    ProgressView(value: session.confirmProgress).tint(.teal)
-                    Text("Holding…").font(.caption).foregroundStyle(.secondary)
+            VStack(spacing: 0) {
+                // Header — phase counter
+                HStack {
+                    Text("CALIBRATION")
+                        .font(.system(size: 10, weight: .medium))
+                        .kerning(1.5)
+                        .foregroundStyle(.white.opacity(0.55))
+                    Spacer()
+                    Text("Phase \(session.currentStateIndex + 1) / \(session.states.count)")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.55))
                 }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 10)
+
+                Spacer()
+
+                // Orb + tracker
+                ZStack(alignment: .leading) {
+                    PositionOrbView(arabicText: state.arabic, prayerTime: prayerTime)
+                        .frame(maxWidth: .infinity)
+                        .offset(x: 58)
+                    PositionTrackerView(
+                        positions: trackerPositions,
+                        prayerTime: prayerTime,
+                        progress: session.confirmProgress,
+                        isSpeaking: session.isSpeaking
+                    )
+                    .padding(.leading, 24)
+                    .offset(y: -65)
+                }
+
+                // Angle readout — calibration-specific
+                HStack(spacing: 32) {
+                    angleCell("Pitch", session.pitch)
+                    angleCell("Roll",  session.roll)
+                    angleCell("Yaw",   session.yaw)
+                }
+                .font(.system(.subheadline, design: .monospaced))
+                .foregroundStyle(.white.opacity(0.7))
+                .padding(.top, 16)
+
+                Spacer()
+
+                // Bottom — position name + cancel
+                PrayerSessionBottomTextView(
+                    positionName: state.displayLabel,
+                    positionMeaning: state.englishMeaning,
+                    recitationText: state.entrySpeech ?? "",
+                    instruction: state.motionTrigger != nil ? "awaiting motion" : "timed",
+                    prayerTime: prayerTime,
+                    onEndPrayer: { session.cancel() }
+                )
+                .padding(.bottom, 40)
             }
-
-            HStack(spacing: 32) {
-                angleCell("Pitch", session.pitch)
-                angleCell("Roll",  session.roll)
-                angleCell("Yaw",   session.yaw)
-            }
-            .font(.system(.title2, design: .monospaced))
-
-            Spacer()
-
-            Button("Cancel", role: .destructive) { session.cancel() }
-                .buttonStyle(.bordered).frame(maxWidth: .infinity)
         }
     }
 

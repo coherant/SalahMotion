@@ -32,6 +32,7 @@ final class PrayerStateMachine {
     private(set) var status: Status = .idle
     private(set) var currentStateIndex: Int = 0
     private(set) var states: [PrayerState]
+    private(set) var visitedStates: [PrayerState] = []
     private(set) var confirmProgress: Double = 0
     private(set) var pitch: Double = 0
     private(set) var roll:  Double = 0
@@ -49,13 +50,20 @@ final class PrayerStateMachine {
     private let audioRoute: AudioRoute
     private let holdWindow: Double = 1.5
 
-    var isAvailable: Bool { detector.isAvailable }
+    var isAvailable: Bool  { detector.isAvailable }
+    var isSpeaking: Bool   { audioManager.isSpeaking }
     var currentState: PrayerState { states[currentStateIndex] }
+    var currentRakat: Int  { currentState.rakatNumber }
+    var totalRakat: Int    { states.map(\.rakatNumber).max() ?? 1 }
+
+    private(set) var guidanceLevel: GuidanceLevel
 
     init(sequence: [PrayerState] = PrayerSequenceGenerator.generate(),
+         guidanceLevel: GuidanceLevel = UserPreferences.shared.guidanceLevel,
          participantName: String = "",
          audioRoute: AudioRoute = .headphones) {
         states = sequence
+        self.guidanceLevel = guidanceLevel
         self.participantName = participantName
         self.audioRoute = audioRoute
         self.thresholds = MotionThresholds(profile: UserCalibrationProfile.load())
@@ -68,6 +76,7 @@ final class PrayerStateMachine {
         UIApplication.shared.isIdleTimerDisabled = true
 #endif
         sessionSamples = []
+        visitedStates  = []
         sessionStartDate = Date()
         qiyamYawBaseline = nil
         startMotionUpdates()
@@ -110,6 +119,7 @@ final class PrayerStateMachine {
         for (index, state) in states.enumerated() {
             guard !Task.isCancelled else { break }
             currentStateIndex = index
+            visitedStates.append(state)
             print(String(format: "[PrayerSM] ▶ %d/%d %@ (%@) t=%.1fs",
                          index + 1, states.count, state.id.rawValue, state.mode.rawValue,
                          Date().timeIntervalSince(sessionStart)))
@@ -156,42 +166,53 @@ final class PrayerStateMachine {
 
     @MainActor
     private func runTimedPhase(_ state: PrayerState) async {
-        if let speech = state.entrySpeech { await audioManager.speak(speech) }
+        let pace = UserPreferences.shared.pace
+        if guidanceLevel.playsEntryGuidance, let speech = state.entrySpeech {
+            await audioManager.speak(speech)
+        }
         guard !Task.isCancelled else { return }
         if !state.prayers.isEmpty { AudioServicesPlaySystemSound(1108) }
-        for prayer in state.prayers {
-            guard !Task.isCancelled else { return }
-            if !prayer.utterance.isEmpty { await audioManager.speak(prayer.utterance) }
-            guard !Task.isCancelled else { return }
-            if prayer.duration > 0 {
+        if guidanceLevel.playsPrayers {
+            for prayer in state.prayers {
+                guard !Task.isCancelled else { return }
+                if !prayer.utterance.isEmpty { await audioManager.speak(prayer.utterance) }
+                guard !Task.isCancelled else { return }
+                let duration = pace.pauseDuration
                 let start = Date()
                 while !Task.isCancelled {
                     let elapsed = Date().timeIntervalSince(start)
-                    confirmProgress = min(elapsed / prayer.duration, 1.0)
-                    if elapsed >= prayer.duration { break }
+                    confirmProgress = min(elapsed / duration, 1.0)
+                    if elapsed >= duration { break }
                     try? await Task.sleep(for: .milliseconds(50))
                 }
                 confirmProgress = 0
             }
         }
         guard !Task.isCancelled else { return }
-        if let speech = state.exitSpeech { await audioManager.speak(speech) }
+        if guidanceLevel.playsPrayers, let speech = state.exitSpeech {
+            await audioManager.speak(speech)
+        }
     }
 
     @MainActor
     private func runMotionPhase(_ state: PrayerState) async {
-        if let speech = state.entrySpeech { await audioManager.speak(speech) }
+        let pace = UserPreferences.shared.pace
+        if guidanceLevel.playsEntryGuidance, let speech = state.entrySpeech {
+            await audioManager.speak(speech)
+        }
         guard !Task.isCancelled else { return }
         await waitForMotion(state)
         guard !Task.isCancelled else { return }
-        for prayer in state.prayers {
+        if guidanceLevel.playsPrayers {
+            for prayer in state.prayers {
+                guard !Task.isCancelled else { return }
+                if !prayer.utterance.isEmpty { await audioManager.speak(prayer.utterance) }
+                guard !Task.isCancelled else { return }
+                try? await Task.sleep(for: .seconds(pace.pauseDuration))
+            }
             guard !Task.isCancelled else { return }
-            if !prayer.utterance.isEmpty { await audioManager.speak(prayer.utterance) }
-            guard !Task.isCancelled else { return }
-            if prayer.duration > 0 { try? await Task.sleep(for: .seconds(prayer.duration)) }
+            if let speech = state.exitSpeech { await audioManager.speak(speech) }
         }
-        guard !Task.isCancelled else { return }
-        if let speech = state.exitSpeech { await audioManager.speak(speech) }
     }
 
     @MainActor
@@ -260,11 +281,15 @@ final class PrayerStateMachine {
         var lastRepromptAt = Date()
 
         while !Task.isCancelled {
+            // Reprompt countdown drives the pie — always counting toward next prompt.
+            // Resets to 0 when the reprompt fires.
+            let elapsed = Date().timeIntervalSince(lastRepromptAt)
+            confirmProgress = min(elapsed / state.repromptInterval, 1.0)
+
             if thresholds.isSatisfied(trigger, pitch: pitch, roll: roll, yaw: yaw,
                                       yawBaseline: qiyamYawBaseline) {
                 if holdStart == nil { holdStart = Date() }
                 let held = Date().timeIntervalSince(holdStart!)
-                confirmProgress = min(held / holdWindow, 1.0)
 
                 if held >= holdWindow {
                     print(String(format: "[PrayerSM] ✓ Motion confirmed: %@ held=%.2fs",
@@ -274,9 +299,8 @@ final class PrayerStateMachine {
                 }
             } else {
                 holdStart = nil
-                confirmProgress = 0
 
-                if Date().timeIntervalSince(lastRepromptAt) >= state.repromptInterval,
+                if elapsed >= state.repromptInterval,
                    let reprompt = state.repromptAudio {
                     print("[PrayerSM] ⏰ Reprompt: \(state.id.rawValue)")
                     await audioManager.speak(reprompt)

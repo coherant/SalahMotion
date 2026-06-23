@@ -51,8 +51,11 @@ enum PrayerStateID: String {
 
 struct PrayerState {
     let id: PrayerStateID
+    let rakatNumber: Int
     let mode: PhaseMode
     let displayLabel: String
+    let arabic: String
+    let englishMeaning: String
     let entrySpeech: String?
     let prayers: [(utterance: String, duration: Double)]
     let exitSpeech: String?
@@ -63,8 +66,11 @@ struct PrayerState {
 
     init(
         id: PrayerStateID,
+        rakatNumber: Int,
         mode: PhaseMode,
         displayLabel: String,
+        arabic: String,
+        englishMeaning: String,
         entrySpeech: String? = nil,
         prayers: [(utterance: String, duration: Double)] = [],
         exitSpeech: String? = nil,
@@ -74,8 +80,11 @@ struct PrayerState {
         capturesYawBaseline: Bool = false
     ) {
         self.id = id
+        self.rakatNumber = rakatNumber
         self.mode = mode
         self.displayLabel = displayLabel
+        self.arabic = arabic
+        self.englishMeaning = englishMeaning
         self.entrySpeech = entrySpeech
         self.prayers = prayers
         self.exitSpeech = exitSpeech
@@ -84,6 +93,24 @@ struct PrayerState {
         self.repromptInterval = repromptInterval
         self.capturesYawBaseline = capturesYawBaseline
     }
+}
+
+// MARK: - Arabic / English constants (source: master-prayer-state-machine.md)
+
+private enum Arabic {
+    static let qiyam   = "قِيَام"
+    static let ruku    = "رُكُوع"
+    static let sujood  = "سُجُود"
+    static let julus   = "جُلُوس"
+    static let tasleem = "تَسْلِيم"
+}
+
+private enum Meaning {
+    static let standing    = "Standing"
+    static let bowing      = "Bowing"
+    static let prostration = "Prostration"
+    static let sitting     = "Sitting"
+    static let salutation  = "Salutation"
 }
 
 // MARK: - Sequence generators
@@ -97,7 +124,6 @@ enum PrayerSequenceGenerator {
 
     static func generate() -> [PrayerState] { masterSequence() }
 
-    // Prayer library — resolved from docs/prayers/prayers.md
     private static let P0  = "Allah Hoo-ekber"
     private static let P1  = "Glory be to Allah the most great!"
     private static let P2  = "Glory be to Allah the most high!"
@@ -108,9 +134,9 @@ enum PrayerSequenceGenerator {
 
     private static func masterSequence() -> [PrayerState] { [
 
-        // Position 1
-        .init(id: .qiyamStart, mode: .timed,
-              displayLabel: "Standing (Qiyam) - Start",
+        // Position 1 — Rakat 1
+        .init(id: .qiyamStart, rakatNumber: 1, mode: .timed,
+              displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
               entrySpeech: "Start",
               prayers: [
                   ("Listen to the Ezan.", 5.0),
@@ -121,21 +147,17 @@ enum PrayerSequenceGenerator {
               ]),
 
         // Position 2
-        .init(id: .rukuFirst, mode: .motion,
-              displayLabel: "Bowing (Ruku) - First",
-              prayers: [
-                  (P1, 1.0),
-                  (P1, 1.0),
-                  (P1, 3.0),
-              ],
+        .init(id: .rukuFirst, rakatNumber: 1, mode: .motion,
+              displayLabel: "Ruku", arabic: Arabic.ruku, englishMeaning: Meaning.bowing,
+              prayers: [(P1, 1.0), (P1, 1.0), (P1, 3.0)],
               exitSpeech: P3,
               motionTrigger: .ruku,
               repromptAudio: "Please bow into Ruku",
               repromptInterval: 5),
 
         // Position 3
-        .init(id: .qiyamAfterRukuFirst, mode: .motion,
-              displayLabel: "Standing (Qiyam) - After Ruku (Rakat 1)",
+        .init(id: .qiyamAfterRukuFirst, rakatNumber: 1, mode: .motion,
+              displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
               prayers: [(P4, 3.0)],
               exitSpeech: P0,
               motionTrigger: .upright,
@@ -143,46 +165,35 @@ enum PrayerSequenceGenerator {
               repromptInterval: 5),
 
         // Position 4
-        .init(id: .sujoodFirst, mode: .motion,
-              displayLabel: "Prostration (Sujood) - First",
-              prayers: [
-                  (P2, 1.0),
-                  (P2, 1.0),
-                  (P2, 1.0),
-              ],
+        .init(id: .sujoodFirst, rakatNumber: 1, mode: .motion,
+              displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
+              prayers: [(P2, 1.0), (P2, 1.0), (P2, 1.0)],
               exitSpeech: P0,
               motionTrigger: .sujood,
               repromptAudio: "Please lower into Sujood",
               repromptInterval: 5),
 
         // Position 5
-        .init(id: .julusFirst, mode: .motion,
-              displayLabel: "Sitting (Julus) - Between Prostrations (Rakat 1)",
-              prayers: [
-                  (P5, 1.5),
-                  (P5, 1.5),
-              ],
+        .init(id: .julusFirst, rakatNumber: 1, mode: .motion,
+              displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
+              prayers: [(P5, 1.5), (P5, 1.5)],
               exitSpeech: P0,
               motionTrigger: .upright,
               repromptAudio: "Please sit up",
               repromptInterval: 5),
 
         // Position 6
-        .init(id: .sujoodSecond, mode: .motion,
-              displayLabel: "Prostration (Sujood) - Second",
-              prayers: [
-                  (P2, 1.0),
-                  (P2, 1.0),
-                  (P2, 1.0),
-              ],
+        .init(id: .sujoodSecond, rakatNumber: 1, mode: .motion,
+              displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
+              prayers: [(P2, 1.0), (P2, 1.0), (P2, 1.0)],
               exitSpeech: P0,
               motionTrigger: .sujood,
               repromptAudio: "Please lower into Sujood again",
               repromptInterval: 5),
 
-        // Position 7
-        .init(id: .qiyamRakat2, mode: .motion,
-              displayLabel: "Standing (Qiyam) - Rakat 2",
+        // Position 7 — Rakat 2
+        .init(id: .qiyamRakat2, rakatNumber: 2, mode: .motion,
+              displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
               prayers: [("Al Fatiha", 5.0)],
               exitSpeech: P0,
               motionTrigger: .upright,
@@ -190,21 +201,17 @@ enum PrayerSequenceGenerator {
               repromptInterval: 5),
 
         // Position 8
-        .init(id: .rukuSecond, mode: .motion,
-              displayLabel: "Bowing (Ruku) - Second",
-              prayers: [
-                  (P1, 1.0),
-                  (P1, 1.0),
-                  (P1, 3.0),
-              ],
+        .init(id: .rukuSecond, rakatNumber: 2, mode: .motion,
+              displayLabel: "Ruku", arabic: Arabic.ruku, englishMeaning: Meaning.bowing,
+              prayers: [(P1, 1.0), (P1, 1.0), (P1, 3.0)],
               exitSpeech: P3,
               motionTrigger: .ruku,
               repromptAudio: "Please bow into Ruku",
               repromptInterval: 5),
 
         // Position 9 — yaw baseline captured here for Tasleem
-        .init(id: .qiyamAfterRukuSecond, mode: .motion,
-              displayLabel: "Standing (Qiyam) - After Ruku (Rakat 2)",
+        .init(id: .qiyamAfterRukuSecond, rakatNumber: 2, mode: .motion,
+              displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
               prayers: [(P4, 3.0)],
               exitSpeech: P0,
               motionTrigger: .upright,
@@ -213,46 +220,35 @@ enum PrayerSequenceGenerator {
               capturesYawBaseline: true),
 
         // Position 10
-        .init(id: .sujoodThird, mode: .motion,
-              displayLabel: "Prostration (Sujood) - Third",
-              prayers: [
-                  (P2, 1.0),
-                  (P2, 1.0),
-                  (P2, 1.0),
-              ],
+        .init(id: .sujoodThird, rakatNumber: 2, mode: .motion,
+              displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
+              prayers: [(P2, 1.0), (P2, 1.0), (P2, 1.0)],
               exitSpeech: P0,
               motionTrigger: .sujood,
               repromptAudio: "Please lower into Sujood",
               repromptInterval: 5),
 
         // Position 11
-        .init(id: .julusSecond, mode: .motion,
-              displayLabel: "Sitting (Julus) - Between Prostrations (Rakat 2)",
-              prayers: [
-                  (P5, 1.5),
-                  (P5, 1.5),
-              ],
+        .init(id: .julusSecond, rakatNumber: 2, mode: .motion,
+              displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
+              prayers: [(P5, 1.5), (P5, 1.5)],
               exitSpeech: P0,
               motionTrigger: .upright,
               repromptAudio: "Please sit up",
               repromptInterval: 5),
 
         // Position 12
-        .init(id: .sujoodFourth, mode: .motion,
-              displayLabel: "Prostration (Sujood) - Fourth",
-              prayers: [
-                  (P2, 1.0),
-                  (P2, 1.0),
-                  (P2, 1.0),
-              ],
+        .init(id: .sujoodFourth, rakatNumber: 2, mode: .motion,
+              displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
+              prayers: [(P2, 1.0), (P2, 1.0), (P2, 1.0)],
               exitSpeech: P0,
               motionTrigger: .sujood,
               repromptAudio: "Please lower into Sujood again",
               repromptInterval: 5),
 
         // Position 13
-        .init(id: .julusTashahhud, mode: .motion,
-              displayLabel: "Sitting (Julus) - Tashahhud",
+        .init(id: .julusTashahhud, rakatNumber: 2, mode: .motion,
+              displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
               prayers: [
                   ("Tashahhud", 2.0),
                   ("Honour Muhammad", 2.0),
@@ -266,18 +262,18 @@ enum PrayerSequenceGenerator {
               repromptInterval: 5),
 
         // Position 14
-        .init(id: .tasleemRight, mode: .motion,
-              displayLabel: "Tasleem - Look Right",
+        .init(id: .tasleemRight, rakatNumber: 2, mode: .motion,
+              displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
               prayers: [(P6, 3.0)],
               motionTrigger: .headTurnRight,
               repromptAudio: "Please turn your head to the right",
               repromptInterval: 5),
 
         // Position 15
-        .init(id: .tasleemLeft, mode: .motion,
-              displayLabel: "Tasleem - Look Left",
+        .init(id: .tasleemLeft, rakatNumber: 2, mode: .motion,
+              displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
               prayers: [(P6, 3.0)],
-              exitSpeech: "Oh Allah, you are peace and pease comes from you",
+              exitSpeech: "Oh Allah, you are peace and peace comes from you",
               motionTrigger: .headTurnLeft,
               repromptAudio: "Please turn your head to the left",
               repromptInterval: 5),
@@ -291,51 +287,51 @@ enum PrayerSequenceGenerator {
 
 enum GuidedSequenceGenerator {
 
-    // Prayer library — resolved from docs/prayers/prayers.md
-    private static let P0  = "Allah Hoo-ekber"
-    private static let P1  = "Glory be to Allah the most great!"
-    private static let P2  = "Glory be to Allah the most high!"
-    private static let P3  = "Allah hears those who praise him."
-    private static let P4  = "O Allah, all praise is due onto you."
-    private static let P5  = "O Allah, forgive me."
-    private static let P6  = "Peace and blessing be onto you"
-    private static let P7  = "All praise be to Allah, the lord of the worlds, the most compationate, the most merciful. Master of the day of judgement. You alone do we worship and you alone do we turn to for help. Guide us on the straight path, the path of those whom you have favoured and not the path of those who earn your anger, nor of those who go astray."
-    private static let P8  = "All compliments, prayers and beauitiful expressions are for Allah. Please and blessing be upon you oh muhammad, and Allahs mercy and blessings. Pease be upon us, ans all righteous servants of Allah."
-    private static let P9  = "Oh Allah, honor muhammad and muhammads family as you have honoured ismail and ismails family"
-    private static let P10 = "Oh Allah, bless muhammad and muhammads family as you have bless ismail and ismails family"
+    static func generate(language: Language = UserPreferences.shared.language) -> [PrayerState] {
+        masterSequence(language: language)
+    }
 
-    static func generate() -> [PrayerState] { masterSequence() }
+    private static func masterSequence(language: Language) -> [PrayerState] {
+        let P0  = PrayerLibrary.text(.p0,  language)
+        let P1  = PrayerLibrary.text(.p1,  language)
+        let P2  = PrayerLibrary.text(.p2,  language)
+        let P3  = PrayerLibrary.text(.p3,  language)
+        let P4  = PrayerLibrary.text(.p4,  language)
+        let P5  = PrayerLibrary.text(.p5,  language)
+        let P6  = PrayerLibrary.text(.p6,  language)
+        let P7  = PrayerLibrary.text(.p7,  language)
+        let P8  = PrayerLibrary.text(.p8,  language)
+        let P9  = PrayerLibrary.text(.p9,  language)
+        let P10 = PrayerLibrary.text(.p10, language)
+        let P11 = PrayerLibrary.text(.p11, language)
+        let P12 = PrayerLibrary.text(.p12, language)
+        return [
 
-    private static func masterSequence() -> [PrayerState] { [
-
-        // Position 1
-        .init(id: .qiyamStart, mode: .timed,
-              displayLabel: "Qiyam",
-              entrySpeech: "Start",
+        // Position 1 — Rakat 1 (Fajr Fard — 2 rakats)
+        .init(id: .qiyamStart, rakatNumber: 1, mode: .timed,
+              displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
+              entrySpeech: "Stand upright and raise your hands to your ears",
               prayers: [
                   ("Listen to the Athan.", 5.0),
-                  ("Give niyet", 5.0),
-                  (P0, 3.0),
-                  ("Al-Fatiha", 5.0),
-                  (P0, 3.0),
+                  ("Give your niyet for Fajr", 5.0),
+                  (P0,  3.0),
+                  (P7,  15.0),
+                  (P11, 8.0),
+                  (P0,  2.0),
               ]),
 
         // Position 2
-        .init(id: .rukuFirst, mode: .motion,
-              displayLabel: "Ruku",
-              prayers: [
-                  (P1, 1.0),
-                  (P1, 1.0),
-                  (P1, 3.0),
-              ],
+        .init(id: .rukuFirst, rakatNumber: 1, mode: .motion,
+              displayLabel: "Ruku", arabic: Arabic.ruku, englishMeaning: Meaning.bowing,
+              prayers: [(P1, 1.0), (P1, 1.0), (P1, 3.0)],
               exitSpeech: P3,
               motionTrigger: .ruku,
               repromptAudio: "Please bow into Ruku",
               repromptInterval: 5),
 
         // Position 3
-        .init(id: .qiyamAfterRukuFirst, mode: .motion,
-              displayLabel: "Qiyam",
+        .init(id: .qiyamAfterRukuFirst, rakatNumber: 1, mode: .motion,
+              displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
               prayers: [(P4, 3.0)],
               exitSpeech: P0,
               motionTrigger: .upright,
@@ -343,68 +339,52 @@ enum GuidedSequenceGenerator {
               repromptInterval: 5),
 
         // Position 4
-        .init(id: .sujoodFirst, mode: .motion,
-              displayLabel: "Sujood",
-              prayers: [
-                  (P2, 1.0),
-                  (P2, 1.0),
-                  (P2, 1.0),
-              ],
+        .init(id: .sujoodFirst, rakatNumber: 1, mode: .motion,
+              displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
+              prayers: [(P2, 1.0), (P2, 1.0), (P2, 1.0)],
               exitSpeech: P0,
               motionTrigger: .sujood,
               repromptAudio: "Please lower into Sujood",
               repromptInterval: 5),
 
         // Position 5
-        .init(id: .julusFirst, mode: .motion,
-              displayLabel: "Julus",
-              prayers: [
-                  (P5, 1.5),
-                  (P5, 1.5),
-              ],
+        .init(id: .julusFirst, rakatNumber: 1, mode: .motion,
+              displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
+              prayers: [(P5, 1.5), (P5, 1.5)],
               exitSpeech: P0,
               motionTrigger: .upright,
               repromptAudio: "Please sit up",
               repromptInterval: 5),
 
         // Position 6
-        .init(id: .sujoodSecond, mode: .motion,
-              displayLabel: "Sujood",
-              prayers: [
-                  (P2, 1.0),
-                  (P2, 1.0),
-                  (P2, 1.0),
-              ],
+        .init(id: .sujoodSecond, rakatNumber: 1, mode: .motion,
+              displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
+              prayers: [(P2, 1.0), (P2, 1.0), (P2, 1.0)],
               exitSpeech: P0,
               motionTrigger: .sujood,
               repromptAudio: "Please lower into Sujood again",
               repromptInterval: 5),
 
-        // Position 7
-        .init(id: .qiyamRakat2, mode: .motion,
-              displayLabel: "Qiyam",
-              prayers: [("Al Fatiha", 5.0)],
-              exitSpeech: P0,
+        // Position 7 — Rakat 2
+        .init(id: .qiyamRakat2, rakatNumber: 2, mode: .motion,
+              displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
+              prayers: [(P7, 10.0), (P12, 8.0), (P0, 2.0)],
               motionTrigger: .upright,
-              repromptAudio: "Please stand for the next rakat",
+              repromptAudio: "Please stand for the second rak'ah",
               repromptInterval: 5),
 
         // Position 8
-        .init(id: .rukuSecond, mode: .motion,
-              displayLabel: "Ruku",
-              prayers: [
-                  (P1, 1.0),
-                  (P1, 1.0),
-                  (P1, 3.0),
-              ],
+        .init(id: .rukuSecond, rakatNumber: 2, mode: .motion,
+              displayLabel: "Ruku", arabic: Arabic.ruku, englishMeaning: Meaning.bowing,
+              prayers: [(P1, 1.0), (P1, 1.0), (P1, 3.0)],
               exitSpeech: P3,
               motionTrigger: .ruku,
               repromptAudio: "Please bow into Ruku",
               repromptInterval: 5),
 
         // Position 9 — yaw baseline captured here for Tasleem
-        .init(id: .qiyamAfterRukuSecond, mode: .motion,
-              displayLabel: "Qiyam",
+        .init(id: .qiyamAfterRukuSecond, rakatNumber: 2, mode: .motion,
+              displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
               prayers: [(P4, 3.0)],
               exitSpeech: P0,
               motionTrigger: .upright,
@@ -413,79 +393,62 @@ enum GuidedSequenceGenerator {
               capturesYawBaseline: true),
 
         // Position 10
-        .init(id: .sujoodThird, mode: .motion,
-              displayLabel: "Sujood",
-              prayers: [
-                  (P2, 1.0),
-                  (P2, 1.0),
-                  (P2, 1.0),
-              ],
+        .init(id: .sujoodThird, rakatNumber: 2, mode: .motion,
+              displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
+              prayers: [(P2, 1.0), (P2, 1.0), (P2, 1.0)],
               exitSpeech: P0,
               motionTrigger: .sujood,
               repromptAudio: "Please lower into Sujood",
               repromptInterval: 5),
 
         // Position 11
-        .init(id: .julusSecond, mode: .motion,
-              displayLabel: "Julus",
-              prayers: [
-                  (P5, 1.5),
-                  (P5, 1.5),
-              ],
+        .init(id: .julusSecond, rakatNumber: 2, mode: .motion,
+              displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
+              prayers: [(P5, 1.5), (P5, 1.5)],
               exitSpeech: P0,
               motionTrigger: .upright,
               repromptAudio: "Please sit up",
               repromptInterval: 5),
 
         // Position 12
-        .init(id: .sujoodFourth, mode: .motion,
-              displayLabel: "Sujood",
-              prayers: [
-                  (P2, 1.0),
-                  (P2, 1.0),
-                  (P2, 1.0),
-              ],
+        .init(id: .sujoodFourth, rakatNumber: 2, mode: .motion,
+              displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
+              prayers: [(P2, 1.0), (P2, 1.0), (P2, 1.0)],
               exitSpeech: P0,
               motionTrigger: .sujood,
               repromptAudio: "Please lower into Sujood again",
               repromptInterval: 5),
 
         // Position 13
-        .init(id: .julusTashahhud, mode: .motion,
-              displayLabel: "Julus",
-              prayers: [
-                  ("Tashahhud", 2.0),
-                  ("Honour Muhammad", 2.0),
-                  ("Bless Muhammad", 2.0),
-                  ("Grant me the good of this world", 2.0),
-                  ("Forgive me and my parents", 2.0),
-                  ("Ive greatly wronged myself", 2.0),
-              ],
+        .init(id: .julusTashahhud, rakatNumber: 2, mode: .motion,
+              displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
+              prayers: [(P8, 0), (P9, 0), (P10, 0)],
               motionTrigger: .upright,
               repromptAudio: "Please sit for Tashahhud",
               repromptInterval: 5),
 
         // Position 14
-        .init(id: .tasleemRight, mode: .motion,
-              displayLabel: "Tasleem",
+        .init(id: .tasleemRight, rakatNumber: 2, mode: .motion,
+              displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
               prayers: [(P6, 3.0)],
               motionTrigger: .headTurnRight,
               repromptAudio: "Please turn your head to the right",
               repromptInterval: 5),
 
         // Position 15
-        .init(id: .tasleemLeft, mode: .motion,
-              displayLabel: "Tasleem",
+        .init(id: .tasleemLeft, rakatNumber: 2, mode: .motion,
+              displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
               prayers: [(P6, 3.0)],
-              exitSpeech: "Oh Allah, you are peace and pease comes from you",
+              exitSpeech: "Oh Allah, you are peace and peace comes from you",
               motionTrigger: .headTurnLeft,
               repromptAudio: "Please turn your head to the left",
               repromptInterval: 5),
-    ] }
+        ]
+    }
 }
 
 // MARK: - Calibration sequence
-// Source: docs/calibration/prayers-for-each-state-in-state-machine.md
+// Source: docs/calibration/master-prayer-state-machine.md
 // No reprompts — user flows through positions silently. Entry speech plays before motion wait.
 
 enum CalibrationSequenceGenerator {
@@ -494,113 +457,123 @@ enum CalibrationSequenceGenerator {
 
     private static func masterSequence() -> [PrayerState] { [
 
-        // Position 1
-        .init(id: .qiyamStart, mode: .timed,
-              displayLabel: "Standing (Qiyam) - Start",
-              entrySpeech: "We are starting the callibration of the prayers.",
-              prayers: [
-                  ("The next steps will guide you through 2 Rakat's and record your movements.", 2.0),
-                  ("Do not move from the position until the app instructs you with the next movement it want you to make.", 2.0),
-                  ("Calibration starts in 5 seconds", 5.0),
-              ]),
+        // Position 1 — timed: announces + holds, no motion wait
+        .init(id: .qiyamStart, rakatNumber: 1, mode: .timed,
+              displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
+              entrySpeech: "Calibration starting. You have fifteen positions to complete. Stand upright — this is Qiyam.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Next: Ruku — bowing."),
 
         // Position 2
-        .init(id: .rukuFirst, mode: .motion,
-              displayLabel: "Bowing (Ruku) - First",
-              entrySpeech: "Bow forward and put both your hands on your knees.",
-              prayers: [("Hold this position.", 3.0)],
+        .init(id: .rukuFirst, rakatNumber: 1, mode: .motion,
+              displayLabel: "Ruku", arabic: Arabic.ruku, englishMeaning: Meaning.bowing,
+              entrySpeech: "Ruku. Bow forward and place both hands on your knees.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Get ready to stand upright into Qiyam.",
               motionTrigger: .ruku),
 
         // Position 3
-        .init(id: .qiyamAfterRukuFirst, mode: .motion,
-              displayLabel: "Standing (Qiyam) - After Ruku (Rakat 1)",
-              entrySpeech: "Return to standing up right position.",
-              prayers: [("Hold this position.", 3.0)],
+        .init(id: .qiyamAfterRukuFirst, rakatNumber: 1, mode: .motion,
+              displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
+              entrySpeech: "Qiyam. Return to standing upright.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Get ready to lower into Sujood.",
               motionTrigger: .upright),
 
         // Position 4
-        .init(id: .sujoodFirst, mode: .motion,
-              displayLabel: "Prostration (Sujood) - First",
-              entrySpeech: "Go onto your hands and knees into a prostrating position with your forhead touching the ground.",
-              prayers: [("Hold this position.", 3.0)],
+        .init(id: .sujoodFirst, rakatNumber: 1, mode: .motion,
+              displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
+              entrySpeech: "Sujood. Lower into prostration with your forehead touching the ground.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Get ready to sit upright into Julus.",
               motionTrigger: .sujood),
 
         // Position 5
-        .init(id: .julusFirst, mode: .motion,
-              displayLabel: "Sitting (Julus) - Between Prostrations (Rakat 1)",
-              entrySpeech: "Sit upright and remain seated on your knees.",
-              prayers: [("Hold this position.", 3.0)],
+        .init(id: .julusFirst, rakatNumber: 1, mode: .motion,
+              displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
+              entrySpeech: "Julus. Sit upright on your knees.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Get ready to lower into Sujood again.",
               motionTrigger: .upright),
 
         // Position 6
-        .init(id: .sujoodSecond, mode: .motion,
-              displayLabel: "Prostration (Sujood) - Second",
-              entrySpeech: "Go into the prostration position with your forhead touching the ground again for the second time.",
-              prayers: [("Hold this position.", 3.0)],
+        .init(id: .sujoodSecond, rakatNumber: 1, mode: .motion,
+              displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
+              entrySpeech: "Sujood. Lower into prostration again with your forehead touching the ground.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Get ready to stand upright for the second rakat.",
               motionTrigger: .sujood),
 
-        // Position 7
-        .init(id: .qiyamRakat2, mode: .motion,
-              displayLabel: "Standing (Qiyam) - Rakat 2",
-              entrySpeech: "Stand up all the way straight and look forward.",
-              prayers: [("Hold this position.", 3.0)],
+        // Position 7 — Rakat 2
+        .init(id: .qiyamRakat2, rakatNumber: 2, mode: .motion,
+              displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
+              entrySpeech: "Qiyam. Stand upright for the second rakat.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Get ready to bow into Ruku.",
               motionTrigger: .upright),
 
         // Position 8
-        .init(id: .rukuSecond, mode: .motion,
-              displayLabel: "Bowing (Ruku) - Second",
-              entrySpeech: "Bow forward and put both your hands on your knees.",
-              prayers: [("Hold this position.", 3.0)],
+        .init(id: .rukuSecond, rakatNumber: 2, mode: .motion,
+              displayLabel: "Ruku", arabic: Arabic.ruku, englishMeaning: Meaning.bowing,
+              entrySpeech: "Ruku. Bow forward and place both hands on your knees.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Get ready to stand upright into Qiyam.",
               motionTrigger: .ruku),
 
         // Position 9 — yaw baseline captured here for Tasleem detection
-        .init(id: .qiyamAfterRukuSecond, mode: .motion,
-              displayLabel: "Standing (Qiyam) - After Ruku (Rakat 2)",
-              entrySpeech: "Return to standing up right position.",
-              prayers: [("Hold this position.", 3.0)],
+        .init(id: .qiyamAfterRukuSecond, rakatNumber: 2, mode: .motion,
+              displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
+              entrySpeech: "Qiyam. Return to standing upright.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Get ready to lower into Sujood.",
               motionTrigger: .upright,
               capturesYawBaseline: true),
 
         // Position 10
-        .init(id: .sujoodThird, mode: .motion,
-              displayLabel: "Prostration (Sujood) - Third",
-              entrySpeech: "Go onto your hands and knees into a prostrating position with your forhead touching the ground.",
-              prayers: [("Hold this position.", 3.0)],
+        .init(id: .sujoodThird, rakatNumber: 2, mode: .motion,
+              displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
+              entrySpeech: "Sujood. Lower into prostration with your forehead touching the ground.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Get ready to sit upright into Julus.",
               motionTrigger: .sujood),
 
         // Position 11
-        .init(id: .julusSecond, mode: .motion,
-              displayLabel: "Sitting (Julus) - Between Prostrations (Rakat 2)",
-              entrySpeech: "Sit upright and remain seated on your knees.",
-              prayers: [("Hold this position.", 3.0)],
+        .init(id: .julusSecond, rakatNumber: 2, mode: .motion,
+              displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
+              entrySpeech: "Julus. Sit upright on your knees.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Get ready to lower into Sujood again.",
               motionTrigger: .upright),
 
         // Position 12
-        .init(id: .sujoodFourth, mode: .motion,
-              displayLabel: "Prostration (Sujood) - Fourth",
-              entrySpeech: "Go into the prostration position with your forhead touching the ground again for the second time.",
-              prayers: [("Hold this position.", 3.0)],
+        .init(id: .sujoodFourth, rakatNumber: 2, mode: .motion,
+              displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
+              entrySpeech: "Sujood. Lower into prostration again with your forehead touching the ground.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Get ready to sit for Tashahhud.",
               motionTrigger: .sujood),
 
         // Position 13
-        .init(id: .julusTashahhud, mode: .motion,
-              displayLabel: "Sitting (Julus) - Tashahhud",
-              entrySpeech: "Sit upright and remain seated on your knees.",
-              prayers: [("Hold this position.", 3.0)],
+        .init(id: .julusTashahhud, rakatNumber: 2, mode: .motion,
+              displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
+              entrySpeech: "Julus. Sit upright for Tashahhud.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Get ready to turn your head to the right for Tasleem.",
               motionTrigger: .upright),
 
         // Position 14
-        .init(id: .tasleemRight, mode: .motion,
-              displayLabel: "Tasleem - Look Right",
-              entrySpeech: "Turn your head to the right.",
-              prayers: [("Hold this position.", 3.0)],
+        .init(id: .tasleemRight, rakatNumber: 2, mode: .motion,
+              displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
+              entrySpeech: "Tasleem. Turn your head to the right.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
+              exitSpeech: "Get ready to turn your head to the left.",
               motionTrigger: .headTurnRight),
 
         // Position 15
-        .init(id: .tasleemLeft, mode: .motion,
-              displayLabel: "Tasleem - Look Left",
-              entrySpeech: "Turn your head to the left.",
-              prayers: [("Hold this position.", 3.0)],
+        .init(id: .tasleemLeft, rakatNumber: 2, mode: .motion,
+              displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
+              entrySpeech: "Tasleem. Turn your head to the left.",
+              prayers: [("Hold this position for five seconds.", 5.0)],
               exitSpeech: "Calibration complete. You may move freely.",
               motionTrigger: .headTurnLeft),
     ] }
