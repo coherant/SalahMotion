@@ -3,6 +3,7 @@ import SwiftUI
 struct PrayerTimesView: View {
 
     @State private var vm = PrayerTimesViewModel()
+    @State private var enabledNotifications: Set<String> = NotificationManager.enabledPrayers()
 
     private var prayerTime: PrayerTime { vm.prayerTime }
     private var theme: PrayerTimeTheme { prayerTime.theme }
@@ -231,6 +232,8 @@ struct PrayerTimesView: View {
                     : isPast ? faint.opacity(0.65)
                     : faint.opacity(0.55)
                 )
+
+            notificationBell(prayer: prayer)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, isCurrent ? 13 : 11)
@@ -268,6 +271,33 @@ struct PrayerTimesView: View {
             }
         }
         .frame(width: 24, height: 24)
+    }
+
+    // MARK: - Notification bell toggle
+
+    private func notificationBell(prayer: PrayerTime) -> some View {
+        let on = enabledNotifications.contains(prayer.rawValue)
+        return Button {
+            NotificationManager.toggle(prayer)
+            enabledNotifications = NotificationManager.enabledPrayers()
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(on ? accent.opacity(0.18) : accent.opacity(0.04))
+                    .frame(width: 24, height: 24)
+                Circle()
+                    .strokeBorder(
+                        on ? accent.opacity(0.55) : neutralBorder,
+                        lineWidth: 1.5
+                    )
+                    .frame(width: 24, height: 24)
+                Image(systemName: "bell.fill")
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundStyle(on ? accent : faint.opacity(0.5))
+            }
+        }
+        .buttonStyle(.plain)
+        .animation(.easeInOut(duration: 0.2), value: on)
     }
 
     // MARK: - CTA button
