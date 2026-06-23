@@ -338,6 +338,8 @@ struct PrayerTimesView: View {
                 )
         }
         .buttonStyle(.plain)
+        .opacity(vm.isInPrayerWindow ? 1.0 : 0.4)
+        .animation(.easeInOut(duration: 0.3), value: vm.isInPrayerWindow)
         .onAppear { ctaPulsing = vm.isInPrayerWindow }
         .onChange(of: vm.isInPrayerWindow) { ctaPulsing = vm.isInPrayerWindow }
     }
