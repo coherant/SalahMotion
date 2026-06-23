@@ -322,7 +322,10 @@ struct PrayerTimesView: View {
                 .overlay(
                     Capsule()
                         .strokeBorder(accent, lineWidth: 1)
-                        .scaleEffect(ctaPulsing ? 1.18 : 1.0)
+                        .scaleEffect(
+                            x: ctaPulsing ? 1.12 : 1.0,
+                            y: ctaPulsing ? 1.5  : 1.0
+                        )
                         .opacity(ctaPulsing ? 0 : 0.55)
                         .animation(
                             .easeOut(duration: 3.6).repeatForever(autoreverses: false),
