@@ -140,6 +140,15 @@ enum PrayerTime: String, CaseIterable, Identifiable {
         }
     }
 
+    // MARK: - Sunrise (not a prayer — used for Fajr waiting label)
+    // Hardcoded London approximation — replace with Adhan calculation when ready.
+    static var sunriseDisplayTime: String { "4:43 AM" }
+    static var sunriseDate: Date {
+        var c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        c.hour = 4; c.minute = 43
+        return Calendar.current.date(from: c) ?? Date()
+    }
+
     // MARK: - Prayer times screen properties
 
     var phase: String {

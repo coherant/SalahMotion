@@ -59,10 +59,23 @@ final class PrayerTimesViewModel {
     }
 
     var ctaLabel: String {
+        let now = Date()
+
+        // State 4 — 15 mins before next prayer
         if isBeforeNextPrayer {
             return "Prepare for \(nextPrayer.displayName)"
         }
-        return "Pray \(prayerTime.displayName)"
+
+        // States 2 & 3 — during or after the prayer window
+        if now >= prayerTime.scheduledDate {
+            return "Pray \(prayerTime.displayName)"
+        }
+
+        // State 1 — before the prayer has happened yet
+        if prayerTime == .fajr {
+            return "Waiting for sunrise"
+        }
+        return "Waiting for \(prayerTime.displayName)"
     }
 
     var countdown: String {
