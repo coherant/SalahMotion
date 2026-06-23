@@ -88,7 +88,6 @@ struct LaunchView: View {
             if starCount > 0 {
                 StarfieldView(
                     count: starCount,
-                    isTwinkling: isTwinkling,
                     isDhuhr: prayerTime == .dhuhr,
                     accent: accent
                 )
@@ -356,7 +355,6 @@ struct LaunchView: View {
 
 private struct StarfieldView: View {
     let count: Int
-    let isTwinkling: Bool
     let isDhuhr: Bool
     let accent: Color
 
@@ -365,17 +363,16 @@ private struct StarfieldView: View {
         let x: CGFloat
         let y: CGFloat
         let size: CGFloat
-        let delay: Double
+        let opacity: Double
         let isSparkle: Bool
     }
 
     private let stars: [Star]
 
-    init(count: Int, isTwinkling: Bool, isDhuhr: Bool, accent: Color) {
-        self.count       = count
-        self.isTwinkling = isTwinkling
-        self.isDhuhr     = isDhuhr
-        self.accent      = accent
+    init(count: Int, isDhuhr: Bool, accent: Color) {
+        self.count   = count
+        self.isDhuhr = isDhuhr
+        self.accent  = accent
         var rng = SystemRandomNumberGenerator()
         self.stars = (0..<count).map { i in
             Star(
@@ -383,7 +380,7 @@ private struct StarfieldView: View {
                 x: CGFloat.random(in: 0.05...0.95, using: &rng),
                 y: CGFloat.random(in: 0.04...0.62, using: &rng),
                 size: CGFloat.random(in: 1.2...2.8, using: &rng),
-                delay: Double.random(in: 0...3, using: &rng),
+                opacity: Double.random(in: 0.4...0.9, using: &rng),
                 isSparkle: i < (count / 7)
             )
         }
@@ -401,13 +398,7 @@ private struct StarfieldView: View {
                         x: star.x * geo.size.width,
                         y: star.y * geo.size.height
                     )
-                    .opacity(isTwinkling ? Double.random(in: 0.25...1.0) : 0.7)
-                    .animation(
-                        .easeInOut(duration: Double.random(in: 1.8...3.5))
-                            .repeatForever(autoreverses: true)
-                            .delay(star.delay),
-                        value: isTwinkling
-                    )
+                    .opacity(star.opacity)
             }
         }
     }

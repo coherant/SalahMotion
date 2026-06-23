@@ -44,7 +44,6 @@ private enum CalibrationStep: Int, CaseIterable {
         }
     }
 
-    // Returns a bundle image name if one exists, otherwise text placeholder is shown
     var imageName: String? {
         switch self {
         case .qiyam:  return "calib-qiyam"
@@ -101,8 +100,6 @@ struct CalibrationView: View {
     @State private var session = PrayerStateMachine(sequence: CalibrationSequenceGenerator.generate(), guidanceLevel: .full)
     @State private var calibrationProfile: UserCalibrationProfile?
     @State private var activeProfile: UserCalibrationProfile? = UserCalibrationProfile.load()
-    @State private var wavePhase = false
-
     private let prayerTime = PrayerTime.current
     private var accent: Color { prayerTime.theme.accent }
 
@@ -120,12 +117,25 @@ struct CalibrationView: View {
     var body: some View {
         ZStack {
             prayerTime.backgroundGradient.ignoresSafeArea()
-            switch session.status {
-            case .idle:      idleView
-            case .running:   runningView
-            case .complete:  completeView
-            case .cancelled: cancelledView
+
+            VStack(spacing: 0) {
+                header
+                Spacer(minLength: 0)
+                hatifBar
+                    .padding(.horizontal, 22)
+                Spacer(minLength: 0)
+                captureDial
+                postureLabel
+                    .padding(.top, 16)
+                    .padding(.horizontal, 22)
+                Spacer(minLength: 0)
+                stepperRow
+                    .padding(.horizontal, 22)
+                bottomArea
+                    .padding(.top, 14)
+                    .padding(.bottom, 32)
             }
+            .padding(.top, 54)
         }
         .animation(.easeInOut(duration: 0.35), value: session.status)
         .onChange(of: session.status) {
@@ -137,129 +147,10 @@ struct CalibrationView: View {
         }
     }
 
-    // MARK: - Idle
+    // MARK: - Header
 
-    private var idleView: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            ZStack {
-                Circle()
-                    .fill(accent.opacity(0.10))
-                    .frame(width: 120, height: 120)
-                Circle()
-                    .strokeBorder(accent.opacity(0.28), lineWidth: 1)
-                    .frame(width: 120, height: 120)
-                Image(systemName: "scope")
-                    .font(.system(size: 44, weight: .ultraLight))
-                    .foregroundStyle(accent)
-            }
-            .padding(.bottom, 28)
-
-            Text("Tune your movements")
-                .font(Typography.display(32, weight: .medium))
-                .foregroundStyle(DesignTokens.ink)
-                .multilineTextAlignment(.center)
-                .padding(.bottom, 10)
-
-            Text("15 positions · 2 rakats · motion capture")
-                .font(Typography.ui(14))
-                .foregroundStyle(DesignTokens.muted)
-
-            if !session.isAvailable {
-                Text("Connect AirPods to begin")
-                    .font(Typography.ui(12))
-                    .foregroundStyle(accent.opacity(0.8))
-                    .padding(.top, 8)
-            }
-
-            Spacer()
-
-            if activeProfile != nil {
-                HStack(spacing: 6) {
-                    Image(systemName: "checkmark.seal.fill")
-                        .font(.system(size: 12))
-                    Text("Personal calibration active")
-                        .font(Typography.ui(12))
-                }
-                .foregroundStyle(accent)
-                .padding(.bottom, 6)
-
-                Button("Reset to defaults", role: .destructive) {
-                    UserCalibrationProfile.reset()
-                    activeProfile = nil
-                }
-                .font(Typography.ui(12))
-                .foregroundStyle(DesignTokens.faint)
-                .padding(.bottom, 20)
-            }
-
-            Button {
-                session = PrayerStateMachine(sequence: CalibrationSequenceGenerator.generate(), guidanceLevel: .full)
-                session.start()
-            } label: {
-                HStack(spacing: 9) {
-                    Text("Begin Calibration")
-                        .font(Typography.ui(16, weight: .bold))
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 17, weight: .semibold))
-                }
-                .foregroundStyle(DesignTokens.darkOnAccent)
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(accent)
-                .clipShape(RoundedRectangle(cornerRadius: 18))
-                .shadow(color: accent.opacity(0.34), radius: 17, y: 12)
-            }
-            .buttonStyle(.plain)
-            .disabled(!session.isAvailable)
-            .opacity(session.isAvailable ? 1 : 0.4)
-            .padding(.horizontal, 22)
-            .padding(.bottom, 26)
-        }
-    }
-
-    // MARK: - Running
-
-    private var runningView: some View {
-        VStack(spacing: 0) {
-            runningHeader
-            Spacer(minLength: 0)
-            hatifBar
-                .padding(.horizontal, 22)
-            Spacer(minLength: 0)
-            captureDial
-            postureLabel
-                .padding(.top, 16)
-                .padding(.horizontal, 22)
-            Spacer(minLength: 0)
-            motionBars
-                .padding(.horizontal, 22)
-            Spacer(minLength: 0)
-            stepperRow
-                .padding(.horizontal, 22)
-            statusPill
-                .padding(.top, 14)
-                .padding(.bottom, 32)
-        }
-        .padding(.top, 54)
-    }
-
-    private var runningHeader: some View {
+    private var header: some View {
         HStack(spacing: 14) {
-            Button { session.cancel() } label: {
-                Circle()
-                    .fill(Color.white.opacity(0.06))
-                    .overlay(Circle().strokeBorder(Color.white.opacity(0.1), lineWidth: 1))
-                    .frame(width: 36, height: 36)
-                    .overlay(
-                        Image(systemName: "xmark")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(Color(hex: "#a39db6"))
-                    )
-            }
-            .buttonStyle(.plain)
-
             VStack(alignment: .leading, spacing: 1) {
                 Text("Calibration")
                     .font(.system(size: 10.5, weight: .semibold))
@@ -273,25 +164,22 @@ struct CalibrationView: View {
 
             Spacer()
 
-            Text("\(session.currentStateIndex + 1) / \(session.states.count)")
-                .font(Typography.ui(12.5))
-                .foregroundStyle(DesignTokens.faint)
-                .fixedSize()
         }
         .padding(.horizontal, 22)
     }
 
-    // MARK: Hātif voice bar
+    // MARK: - Hātif voice bar
 
     private var hatifBar: some View {
-        HStack(spacing: 12) {
-            let barHeights: [CGFloat] = [5, 9, 6, 12, 7, 11, 5, 9, 6]
+        let isActive = session.status == .running
+        let barHeights: [CGFloat] = [5, 9, 6, 12, 7, 11, 5, 9, 6]
+        return HStack(spacing: 12) {
             HStack(alignment: .center, spacing: 2.5) {
                 ForEach(Array(barHeights.enumerated()), id: \.offset) { i, h in
                     RoundedRectangle(cornerRadius: 1.5)
                         .fill(accent)
                         .frame(width: 2.5, height: h)
-                        .scaleEffect(y: session.isSpeaking ? 1.0 : 0.25, anchor: .center)
+                        .scaleEffect(y: (isActive && session.isSpeaking) ? 1.0 : 0.25, anchor: .center)
                         .animation(
                             .easeInOut(duration: 1.2 + Double(i % 3) * 0.3)
                                 .repeatForever(autoreverses: true)
@@ -307,7 +195,7 @@ struct CalibrationView: View {
                     .font(Typography.eyebrow)
                     .tracking(1.5)
                     .foregroundStyle(accent)
-                Text(session.currentState.entrySpeech ?? "")
+                Text(isActive ? currentStep.chip : "Ready when you are")
                     .font(Typography.ui(13))
                     .foregroundStyle(DesignTokens.muted)
                     .lineLimit(2)
@@ -325,7 +213,7 @@ struct CalibrationView: View {
         )
     }
 
-    // MARK: Capture dial
+    // MARK: - Capture dial
 
     private var captureDial: some View {
         ZStack {
@@ -333,20 +221,46 @@ struct CalibrationView: View {
                 .strokeBorder(Color.white.opacity(0.1), lineWidth: 1.5)
                 .frame(width: 230, height: 230)
 
-            CaptureArc(progress: session.confirmProgress)
+            CaptureArc(progress: session.status == .running ? session.confirmProgress : 0)
                 .stroke(accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                 .frame(width: 222, height: 222)
                 .animation(.linear(duration: 0.1), value: session.confirmProgress)
 
-            // Ground line
             Rectangle()
                 .fill(Color.white.opacity(0.12))
                 .frame(width: 140, height: 1)
                 .offset(y: 82)
 
-            postureContent(for: currentStep)
+            // Complete overlay inside the dial
+            if session.status == .complete {
+                dialCompleteOverlay
+            } else if session.status == .cancelled {
+                postureContent(for: .qiyam)
+            } else {
+                postureContent(for: currentStep)
+            }
         }
         .frame(width: 230, height: 230)
+    }
+
+    private var dialCompleteOverlay: some View {
+        VStack(spacing: 6) {
+            if calibrationProfile != nil {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 52))
+                    .foregroundStyle(accent)
+                Text("Complete")
+                    .font(Typography.display(16, weight: .medium))
+                    .foregroundStyle(DesignTokens.ink)
+            } else {
+                Image(systemName: "exclamationmark.circle")
+                    .font(.system(size: 52))
+                    .foregroundStyle(DesignTokens.faint)
+                Text("Try again")
+                    .font(Typography.display(16, weight: .medium))
+                    .foregroundStyle(DesignTokens.muted)
+            }
+        }
     }
 
     @ViewBuilder
@@ -368,7 +282,7 @@ struct CalibrationView: View {
         }
     }
 
-    // MARK: Posture label
+    // MARK: - Posture label
 
     private var postureLabel: some View {
         VStack(spacing: 6) {
@@ -380,51 +294,14 @@ struct CalibrationView: View {
                     .font(Typography.display(22, weight: .medium))
                     .foregroundStyle(DesignTokens.muted)
             }
-            Text(currentStep.chip)
-                .font(Typography.ui(12))
-                .foregroundStyle(DesignTokens.faint)
-                .tracking(0.3)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 5)
-                .background(
-                    Capsule()
-                        .fill(Color.white.opacity(0.05))
-                        .overlay(Capsule().strokeBorder(Color.white.opacity(0.08), lineWidth: 1))
-                )
         }
         .multilineTextAlignment(.center)
+        .opacity(session.status == .running ? 1 : 0.4)
     }
 
-    // MARK: Motion sampling bars
+    // MARK: - Motion sampling bars
 
-    private var motionBars: some View {
-        VStack(spacing: 6) {
-            let heights: [CGFloat] = [8, 14, 10, 18, 12, 16, 9, 13, 8, 15, 10, 17]
-            HStack(alignment: .center, spacing: 3) {
-                ForEach(Array(heights.enumerated()), id: \.offset) { i, h in
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(accent.opacity(0.35 + Double(h) / 60.0))
-                        .frame(width: 3, height: h)
-                        .scaleEffect(y: wavePhase ? 1.0 : 0.15, anchor: .center)
-                        .animation(
-                            .easeInOut(duration: 0.55 + Double(i % 4) * 0.15)
-                                .repeatForever(autoreverses: true)
-                                .delay(Double(i) * 0.07),
-                            value: wavePhase
-                        )
-                }
-            }
-            .frame(height: 20)
-            .onAppear { wavePhase = true }
-
-            Text("SAMPLING MOTION")
-                .font(Typography.eyebrow)
-                .tracking(2)
-                .foregroundStyle(DesignTokens.faint)
-        }
-    }
-
-    // MARK: 8-step stepper
+    // MARK: - 8-step stepper
 
     private var stepperRow: some View {
         HStack(spacing: 0) {
@@ -437,7 +314,7 @@ struct CalibrationView: View {
                 }
                 stepperDot(step: step,
                            completed: completedSteps.contains(step),
-                           current: step == currentStep)
+                           current: step == currentStep && session.status == .running)
             }
         }
     }
@@ -464,88 +341,71 @@ struct CalibrationView: View {
         }
     }
 
-    // MARK: Status pill
+    // MARK: - Bottom area (state-driven)
 
-    private var statusPill: some View {
-        let text: String
-        if session.isSpeaking {
-            text = "Hātif is speaking"
-        } else if session.confirmProgress > 0.01 {
-            text = "Recording · hold still"
-        } else {
-            text = "Waiting for movement"
-        }
-        return Text(text)
-            .font(Typography.ui(12, weight: .semibold))
-            .foregroundStyle(accent)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 7)
-            .background(
-                Capsule()
-                    .fill(accent.opacity(0.12))
-                    .overlay(Capsule().strokeBorder(accent.opacity(0.3), lineWidth: 1))
-            )
-    }
-
-    // MARK: - Complete
-
-    private var completeView: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            if calibrationProfile != nil {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 72))
-                    .foregroundStyle(accent)
-                    .padding(.bottom, 20)
-                Text("Calibration complete")
-                    .font(Typography.display(32, weight: .medium))
-                    .foregroundStyle(DesignTokens.ink)
-                    .padding(.bottom, 8)
-                Text("Your movements have been tuned.")
-                    .font(Typography.ui(14))
-                    .foregroundStyle(DesignTokens.muted)
-            } else {
-                Image(systemName: "exclamationmark.circle")
-                    .font(.system(size: 72))
-                    .foregroundStyle(DesignTokens.faint)
-                    .padding(.bottom, 20)
-                Text("Could not calibrate")
-                    .font(Typography.display(32, weight: .medium))
-                    .foregroundStyle(DesignTokens.ink)
-                    .padding(.bottom, 8)
-                Text("Not enough motion data was captured.\nPlease try again.")
-                    .font(Typography.ui(14))
-                    .foregroundStyle(DesignTokens.muted)
-                    .multilineTextAlignment(.center)
-            }
-
-            if let p = calibrationProfile {
+    @ViewBuilder
+    private var bottomArea: some View {
+        VStack(spacing: 12) {
+            // Contextual content above the button
+            if session.status == .complete, let p = calibrationProfile {
                 calibrationResultCard(p)
-                    .padding(.top, 28)
                     .padding(.horizontal, 22)
+            } else if session.status == .idle, activeProfile != nil {
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 11))
+                    Text("Personal calibration active")
+                        .font(Typography.ui(11))
+                }
+                .foregroundStyle(accent)
             }
 
-            Spacer()
-
+            // Single action button
             Button {
-                calibrationProfile = nil
-                session = PrayerStateMachine(sequence: CalibrationSequenceGenerator.generate(), guidanceLevel: .full)
+                switch session.status {
+                case .idle:
+                    session = PrayerStateMachine(sequence: CalibrationSequenceGenerator.generate(), guidanceLevel: .full)
+                    session.start()
+                case .running:
+                    session.cancel()
+                case .complete, .cancelled:
+                    calibrationProfile = nil
+                    session = PrayerStateMachine(sequence: CalibrationSequenceGenerator.generate(), guidanceLevel: .full)
+                }
             } label: {
-                Text("Done")
-                    .font(Typography.ui(16, weight: .bold))
-                    .foregroundStyle(DesignTokens.darkOnAccent)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(accent)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .shadow(color: accent.opacity(0.34), radius: 17, y: 12)
+                Text(buttonLabel)
+                    .font(Typography.eyebrow)
+                    .tracking(1.5)
+                    .foregroundStyle(accent)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .strokeBorder(accent.opacity(0.5), lineWidth: 1)
+                    )
             }
             .buttonStyle(.plain)
-            .padding(.horizontal, 22)
-            .padding(.bottom, 26)
+            .disabled(session.status == .idle && !session.isAvailable)
+            .opacity(session.status == .idle && !session.isAvailable ? 0.4 : 1)
+
+            if session.status == .idle && !session.isAvailable {
+                Text("Connect AirPods to begin")
+                    .font(Typography.ui(11))
+                    .foregroundStyle(accent.opacity(0.7))
+            }
         }
     }
+
+    private var buttonLabel: String {
+        switch session.status {
+        case .idle:      return "BEGIN CALIBRATION"
+        case .running:   return "END CALIBRATION"
+        case .complete:  return calibrationProfile != nil ? "BEGIN AGAIN" : "TRY AGAIN"
+        case .cancelled: return "TRY AGAIN"
+        }
+    }
+
+    // MARK: - Result card
 
     private func calibrationResultCard(_ p: UserCalibrationProfile) -> some View {
         VStack(spacing: 0) {
@@ -577,48 +437,9 @@ struct CalibrationView: View {
             Rectangle().fill(Color.white.opacity(0.06)).frame(height: 1)
         }
     }
-
-    // MARK: - Cancelled
-
-    private var cancelledView: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            Image(systemName: "xmark.circle")
-                .font(.system(size: 60))
-                .foregroundStyle(DesignTokens.faint)
-                .padding(.bottom, 16)
-            Text("Calibration cancelled")
-                .font(Typography.display(28, weight: .medium))
-                .foregroundStyle(DesignTokens.ink)
-                .padding(.bottom, 8)
-            Text("Your previous calibration is still active.")
-                .font(Typography.ui(13))
-                .foregroundStyle(DesignTokens.muted)
-                .multilineTextAlignment(.center)
-            Spacer()
-            Button {
-                session = PrayerStateMachine(sequence: CalibrationSequenceGenerator.generate(), guidanceLevel: .full)
-            } label: {
-                Text("Try Again")
-                    .font(Typography.ui(16, weight: .bold))
-                    .foregroundStyle(DesignTokens.darkOnAccent)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(accent)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 22)
-            .padding(.bottom, 26)
-        }
-        .padding(.horizontal, 22)
-    }
 }
 
 // MARK: - Previews
 
 #Preview("Idle")      { CalibrationView() }
-#Preview("Cancelled") {
-    let v = CalibrationView()
-    return v
-}
+#Preview("Cancelled") { CalibrationView() }

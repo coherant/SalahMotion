@@ -106,17 +106,7 @@ struct PrayerSetupView: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack(spacing: 14) {
-            Circle()
-                .fill(Color.white.opacity(0.06))
-                .overlay(Circle().strokeBorder(Color.white.opacity(0.1), lineWidth: 1))
-                .frame(width: 36, height: 36)
-                .overlay(
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color(hex: "#a39db6"))
-                )
-
+        HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 1) {
                 Text("New session")
                     .font(.system(size: 10.5, weight: .semibold))
