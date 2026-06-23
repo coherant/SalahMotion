@@ -22,8 +22,8 @@ struct LaunchView: View {
     @State private var showStatus     = false
 
     // Ambient loop flags
-    @State private var isPulsing  = false
-    @State private var isTwinkling = false
+    @State private var isPulsing    = false
+    @State private var isTwinkling  = false
     @State private var lineHeight: CGFloat = 0
 
     private var theme: PrayerTimeTheme { prayerTime.theme }
@@ -84,14 +84,17 @@ struct LaunchView: View {
                     .padding(.bottom, 52)
             }
 
-            // Stars
+            // .equatable() prevents re-render on every parent body evaluation,
+            // keeping star positions stable across the intro animation sequence.
             if starCount > 0 {
                 StarfieldView(
                     count: starCount,
                     isDhuhr: prayerTime == .dhuhr,
                     accent: accent
                 )
+                .equatable()
                 .ignoresSafeArea()
+                .transition(.opacity)
             }
 
             // Horizon glow
@@ -344,7 +347,6 @@ struct LaunchView: View {
         withAnimation(.easeIn(duration: 0.9).delay(1.20))  { showAyah       = true }
         withAnimation(.easeIn(duration: 1.0).delay(1.50))  { showStatus     = true }
 
-        // Dismiss after animations complete + brief hold
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.8) {
             onComplete()
         }
@@ -353,10 +355,18 @@ struct LaunchView: View {
 
 // MARK: - Starfield
 
-private struct StarfieldView: View {
+private struct StarfieldView: View, Equatable {
     let count: Int
     let isDhuhr: Bool
     let accent: Color
+
+    // SwiftUI re-creates this struct on every parent render, generating new
+    // random positions each time. Making it Equatable + using .equatable()
+    // tells SwiftUI to skip re-rendering if count/isDhuhr haven't changed,
+    // so stars stay locked in their initial positions.
+    static func == (lhs: StarfieldView, rhs: StarfieldView) -> Bool {
+        lhs.count == rhs.count && lhs.isDhuhr == rhs.isDhuhr
+    }
 
     private struct Star: Identifiable {
         let id: Int

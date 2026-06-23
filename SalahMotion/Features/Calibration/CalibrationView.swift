@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 // MARK: - Calibration step (8 posture types across the 15-state sequence)
 
@@ -57,17 +58,18 @@ private enum CalibrationStep: Int, CaseIterable {
 private extension PrayerStateID {
     var calibrationStep: CalibrationStep {
         switch self {
-        case .qiyamStart, .qiyamRakat2:
+        case .r1QiyamFull, .r2QiyamFull, .r3QiyamFatiha, .r4QiyamFatiha:
             return .qiyam
-        case .rukuFirst, .rukuSecond:
+        case .r1Ruku, .r2Ruku, .r3Ruku, .r4Ruku:
             return .ruku
-        case .qiyamAfterRukuFirst, .qiyamAfterRukuSecond:
+        case .r1QiyamAfterRuku, .r2QiyamAfterRuku, .r3QiyamAfterRuku, .r4QiyamAfterRuku:
             return .itidal
-        case .sujoodFirst, .sujoodSecond, .sujoodThird, .sujoodFourth:
+        case .r1SujoodFirst, .r1SujoodSecond, .r2SujoodFirst, .r2SujoodSecond,
+             .r3SujoodFirst, .r3SujoodSecond, .r4SujoodFirst, .r4SujoodSecond:
             return .sujood
-        case .julusFirst, .julusSecond:
+        case .r1JulusBetween, .r2JulusBetween, .r3JulusBetween, .r4JulusBetween:
             return .julus
-        case .julusTashahhud:
+        case .julusFull, .julusShort:
             return .tashahhud
         case .tasleemRight:
             return .tasleemRight
@@ -97,10 +99,10 @@ private struct CaptureArc: Shape {
 
 struct CalibrationView: View {
 
-    @State private var session = PrayerStateMachine(sequence: CalibrationSequenceGenerator.generate(), guidanceLevel: .full)
+    @State private var session = PrayerStateMachine(sequence: CalibrationSequenceGenerator.generate(), guidanceLevel: .full, useDefaultThresholds: true)
     @State private var calibrationProfile: UserCalibrationProfile?
     @State private var activeProfile: UserCalibrationProfile? = UserCalibrationProfile.load()
-    private let prayerTime = PrayerTime.current
+    @State private var prayerTime: PrayerTime = .current
     private var accent: Color { prayerTime.theme.accent }
 
     private var currentStep: CalibrationStep { session.currentState.id.calibrationStep }
@@ -120,6 +122,7 @@ struct CalibrationView: View {
 
             VStack(spacing: 0) {
                 header
+                    .padding(.top, 8)
                 Spacer(minLength: 0)
                 hatifBar
                     .padding(.horizontal, 22)
@@ -135,9 +138,12 @@ struct CalibrationView: View {
                     .padding(.top, 14)
                     .padding(.bottom, 32)
             }
-            .padding(.top, 54)
         }
         .animation(.easeInOut(duration: 0.35), value: session.status)
+        .onAppear { prayerTime = .current }
+        .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
+            prayerTime = .current
+        }
         .onChange(of: session.status) {
             if session.status == .complete {
                 let result = CalibrationAnalyzer(samples: session.sessionSamples).analyze()
@@ -351,26 +357,35 @@ struct CalibrationView: View {
                 calibrationResultCard(p)
                     .padding(.horizontal, 22)
             } else if session.status == .idle, activeProfile != nil {
-                HStack(spacing: 6) {
-                    Image(systemName: "checkmark.seal.fill")
-                        .font(.system(size: 11))
-                    Text("Personal calibration active")
-                        .font(Typography.ui(11))
+                VStack(spacing: 6) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.system(size: 11))
+                        Text("Personal calibration active")
+                            .font(Typography.ui(11))
+                    }
+                    .foregroundStyle(accent)
+
+                    Button("Reset to defaults", role: .destructive) {
+                        UserCalibrationProfile.reset()
+                        activeProfile = nil
+                    }
+                    .font(Typography.ui(11))
+                    .foregroundStyle(DesignTokens.faint)
                 }
-                .foregroundStyle(accent)
             }
 
             // Single action button
             Button {
                 switch session.status {
                 case .idle:
-                    session = PrayerStateMachine(sequence: CalibrationSequenceGenerator.generate(), guidanceLevel: .full)
+                    session = PrayerStateMachine(sequence: CalibrationSequenceGenerator.generate(), guidanceLevel: .full, useDefaultThresholds: true)
                     session.start()
                 case .running:
                     session.cancel()
                 case .complete, .cancelled:
                     calibrationProfile = nil
-                    session = PrayerStateMachine(sequence: CalibrationSequenceGenerator.generate(), guidanceLevel: .full)
+                    session = PrayerStateMachine(sequence: CalibrationSequenceGenerator.generate(), guidanceLevel: .full, useDefaultThresholds: true)
                 }
             } label: {
                 Text(buttonLabel)

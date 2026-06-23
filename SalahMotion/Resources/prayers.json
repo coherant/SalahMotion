@@ -125,6 +125,41 @@
       "arabic": "قُلْ يَا أَيُّهَا الْكَافِرُونَ لَا أَعْبُدُ مَا تَعْبُدُونَ وَلَا أَنتُمْ عَابِدُونَ مَا أَعْبُدُ وَلَا أَنَا عَابِدٌ مَّا عَبَدتُّمْ وَلَا أَنتُمْ عَابِدُونَ مَا أَعْبُدُ لَكُمْ دِينُكُمْ وَلِيَ دِينِ",
       "turkish": "Kul ya eyyühel kafirun. La a'büdü ma ta'büdun. Ve la entüm abidüne ma a'büd. Ve la ene abidün ma abedtüm. Ve la entüm abidüne ma a'büd. Leküm dinüküm ve liye din.",
       "english": "Say: O disbelievers — I do not worship what you worship, nor do you worship what I worship. I will never worship what you worship, nor will you worship what I worship. Your religion is for you, and my religion is for me."
+    },
+    {
+      "id": "P-18",
+      "name": "Qunut (1) — Guidance",
+      "arabic": "اللَّهُمَّ اهْدِنِي فِيمَنْ هَدَيْتَ",
+      "turkish": "Allahümme'hdini fimen hedayt",
+      "english": "O Allah, guide me along with those You have guided"
+    },
+    {
+      "id": "P-19",
+      "name": "Qunut (2) — Well-being",
+      "arabic": "وَعَافِنِي فِيمَنْ عَافَيْتَ",
+      "turkish": "Ve afini fimen afayt",
+      "english": "Grant me well-being along with those You have granted well-being"
+    },
+    {
+      "id": "P-20",
+      "name": "Qunut (3) — Alliance",
+      "arabic": "وَتَوَلَّنِي فِيمَنْ تَوَلَّيْتَ",
+      "turkish": "Ve tevelleni fimen tevelleit",
+      "english": "Take me as Your ally along with those You have taken as allies"
+    },
+    {
+      "id": "P-21",
+      "name": "Qunut (4) — Blessing and protection",
+      "arabic": "وَبَارِكْ لِي فِيمَا أَعْطَيْتَ وَقِنِي شَرَّ مَا قَضَيْتَ",
+      "turkish": "Ve barik li fima a'tayt ve kini şerre ma kadayt",
+      "english": "Bless what You have given me and protect me from the evil You have decreed"
+    },
+    {
+      "id": "P-22",
+      "name": "Qunut (5) — Closing",
+      "arabic": "فَإِنَّكَ تَقْضِي وَلَا يُقْضَى عَلَيْكَ وَإِنَّهُ لَا يَذِلُّ مَنْ وَالَيْتَ تَبَارَكْتَ رَبَّنَا وَتَعَالَيْتَ",
+      "turkish": "Fe inneke takdi ve la yukda aleyk ve innehu la yezillü men valeyt tebarekete Rabbena ve tealeyt",
+      "english": "You decree and none can decree over You, none is abased whom You befriend — blessed are You our Lord and exalted"
     }
   ]
 }

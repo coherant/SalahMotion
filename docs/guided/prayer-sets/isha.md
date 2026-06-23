@@ -21,8 +21,8 @@ Mode: `timed`
 | prayer | Listen to the Ezan | F | 5s |
 | prayer | Give your niyet for Isha | F | 5s |
 | prayer | P-0 | F+P | 3s |
-| prayer | P-7 (Al-Fatiha) | F+P | 15s |
-| prayer | Al-Ikhlas | F+P | 8s |
+| prayer | P-7 | F+P | 2s |
+| prayer | P-11 | F+P | 2s |
 | prayer | P-0 | F+P | 2s |
 
 ---
@@ -34,8 +34,8 @@ Mode: `motion` · Motion trigger: pitch (upright)
 |---|---|---|
 | entry | Stand for the second rak'ah | F |
 | reprompt | Please stand | F+P |
-| prayer | P-7 (Al-Fatiha) | F+P |
-| prayer | Al-Nas | F+P |
+| prayer | P-7 | F+P |
+| prayer | P-12 | F+P |
 | prayer | P-0 | F+P |
 
 ---
@@ -114,7 +114,7 @@ Mode: `motion` · Motion trigger: pitch (upright)
 |---|---|---|
 | entry | Sit for the short Tashahhud | F |
 | reprompt | Please sit | F+P |
-| prayer | P-8 (Tashahhud only — no Salawat) | F+P |
+| prayer | P-8 | F+P |
 
 ---
 
@@ -125,7 +125,7 @@ Mode: `motion` · Motion trigger: pitch (upright)
 |---|---|---|
 | entry | Stand for the next rak'ah | F |
 | reprompt | Please stand | F+P |
-| prayer | P-7 (Al-Fatiha only) | F+P |
+| prayer | P-7 | F+P |
 | prayer | P-0 | F+P |
 
 ---
@@ -137,9 +137,9 @@ Mode: `motion` · Motion trigger: pitch (upright)
 |---|---|---|
 | entry | Sit for the final Tashahhud | F |
 | reprompt | Please sit for Tashahhud | F+P |
-| prayer | P-8 (Tashahhud) | F+P |
-| prayer | P-9 (Allahumma Salli) | F+P |
-| prayer | P-10 (Allahumma Barik) | F+P |
+| prayer | P-8 | F+P |
+| prayer | P-9 | F+P |
+| prayer | P-10 | F+P |
 
 ---
 

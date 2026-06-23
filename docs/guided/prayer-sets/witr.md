@@ -24,8 +24,8 @@ Mode: `timed`
 | entry | Stand upright and raise your hands to your ears | F | — |
 | prayer | Give your niyet for Witr | F | 5s |
 | prayer | P-0 | F+P | 3s |
-| prayer | P-7 (Al-Fatiha) | F+P | 15s |
-| prayer | Al-Ala | F+P | 8s |
+| prayer | P-7 | F+P | 2s |
+| prayer | P-16 | F+P | 8s |
 | prayer | P-0 | F+P | 2s |
 
 ---
@@ -37,8 +37,8 @@ Mode: `motion` · Motion trigger: pitch (upright)
 |---|---|---|
 | entry | Stand for the second rak'ah | F |
 | reprompt | Please stand | F+P |
-| prayer | P-7 (Al-Fatiha) | F+P |
-| prayer | Al-Kafirun | F+P |
+| prayer | P-7 | F+P |
+| prayer | P-17 | F+P |
 | prayer | P-0 | F+P |
 
 ---
@@ -117,7 +117,7 @@ Mode: `motion` · Motion trigger: pitch (upright)
 |---|---|---|
 | entry | Sit for the short Tashahhud | F |
 | reprompt | Please sit | F+P |
-| prayer | P-8 (Tashahhud only — no Salawat) | F+P |
+| prayer | P-8 | F+P |
 
 ---
 
@@ -130,12 +130,12 @@ Note: Qunut dua is recited in this Qiyam after Al-Fatiha, before Ruku.
 |---|---|---|
 | entry | Stand for the third rak'ah | F |
 | reprompt | Please stand | F+P |
-| prayer | P-7 (Al-Fatiha) | F+P |
-| prayer | Oh Allah guide me along with those you have guided | F+P |
-| prayer | Grant me well-being along with those you have granted well-being | F+P |
-| prayer | Take me as your ally along with those you have taken as allies | F+P |
-| prayer | Bless what you have given me, protect me from the evil you have decreed | F+P |
-| prayer | You decree and none can decree over you, none is abased whom you befriend | F+P |
+| prayer | P-7 | F+P |
+| prayer | P-18 | F+P |
+| prayer | P-19 | F+P |
+| prayer | P-20 | F+P |
+| prayer | P-21 | F+P |
+| prayer | P-22 | F+P |
 | prayer | P-0 | F+P |
 
 ---
@@ -147,9 +147,9 @@ Mode: `motion` · Motion trigger: pitch (upright)
 |---|---|---|
 | entry | Sit for the final Tashahhud | F |
 | reprompt | Please sit for Tashahhud | F+P |
-| prayer | P-8 (Tashahhud) | F+P |
-| prayer | P-9 (Allahumma Salli) | F+P |
-| prayer | P-10 (Allahumma Barik) | F+P |
+| prayer | P-8 | F+P |
+| prayer | P-9 | F+P |
+| prayer | P-10 | F+P |
 
 ---
 

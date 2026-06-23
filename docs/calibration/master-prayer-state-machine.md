@@ -69,7 +69,7 @@ The Swift implementation in `PrayerStateMachine.swift` always uses the calibrate
 
 | Position | Signal | Initial | Calibrated | Source |
 |---|---|---|---|---|
-| Ruku | Pitch | [-80°, -65°] | [-82°, -48°] | 3 participants, Jun 2026 |
+| Ruku | Pitch | [-80°, -65°] | [-90°, -30°] | Widened Jun 2026 — 3-participant sample too small to narrow further |
 | Sujood | Roll | angDist(roll, 162.5°) ≤ 12.5° | angDist(roll, 180°) ≤ 30° | 3 participants, Jun 2026 |
 | Upright (standing or sitting) | Pitch | [-30°, +25°] | [-40°, +6°] | 3 participants, Jun 2026 |
 | Tasleem right | Yaw delta | yaw − baseline ≥ +30° | baseline − yaw ≥ 30° | 3 participants, Jun 2026 |
@@ -79,6 +79,16 @@ Notes:
 - Upright: sequence position disambiguates standing vs sitting — roll is NOT a hard gate
 - Sujood: angular distance handles the ±180° Euler-angle wraparound
 - Tasleem: yaw is session-relative; baseline captured at phase 9. Right/left directions confirmed by calibration data (right turn = negative yaw delta)
+
+## Position fallback (calibration only)
+
+Each motion position in the calibration sequence has a `maxReprompts` value of 3.
+If the position is not detected within 3 reprompt cycles (15 seconds), the state machine
+advances regardless, using whatever sensor samples were recorded during the wait window.
+The `CalibrationAnalyzer` derives thresholds from those samples — so the user's actual
+range becomes the calibrated value, even if it falls outside the default detection window.
+
+This fallback does not apply to guided prayer.
 
 ## Sensor smoothing
 7-sample moving average applied to pitch, roll, yaw before threshold evaluation.

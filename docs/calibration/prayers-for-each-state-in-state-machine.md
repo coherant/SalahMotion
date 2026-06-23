@@ -7,6 +7,7 @@ Pattern for every position:
 1. **entry** — announces the position name and instructs the user to move into it
 2. **prayer** — "Hold this position for five seconds." (5s duration, after motion confirmed)
 3. **exit** — names the next position so the user knows what is coming
+4. **reprompt** — spoken every 5s while waiting for motion confirmation; short and directive
 
 ---
 
@@ -29,6 +30,7 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Ruku. Bow forward and place both hands on your knees. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Get ready to stand upright into Qiyam. | |
+| reprompt | Bow forward and place both hands on your knees. | |
 
 ---
 
@@ -39,6 +41,7 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Qiyam. Return to standing upright. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Get ready to lower into Sujood. | |
+| reprompt | Stand upright. | |
 
 ---
 
@@ -49,6 +52,7 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Sujood. Lower into prostration with your forehead touching the ground. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Get ready to sit upright into Julus. | |
+| reprompt | Lower into prostration with your forehead touching the ground. | |
 
 ---
 
@@ -59,6 +63,7 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Julus. Sit upright on your knees. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Get ready to lower into Sujood again. | |
+| reprompt | Sit upright on your knees. | |
 
 ---
 
@@ -69,6 +74,7 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Sujood. Lower into prostration again with your forehead touching the ground. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Get ready to stand upright for the second rakat. | |
+| reprompt | Lower into prostration with your forehead touching the ground. | |
 
 ---
 
@@ -79,6 +85,7 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Qiyam. Stand upright for the second rakat. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Get ready to bow into Ruku. | |
+| reprompt | Stand upright. | |
 
 ---
 
@@ -89,6 +96,7 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Ruku. Bow forward and place both hands on your knees. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Get ready to stand upright into Qiyam. | |
+| reprompt | Bow forward and place both hands on your knees. | |
 
 ---
 
@@ -101,6 +109,7 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Qiyam. Return to standing upright. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Get ready to lower into Sujood. | |
+| reprompt | Stand upright. | |
 
 ---
 
@@ -111,6 +120,7 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Sujood. Lower into prostration with your forehead touching the ground. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Get ready to sit upright into Julus. | |
+| reprompt | Lower into prostration with your forehead touching the ground. | |
 
 ---
 
@@ -121,6 +131,7 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Julus. Sit upright on your knees. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Get ready to lower into Sujood again. | |
+| reprompt | Sit upright on your knees. | |
 
 ---
 
@@ -131,6 +142,7 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Sujood. Lower into prostration again with your forehead touching the ground. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Get ready to sit for Tashahhud. | |
+| reprompt | Lower into prostration with your forehead touching the ground. | |
 
 ---
 
@@ -141,6 +153,7 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Julus. Sit upright for Tashahhud. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Get ready to turn your head to the right for Tasleem. | |
+| reprompt | Sit upright on your knees. | |
 
 ---
 
@@ -151,6 +164,7 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Tasleem. Turn your head to the right. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Get ready to turn your head to the left. | |
+| reprompt | Turn your head to the right. | |
 
 ---
 
@@ -161,3 +175,4 @@ Mode: `timed` — no motion wait. Entry, prayer and exit play in sequence.
 | entry | Tasleem. Turn your head to the left. | |
 | prayer | Hold this position for five seconds. | 5s |
 | exit | Calibration complete. You may move freely. | |
+| reprompt | Turn your head to the left. | |

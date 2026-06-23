@@ -24,23 +24,23 @@ struct CalibrationAnalyzer {
             return sorted[min(index, sorted.count - 1)]
         }
 
-        // Ruku — pitch (positions 2, 8)
-        let rukuPitches = (steady(for: "rukuFirst") + steady(for: "rukuSecond")).map { $0.pitch }
+        // Ruku — pitch (r1Ruku, r2Ruku)
+        let rukuPitches = (steady(for: "r1Ruku") + steady(for: "r2Ruku")).map { $0.pitch }
         guard !rukuPitches.isEmpty else { return nil }
 
-        // Upright — pitch (all qiyam + julus positions)
-        let uprightIDs = ["qiyamStart", "qiyamAfterRukuFirst", "qiyamRakat2",
-                          "qiyamAfterRukuSecond", "julusFirst", "julusSecond", "julusTashahhud"]
+        // Upright — pitch (all qiyam + julus positions across both rakats)
+        let uprightIDs = ["r1QiyamFull", "r1QiyamAfterRuku", "r2QiyamFull",
+                          "r2QiyamAfterRuku", "r1JulusBetween", "r2JulusBetween", "julusFull"]
         let uprightPitches = uprightIDs.flatMap { steady(for: $0) }.map { $0.pitch }
         guard !uprightPitches.isEmpty else { return nil }
 
-        // Sujood — angular distance of roll from 180° (positions 4, 6, 10, 12)
-        let sujoodIDs = ["sujoodFirst", "sujoodSecond", "sujoodThird", "sujoodFourth"]
+        // Sujood — angular distance of roll from 180° (all four sujood positions)
+        let sujoodIDs = ["r1SujoodFirst", "r1SujoodSecond", "r2SujoodFirst", "r2SujoodSecond"]
         let sujoodDeviations = sujoodIDs.flatMap { steady(for: $0) }.map { angDist($0.roll, 180) }
         guard !sujoodDeviations.isEmpty else { return nil }
 
-        // Tasleem — yaw offset from qiyam baseline (position 9 baseline, 14+15 turns)
-        let baselineYaws = steady(for: "qiyamAfterRukuSecond").map { $0.yaw }
+        // Tasleem — yaw offset from qiyam baseline (r2QiyamAfterRuku captures baseline)
+        let baselineYaws = steady(for: "r2QiyamAfterRuku").map { $0.yaw }
         guard !baselineYaws.isEmpty else { return nil }
         let yawBaseline = baselineYaws.reduce(0, +) / Double(baselineYaws.count)
 

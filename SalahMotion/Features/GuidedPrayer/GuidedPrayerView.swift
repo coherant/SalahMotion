@@ -5,7 +5,7 @@ struct GuidedPrayerView: View {
     // Set in onBegin so the running screen always matches the selected prayer.
     @State private var prayerTime: PrayerTime = UserPreferences.shared.salatType.prayerTime
 
-    @State private var session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate(language: UserPreferences.shared.language))
+    @State private var session = PrayerStateMachine(sequence: GuidedSequenceGenerator.generate())
     @State private var isSilenced = false
     @State private var shareURL: URL?
     @State private var sessionFiles: [URL] = []
@@ -39,7 +39,7 @@ struct GuidedPrayerView: View {
             UserPreferences.shared.pace            = pace
             UserPreferences.shared.muezzinId       = muezzinId
             session = PrayerStateMachine(
-                sequence: GuidedSequenceGenerator.generate(language: lang),
+                sequence: GuidedSequenceGenerator.generate(salat: salat, language: lang),
                 guidanceLevel: guidance
             )
             session.start()

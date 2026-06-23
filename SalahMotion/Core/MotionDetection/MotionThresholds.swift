@@ -35,8 +35,8 @@ struct MotionThresholds {
     ) -> Bool {
         switch trigger {
         case .ruku:
-            return pitch >= (profile?.rukuPitchLow  ?? -82)
-                && pitch <= (profile?.rukuPitchHigh ?? -48)
+            return pitch >= (profile?.rukuPitchLow  ?? -90)
+                && pitch <= (profile?.rukuPitchHigh ?? -30)
 
         case .sujood:
             // angDist handles Euler-angle wraparound; fallback radius calibrated at 88% coverage.
