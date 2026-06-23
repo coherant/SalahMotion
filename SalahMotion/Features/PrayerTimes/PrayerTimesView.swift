@@ -320,17 +320,21 @@ struct PrayerTimesView: View {
                         .strokeBorder(accent.opacity(0.5), lineWidth: 1)
                 )
                 .overlay(
-                    Capsule()
-                        .fill(accent)
-                        .scaleEffect(
-                            x: ctaPulsing ? 1.12 : 1.0,
-                            y: ctaPulsing ? 1.5  : 1.0
-                        )
-                        .opacity(ctaPulsing ? 0 : 0.35)
-                        .animation(
-                            .easeOut(duration: 3.6).repeatForever(autoreverses: false),
-                            value: ctaPulsing
-                        )
+                    Group {
+                        if vm.isInPrayerWindow {
+                            Capsule()
+                                .fill(accent)
+                                .scaleEffect(
+                                    x: ctaPulsing ? 1.12 : 1.0,
+                                    y: ctaPulsing ? 1.5  : 1.0
+                                )
+                                .opacity(ctaPulsing ? 0 : 0.35)
+                                .animation(
+                                    .easeOut(duration: 3.6).repeatForever(autoreverses: false),
+                                    value: ctaPulsing
+                                )
+                        }
+                    }
                 )
         }
         .buttonStyle(.plain)
