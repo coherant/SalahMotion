@@ -4,6 +4,7 @@ import CoreLocation
 final class LocationManager: NSObject {
 
     private(set) var cityName: String = "Locating…"
+    private(set) var coordinate: CLLocationCoordinate2D?
 
     private let manager = CLLocationManager()
     private let geocoder = CLGeocoder()
@@ -60,6 +61,10 @@ extension LocationManager: CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
+        DispatchQueue.main.async { [weak self] in
+            self?.coordinate = location.coordinate
+            PrayerTimesEngine.shared.setCoordinate(location.coordinate)
+        }
         reverseGeocode(location)
     }
 

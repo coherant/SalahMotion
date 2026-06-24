@@ -13,8 +13,9 @@ final class PrayerTimesViewModel {
     var cityName: String { location.cityName }
 
     init() {
-        // 60s — refreshes which prayer period we're in
+        // 60s — refreshes which prayer period we're in, and recomputes times at day rollover
         minuteTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            PrayerTimesEngine.shared.refreshIfNeeded()
             self?.prayerTime = .current
         }
         // 1s — drives countdown and all time-sensitive computed properties
@@ -31,7 +32,9 @@ final class PrayerTimesViewModel {
     var hijriDate: String {
         var cal = Calendar(identifier: .islamicCivil)
         cal.locale = Locale(identifier: "en")
-        let c = cal.dateComponents([.day, .month, .year], from: now)
+        let offsetDays = PrayerCalculationSettings.shared.hijriOffsetDays
+        let base = cal.date(byAdding: .day, value: offsetDays, to: now) ?? now
+        let c = cal.dateComponents([.day, .month, .year], from: base)
         guard let day = c.day, let month = c.month, let year = c.year,
               (1...12).contains(month) else { return "" }
         let months = ["Muḥarram","Ṣafar","Rabīʿ al-Awwal","Rabīʿ al-Thānī",

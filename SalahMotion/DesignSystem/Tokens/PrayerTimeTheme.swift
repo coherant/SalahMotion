@@ -30,14 +30,14 @@ enum PrayerTime: String, CaseIterable, Identifiable {
     }
 
     var displayTime: String {
-        switch self {
-        case .fajr:    return "4:52 AM"
-        case .dhuhr:   return "12:21 PM"
-        case .asr:     return "3:47 PM"
-        case .maghrib: return "6:58 PM"
-        case .isha:    return "8:24 PM"
-        }
+        Self.timeFormatter.string(from: scheduledDate)
     }
+
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "h:mm a"
+        return f
+    }()
 
     var theme: PrayerTimeTheme {
         switch self {
@@ -182,8 +182,14 @@ enum PrayerTime: String, CaseIterable, Identifiable {
         }
     }
 
-    // Today's date at the hardcoded prayer time — used for countdown calculation
+    // Today's prayer instant from the engine (real, location-based times).
+    // Falls back to fixed times only before the engine's first computation.
     var scheduledDate: Date {
+        PrayerTimesEngine.shared.date(for: self) ?? fallbackScheduledDate
+    }
+
+    // Fixed approximate times — used only as a fallback before computation.
+    private var fallbackScheduledDate: Date {
         var c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
         switch self {
         case .fajr:    c.hour = 4;  c.minute = 52
