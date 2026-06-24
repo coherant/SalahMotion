@@ -46,9 +46,10 @@ struct GuidedPrayerBottomTextView: View {
             Button {
                 guard !cancelled else { return }
                 cancelled = true
-                pulsing = true
                 onCancel()
                 Task {
+                    try? await Task.sleep(for: .milliseconds(250))
+                    pulsing = true
                     try? await Task.sleep(for: .seconds(3))
                     onNavigate()
                 }
