@@ -41,6 +41,7 @@ struct PrayerTimesView: View {
                 ctaButton
                     .padding(.bottom, 32)
             }
+            .safeAreaPadding(.top)
             .padding(.horizontal, 22)
             .padding(.bottom, 80)
         }
