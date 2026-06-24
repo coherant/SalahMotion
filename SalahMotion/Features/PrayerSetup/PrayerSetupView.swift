@@ -119,11 +119,6 @@ struct PrayerSetupView: View {
             }
 
             Spacer()
-
-            Text(salat.prayerTime.displayTime)
-                .font(Typography.ui(12.5))
-                .foregroundStyle(DesignTokens.faint)
-                .fixedSize()
         }
         .padding(.horizontal, 22)
         .padding(.top, 8)
