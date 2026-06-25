@@ -78,21 +78,22 @@ is not throwaway — it is the **seed of the Stage 3 `observances.md` spec**.
   `session` rename — that word is the *recording-session* concept, correctly named.
 - **Exit:** snapshot byte-identical (green); nothing chains yet; fully reversible. ✅
 
-### Stage 3 — The observance layer (new)
+### Stage 3 — The observance layer (new) ✅ DONE
 - **The composition table already exists** as `SalatType.units` (see Stage 2 finding)
-  — Stage 3 consumes it rather than re-authoring. Promote `observance-considerations.md`
-  → `observances.md` for the *transition* semantics + inclusion rules, and reconcile
-  its parked composition table against `SalatType.units` (they match today).
-  Original table for reference: Fajr `[SunnahBefore-2, Fard-2]`, Dhuhr
-  `[SunnahBefore-4, Fard-4, SunnahAfter-2]`, Asr `[SunnahBefore-4, Fard-4]`,
-  Maghrib `[Fard-3, SunnahAfter-2]`, Isha `[Fard-4, SunnahAfter-2, Witr-3]`.
-- Write the transition semantics: niyet replays per unit; I-1 fires once
-  (observance start); I-24 per the parked decision; timed pie-opening restarts each
-  unit; P-23 placement fixed.
-- Code: `generate(observance:) = units.map { generateUnit($0, isFirst:, isLast:) }.flatMap`,
-  with boundary handling.
-- **Exit:** observance snapshot fixtures; the Stage-0 single-unit snapshot reproduced
-  as the first unit of each observance.
+  — Stage 3 consumes it rather than re-authoring. Promoted `observance-considerations.md`
+  → **`observances.md`** (live spec): composition = `SalatType.units`, inclusion =
+  `UserPreferences.selectedUnitIds` (farḍ always included, never stored), the three
+  resolved transition rules. Composition matches `SalatType.units`.
+- Transition semantics authored: niyet replays per unit; I-1 fires once (first unit
+  only); subsequent units open `motion` (I-24 stand cue + I-14 reprompt, no I-1);
+  timed pie-opening restarts each unit; P-23 once at observance end (`isLast`).
+- Code: `generate(salat:language:unitIds:)` filters `salat.units` by
+  `isObligatory || unitIds.contains`, then `generateUnit($0, isFirst:, isLast:)` per
+  unit. `rakat1Full(isFirst:)` branches timed/motion opener; `tasleem(closingDua:)`
+  gates P-23. Witr content (own surahs/niyet) resolved via `content(for:unit:)`.
+- **Snapshot:** intentional diff — full observances now emitted (fajr 15→30,
+  dhuhr 28→71, asr 28→56, maghrib 22→37, isha 28→65; standalone witr 22 unchanged).
+  Test passes explicit full `unitIds` for determinism. Green, reviewed.
 
 ### Stage 4 — Runtime + UI chaining (highest risk; device-tested)
 - `PrayerStateMachine` iterates the chained array; per-unit rakat numbering + unit
@@ -141,9 +142,16 @@ is not throwaway — it is the **seed of the Stage 3 `observances.md` spec**.
 - **Stage 0 ✅ committed** (`1346d83`): live spec locked to current truth; golden
   snapshot (`SalahMotionTests/GuidedSnapshotTests.swift` + `__Snapshots__/guided-sequences.txt`,
   584 lines) green. State counts match master phase counts; one yaw-capture per sequence.
-- **Stage 2 ✅ complete** (uncommitted): generator reuses canonical `PrayerUnit` /
+- **Stage 2 ✅ committed** (`1e73ade`): generator reuses canonical `PrayerUnit` /
   `SalatType.units`; single `generateUnit` composes by `rakats`; per-shape funcs
-  deleted; spec § Unit identity added. Snapshot byte-identical (still green). Key
-  finding: composition table already exists in `SalatType.units` — de-risks Stage 3.
-- **Next action:** commit Stage 2, then Stage 3 — observance layer (consume
-  `SalatType.units`; author transition semantics; resolve the 4 parked decisions).
+  deleted; spec § Unit identity added. Snapshot byte-identical. Key finding:
+  composition table already exists in `SalatType.units` — de-risked Stage 3.
+- **Stage 3 ✅ complete** (uncommitted): observance layer. `generate(…unitIds:)`
+  chains the selected `SalatType.units`; `isFirst`/`isLast` boundary handling
+  (motion opener for subsequent units, P-23 once at end). Live spec `observances.md`
+  added; README §4-5 + master Notes/Unit-identity reconciled; `observance-considerations.md`
+  deleted. Decisions resolved: sunnah toggleable (already modelled via selectedUnitIds);
+  I-1 once + I-24 motion opener for later units; P-23 at observance end; Hanafi locked.
+  Snapshot regenerated (intentional diff, reviewed, green).
+- **Next action:** commit Stage 3, then Stage 4 — runtime + UI chaining (highest risk,
+  no snapshot net, device-tested).

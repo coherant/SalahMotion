@@ -183,27 +183,43 @@ enum GuidedSequenceGenerator {
 
     static func generate(
         salat: SalatType = UserPreferences.shared.salatType,
-        language: Language = UserPreferences.shared.language
+        language: Language = UserPreferences.shared.language,
+        unitIds: Set<String> = UserPreferences.shared.selectedUnitIds
     ) -> [PrayerState] {
         let tx = Tx(language: language)
-        let c  = makeContent(for: salat, tx: tx)
-        return generateUnit(fardUnit(for: salat), content: c, tx: tx)
+        // Farḍ is always included (never stored in selectedUnitIds); sunnah/witr units
+        // only when selected. Execution order is SalatType.units' order. See observances.md.
+        let chain = salat.units.filter { $0.isObligatory || unitIds.contains($0.id) }
+        var states: [PrayerState] = []
+        for (i, unit) in chain.enumerated() {
+            states += generateUnit(unit,
+                                   content: content(for: salat, unit: unit, tx: tx),
+                                   tx: tx,
+                                   isFirst: i == 0,
+                                   isLast: i == chain.count - 1)
+        }
+        return states
     }
 
-    // Witr is a sunnah unit within Isha — exposed separately for future unit composition.
+    // Witr exposed standalone — a self-contained single-unit observance.
     static func witrSequence(language: Language = UserPreferences.shared.language) -> [PrayerState] {
         let tx = Tx(language: language)
-        let c  = Content(niyetText: InstructionLibrary.text(.i25, prayer: "Witr"), hasOpeningCue: false,
-                         rakat1Surah: tx.P16, rakat2Surah: tx.P17)
-        return generateUnit(PrayerUnit(id: "isha_witr", kind: .witr, rakats: 3), content: c, tx: tx)
+        let unit = PrayerUnit(id: "isha_witr", kind: .witr, rakats: 3)
+        return generateUnit(unit, content: content(for: .isha, unit: unit, tx: tx), tx: tx,
+                            isFirst: true, isLast: true)
     }
 
     // MARK: - Unit generation
 
-    // The Fard-equivalent unit for each prayer-time (the single unit emitted today).
-    private static func fardUnit(for salat: SalatType) -> PrayerUnit {
-        salat.units.first(where: \.isObligatory)
-            ?? PrayerUnit(id: "\(salat.rawValue)_f", kind: .fard, rakats: salat.fardRakats)
+    // Resolves a unit's recitation content. Witr has its own surahs + niyet and no
+    // opening cue; every other unit shares its prayer-time's Farḍ content (per-unit
+    // niyet / surah refinement is Stage 5 — see observances.md).
+    private static func content(for salat: SalatType, unit: PrayerUnit, tx: Tx) -> Content {
+        if case .witr = unit.kind {
+            return Content(niyetText: InstructionLibrary.text(.i25, prayer: "Witr"),
+                           hasOpeningCue: false, rakat1Surah: tx.P16, rakat2Surah: tx.P17)
+        }
+        return makeContent(for: salat, tx: tx)
     }
 
     // True when this unit recites the Qunut dua in its final standing (Witr only).
@@ -212,10 +228,14 @@ enum GuidedSequenceGenerator {
         return false
     }
 
-    // Builds one unit's full [PrayerState] from its identity (rakat count, kind)
-    // + content. The yaw baseline is always the last qiyam-after-ruku before Tasleem.
-    private static func generateUnit(_ unit: PrayerUnit, content c: Content, tx: Tx) -> [PrayerState] {
-        var states = rakat1Full(tx: tx, c: c)
+    // Builds one unit's full [PrayerState]. isFirst / isLast place the unit within its
+    // observance: the first unit opens with the I-1 intro (timed); a later unit opens
+    // `motion` ("stand to begin"), no intro; the closing dua P-23 sounds only on the
+    // last unit's Tasleem. See observances.md. The yaw baseline is always the last
+    // qiyam-after-ruku before this unit's Tasleem.
+    private static func generateUnit(_ unit: PrayerUnit, content c: Content, tx: Tx,
+                                     isFirst: Bool, isLast: Bool) -> [PrayerState] {
+        var states = rakat1Full(tx: tx, c: c, isFirst: isFirst)
         states += rakat2Full(tx: tx, c: c, capturesYaw: unit.rakats == 2)
 
         if unit.rakats >= 3 {
@@ -230,7 +250,7 @@ enum GuidedSequenceGenerator {
         }
 
         states += fullTashahhud(tx: tx, rakat: unit.rakats)
-        states += tasleem(tx: tx, rakat: unit.rakats)
+        states += tasleem(tx: tx, rakat: unit.rakats, closingDua: isLast)
         return states
     }
 
@@ -290,22 +310,38 @@ enum GuidedSequenceGenerator {
 
     // MARK: - Block generators
 
-    // RAKAT_FULL rakat 1 — timed opening (Qiyam with stand-upright cue + niyet + surahs)
-    private static func rakat1Full(tx: Tx, c: Content) -> [PrayerState] {
-        var openingPrayers: [(utterance: String, duration: PrayerDuration)] = []
-        if c.hasOpeningCue { openingPrayers.append((InstructionLibrary.text(.i24), .fixed(5.0))) }
-        openingPrayers += [
-            (c.niyetText,    .fixed(5.0)),
-            (tx.P0,          .fixed(3.0)),
-            (tx.P7,          .fixed(2.0)),
-            (c.rakat1Surah,  .fixed(2.0)),
-            (tx.P0,          .fixed(2.0)),
-        ]
-        return [
-            .init(id: .r1QiyamFull, rakatNumber: 1, mode: .timed,
+    // RAKAT_FULL rakat 1 — the unit's opening Qiyam.
+    // isFirst: timed intro (I-1) with stand-upright cue + niyet + surahs at .fixed.
+    // subsequent unit: motion "stand to begin" (I-24 entry, I-14 reprompt), renewed
+    // niyet, no I-1, .pace rows. See observances.md.
+    private static func rakat1Full(tx: Tx, c: Content, isFirst: Bool) -> [PrayerState] {
+        let qiyam: PrayerState
+        if isFirst {
+            var openingPrayers: [(utterance: String, duration: PrayerDuration)] = []
+            if c.hasOpeningCue { openingPrayers.append((InstructionLibrary.text(.i24), .fixed(5.0))) }
+            openingPrayers += [
+                (c.niyetText,    .fixed(5.0)),
+                (tx.P0,          .fixed(3.0)),
+                (tx.P7,          .fixed(2.0)),
+                (c.rakat1Surah,  .fixed(2.0)),
+                (tx.P0,          .fixed(2.0)),
+            ]
+            qiyam = .init(id: .r1QiyamFull, rakatNumber: 1, mode: .timed,
                   displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
                   entrySpeech: InstructionLibrary.text(.i1),
-                  prayers: openingPrayers),
+                  prayers: openingPrayers)
+        } else {
+            qiyam = .init(id: .r1QiyamFull, rakatNumber: 1, mode: .motion,
+                  displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
+                  entrySpeech: InstructionLibrary.text(.i24),
+                  prayers: [(c.niyetText, .pace), (tx.P0, .pace), (tx.P7, .pace),
+                            (c.rakat1Surah, .pace), (tx.P0, .pace)],
+                  motionTrigger: .upright,
+                  repromptAudio: InstructionLibrary.text(.i14),
+                  repromptInterval: 5)
+        }
+        return [
+            qiyam,
             ruku(id: .r1Ruku, rakat: 1, tx: tx),
             qiyamAfterRuku(id: .r1QiyamAfterRuku, rakat: 1, tx: tx, capturesYaw: false),
             sujoodFirst(id: .r1SujoodFirst, rakat: 1, tx: tx),
@@ -398,7 +434,8 @@ enum GuidedSequenceGenerator {
     }
 
     // TASLEEM — two head turns, closing supplication on left
-    private static func tasleem(tx: Tx, rakat: Int) -> [PrayerState] {
+    // closingDua: the P-23 closing dua sounds only on the observance's final unit.
+    private static func tasleem(tx: Tx, rakat: Int, closingDua: Bool) -> [PrayerState] {
         [
             .init(id: .tasleemRight, rakatNumber: rakat, mode: .motion,
                   displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
@@ -411,7 +448,7 @@ enum GuidedSequenceGenerator {
                   displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
                   entrySpeech: InstructionLibrary.text(.i13),
                   prayers: [(tx.P6, .pace)],
-                  exitSpeech: tx.P23,
+                  exitSpeech: closingDua ? tx.P23 : nil,
                   motionTrigger: .headTurnLeft,
                   repromptAudio: InstructionLibrary.text(.i23),
                   repromptInterval: 5),

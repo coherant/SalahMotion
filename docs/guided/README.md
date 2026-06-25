@@ -92,17 +92,24 @@ empty utterances/speech are skipped.
 
 ## 4. Per-prayer composition (verified against code)
 
-`generate(salat:)` dispatches:
+`generate(salat:language:unitIds:)` builds an **observance**: it walks
+`SalatType.units` in order, keeps those in `unitIds` (default
+`UserPreferences.selectedUnitIds`), and `flatMap`s each through
+`generateUnit(_:content:isFirst:isLast:)`. One unit's block sequence is fully
+determined by its `rakats` count (Qunut derived from `kind == .witr`):
 
-| Prayer | Builder | Block sequence |
-|---|---|---|
-| Fajr | `fajrSequence` | `rakat1Full → rakat2Full(yaw) → fullTashahhud(2) → tasleem(2)` |
-| Maghrib | `maghribSequence` | `rakat1Full → rakat2Full → shortTashahhud → rakat3FatihaOnly(yaw) → fullTashahhud(3) → tasleem(3)` |
-| Dhuhr / Asr / Isha | `fourRakatSequence` | `rakat1Full → rakat2Full → shortTashahhud → rakat3FatihaOnly → rakat4FatihaOnly(yaw) → fullTashahhud(4) → tasleem(4)` |
-| Witr | `witrSequence` | as Maghrib, but `rakat3FatihaOnly` carries the **Qunut** dua (`P-18…P-22`) as extra prayers |
+| rakats | Block sequence |
+|---|---|
+| 2 | `rakat1Full → rakat2Full(yaw) → fullTashahhud(2) → tasleem(2)` |
+| 3 | `rakat1Full → rakat2Full → shortTashahhud → rakat3FatihaOnly(yaw) → fullTashahhud(3) → tasleem(3)` |
+| 4 | `rakat1Full → rakat2Full → shortTashahhud → rakat3FatihaOnly → rakat4FatihaOnly(yaw) → fullTashahhud(4) → tasleem(4)` |
+| Witr (3) | as 3-rakat, but `rakat3FatihaOnly` carries the **Qunut** dua (`P-18…P-22`) |
 
 `(yaw)` marks the block whose `qiyam-after-ruku` sets `capturesYawBaseline: true`
-— always the **last** `qiyam-after-ruku` before Tasleem.
+— always the **last** `qiyam-after-ruku` before that unit's Tasleem.
+
+Unit-boundary behaviour (first vs subsequent unit openers, `P-23` placement) is in
+`observances.md`.
 
 ### Content per prayer (`makeContent`)
 
@@ -119,22 +126,25 @@ empty utterances/speech are skipped.
 
 ## 5. Invariants (must hold after any rebuild)
 
-1. **First Qiyam of a unit is `timed`.** Entry speech is `I-1`. The opening prayer rows
-   are `[I-24 (when hasOpeningCue) →] niyet → P-0 → P-7 (Fatiha) → surah → P-0` with
-   `.fixed` durations (I-24 5s, niyet 5s, P-0 3s, Fatiha 2s, surah 2s, P-0 2s). Every
-   later position is `motion` with `.pace`. (Entry speech carries no duration; the `—`
-   on `I-1` entry rows in the prayer-sets reflects that.)
+1. **The first unit's opening Qiyam is `timed`.** Entry speech is `I-1`. The opening
+   prayer rows are `[I-24 (when hasOpeningCue) →] niyet → P-0 → P-7 (Fatiha) → surah → P-0`
+   with `.fixed` durations (I-24 5s, niyet 5s, P-0 3s, Fatiha 2s, surah 2s, P-0 2s). Every
+   later position in the unit is `motion` with `.pace`. (Entry speech carries no duration;
+   the `—` on `I-1` entry rows in the prayer-sets reflects that.)
+   - A **subsequent** unit's opening Qiyam is `motion` (`upright`): entry `I-24`, reprompt
+     `I-14`, renewed niyet `I-25`, then `P-7 → surah → P-0` at `.pace` — **no** `I-1`. See
+     `observances.md`.
 2. **Yaw baseline** is captured at the last `qiyam-after-ruku` before `TASLEEM`, in the
    same unit (yaw is unit-relative).
 3. **Reprompt interval = 5s** for all guided motion positions (the `PrayerState`
    default of 8 is overridden everywhere in guided).
-4. **Closing dua** "Oh Allah, you are peace and peace comes from you" is the `exitSpeech`
-   of `tasleemLeft`.
+4. **Closing dua** "Oh Allah, you are peace and peace comes from you" (`P-23`) is the
+   `exitSpeech` of `tasleemLeft` — **once per observance**, on the final unit only
+   (`isLast`). Non-final units' `tasleemLeft` carries no closing dua.
 5. **Motion triggers:** Ruku→`ruku`, every standing/sitting→`upright`, Sujood→`sujood`,
    Tasleem→`headTurnRight` then `headTurnLeft`.
 
-> The lifetime of the `I-1` intro and `I-24` stand-upright cue (per-unit today,
-> observance-level in the future) is parked in `observance-considerations.md`.
+> Observance composition + unit-boundary semantics are specified in `observances.md`.
 
 ---
 
@@ -157,8 +167,10 @@ To regenerate `GuidedSequenceGenerator`:
    `I-ids` (the niyet via `InstructionLibrary.text(.i25, prayer:)`), and the closing-dua
    `exit` row is `P-23`. Durations: `.fixed` only in the timed opening, `.pace` elsewhere.
 4. **Content** — encode `makeContent` from the per-prayer niyet + surah table (§4).
-5. **Compose** — wire each `…Sequence` builder to the block order in
-   `master-prayer-state-machine.md` (§4), setting `capturesYaw` on the correct block.
+5. **Compose** — `generateUnit(_:content:isFirst:isLast:)` wires the block order by
+   `rakats` (§4), setting `capturesYaw` on the last `qiyam-after-ruku`; apply the unit
+   opener / `P-23` boundary rules from `observances.md`. `generate(salat:…)` chains the
+   selected `SalatType.units`.
 6. **Verify** — phase counts per variant must match `master-prayer-state-machine.md`
    (Fajr 15, Maghrib 22, 4-rakat 28, Witr 22), and the §5 invariants must hold.
 

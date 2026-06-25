@@ -48,8 +48,12 @@ struct GuidedSnapshotTests {
     private func fullSnapshot() -> String {
         var parts: [String] = []
         for salat in SalatType.allCases {
+            // Full observance: every unit selected, so the snapshot is independent of the
+            // user's selectedUnitIds (which would otherwise be read from UserDefaults).
+            let allUnits = Set(salat.units.map(\.id))
             parts.append(serialize(salat.rawValue,
-                                   GuidedSequenceGenerator.generate(salat: salat, language: .english)))
+                                   GuidedSequenceGenerator.generate(salat: salat, language: .english,
+                                                                    unitIds: allUnits)))
         }
         parts.append(serialize("witr", GuidedSequenceGenerator.witrSequence(language: .english)))
         return parts.joined(separator: "\n")

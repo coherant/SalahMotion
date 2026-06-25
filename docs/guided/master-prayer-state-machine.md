@@ -6,16 +6,18 @@ Prayer content: `prayer-sets/{prayer}.md`
 Prayer text library: `../prayers/prayers.md`
 
 ## Notes
-- The first Qiyam of any prayer unit is `timed` — entry `I-1`, then `I-24` (when hasOpeningCue), the niyet (renewed per unit), then Al-Fatiha + surah
-- All subsequent Qiyams within a unit are `motion`
-- Yaw baseline is always captured at the last qiyam-after-ruku before TASLEEM
-- The future observance-level lifetime of `I-1` / `I-24` is parked in `observance-considerations.md` (not yet implemented)
+- A guided sequence is an **observance** — a chain of units (see `observances.md`). The notes below describe one unit; boundary behaviour between units is in `observances.md`.
+- The **first** unit of an observance opens `timed` — entry `I-1`, then `I-24` (when hasOpeningCue), the niyet, then Al-Fatiha + surah
+- A **subsequent** unit opens `motion` (stand to begin) — `I-24` cue + renewed niyet, **no** `I-1` intro; opening rows are `.pace`
+- All other Qiyams within a unit are `motion`
+- Yaw baseline is always captured at the last qiyam-after-ruku before each unit's TASLEEM
+- The `I-1` intro fires **once** per observance; the `P-23` closing dua sounds **once** at the observance's final TASLEEM
 
 ## Unit identity
 
 A **unit** is one complete prayer from niyet to Tasleem. It is the atom the
 generator builds; the **observance** layer that chains multiple units per
-prayer-time is parked in `observance-considerations.md` (not yet implemented).
+prayer-time is specified in `observances.md`.
 
 The unit model is **canonical, not guided-specific**: it is `PrayerUnit` in
 `SalatType.swift`, and `SalatType.units` already lists each prayer-time's full
@@ -34,9 +36,9 @@ Whether a unit recites the **Qunut** dua in its final standing is *derived* from
 surahs, whether it opens with the `I-24` stand-upright cue) is carried separately
 — see `prayer-sets/{prayer}.md`.
 
-Today every guided sequence is a **single unit** — the Fard-equivalent for each
-prayer-time (`SalatType.units.first(where: \.isObligatory)`), plus Witr exposed on
-its own. The shape is fully determined by `rakats` and the derived Qunut flag:
+A guided sequence is the **observance** — the selected units of `SalatType.units`
+chained in order (`observances.md`). Each unit's shape is fully determined by
+`rakats` and the derived Qunut flag:
 
 - `rakat1` RAKAT_FULL · `rakat2` RAKAT_FULL — yaw here when `rakats == 2`
 - if `rakats >= 3`: SHORT_TASHAHHUD, then RAKAT_FATIHA_ONLY rakats up to `rakats`

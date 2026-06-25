@@ -1,4 +1,4 @@
-=== fajr (15 states) ===
+=== fajr (30 states) ===
 [0] r1QiyamFull r1 timed trigger=- yaw=false reprompt=8 maxReprompts=- progressDuringWait=true
     label="Qiyam" ar="قِيَام" en="Standing"
     entry="This is the instructional prayer. You will be guided through all motions. The reciter will give you an instruction to move into a prayer position. When you are in the position, the recitation of the prayer will begin." reprompt=- exit=-
@@ -57,10 +57,70 @@
     prayers=["Peace and mercy of Allah be upon you"@pace]
 [14] tasleemLeft r2 motion trigger=head turn left yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
     label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the left" reprompt="Please turn left" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[15] r1QiyamFull r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand upright and put your hands by your side." reprompt="Please stand" exit=-
+    prayers=["Give your niyet for Fajr"@pace, "Allah is the Greatest"@pace, "All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Say: He is Allah, the One. Allah is Eternal and Absolute. He neither begets nor was He begotten. And there is none comparable to Him."@pace, "Allah is the Greatest"@pace]
+[16] r1Ruku r1 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[17] r1QiyamAfterRuku r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[18] r1SujoodFirst r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[19] r1JulusBetween r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[20] r1SujoodSecond r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[21] r2QiyamFull r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand for the second rak'ah" reprompt="Please stand" exit=-
+    prayers=["All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Say: I seek refuge with the Lord of mankind, the King of mankind, the God of mankind — from the evil of the retreating whisperer who whispers in the hearts of mankind, from among jinn and mankind."@pace, "Allah is the Greatest"@pace]
+[22] r2Ruku r2 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[23] r2QiyamAfterRuku r2 motion trigger=upright yaw=true reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[24] r2SujoodFirst r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[25] r2JulusBetween r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[26] r2SujoodSecond r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[27] julusFull r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit for Tashahhud" reprompt="Please sit for Tashahhud" exit=-
+    prayers=["All greetings, prayers and goodness belong to Allah. Peace be upon you O Prophet, and the mercy of Allah and His blessings. Peace be upon us and upon all the righteous servants of Allah. I bear witness that there is no god but Allah, and I bear witness that Muhammad is His servant and messenger."@pace, "O Allah, honour Muhammad and the family of Muhammad as You have honoured Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace, "O Allah, bless Muhammad and the family of Muhammad as You have blessed Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace]
+[28] tasleemRight r2 motion trigger=head turn right yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the right" reprompt="Please turn right" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[29] tasleemLeft r2 motion trigger=head turn left yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
     entry="Turn your head to the left" reprompt="Please turn left" exit="Oh Allah, you are peace and peace comes from you. Blessed are You, O Possessor of Majesty and Honour"
     prayers=["Peace and mercy of Allah be upon you"@pace]
 
-=== dhuhr (28 states) ===
+=== dhuhr (71 states) ===
 [0] r1QiyamFull r1 timed trigger=- yaw=false reprompt=8 maxReprompts=- progressDuringWait=true
     label="Qiyam" ar="قِيَام" en="Standing"
     entry="This is the instructional prayer. You will be guided through all motions. The reciter will give you an instruction to move into a prayer position. When you are in the position, the recitation of the prayer will begin." reprompt=- exit=-
@@ -171,10 +231,182 @@
     prayers=["Peace and mercy of Allah be upon you"@pace]
 [27] tasleemLeft r4 motion trigger=head turn left yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
     label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the left" reprompt="Please turn left" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[28] r1QiyamFull r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand upright and put your hands by your side." reprompt="Please stand" exit=-
+    prayers=["Give your niyet for Dhuhr"@pace, "Allah is the Greatest"@pace, "All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Say: He is Allah, the One. Allah is Eternal and Absolute. He neither begets nor was He begotten. And there is none comparable to Him."@pace, "Allah is the Greatest"@pace]
+[29] r1Ruku r1 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[30] r1QiyamAfterRuku r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[31] r1SujoodFirst r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[32] r1JulusBetween r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[33] r1SujoodSecond r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[34] r2QiyamFull r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand for the second rak'ah" reprompt="Please stand" exit=-
+    prayers=["All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Indeed We have granted you abundance. So pray to your Lord and sacrifice. Indeed your enemy is the one cut off."@pace, "Allah is the Greatest"@pace]
+[35] r2Ruku r2 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[36] r2QiyamAfterRuku r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[37] r2SujoodFirst r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[38] r2JulusBetween r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[39] r2SujoodSecond r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[40] julusShort r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit for the short Tashahhud" reprompt="Please sit" exit=-
+    prayers=["All greetings, prayers and goodness belong to Allah. Peace be upon you O Prophet, and the mercy of Allah and His blessings. Peace be upon us and upon all the righteous servants of Allah. I bear witness that there is no god but Allah, and I bear witness that Muhammad is His servant and messenger."@pace]
+[41] r3QiyamFatiha r3 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand for the third rak'ah" reprompt="Please stand" exit=-
+    prayers=["All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Allah is the Greatest"@pace]
+[42] r3Ruku r3 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[43] r3QiyamAfterRuku r3 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[44] r3SujoodFirst r3 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[45] r3JulusBetween r3 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[46] r3SujoodSecond r3 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[47] r4QiyamFatiha r4 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand for the fourth rak'ah" reprompt="Please stand" exit=-
+    prayers=["All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Allah is the Greatest"@pace]
+[48] r4Ruku r4 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[49] r4QiyamAfterRuku r4 motion trigger=upright yaw=true reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[50] r4SujoodFirst r4 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[51] r4JulusBetween r4 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[52] r4SujoodSecond r4 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[53] julusFull r4 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit for Tashahhud" reprompt="Please sit for Tashahhud" exit=-
+    prayers=["All greetings, prayers and goodness belong to Allah. Peace be upon you O Prophet, and the mercy of Allah and His blessings. Peace be upon us and upon all the righteous servants of Allah. I bear witness that there is no god but Allah, and I bear witness that Muhammad is His servant and messenger."@pace, "O Allah, honour Muhammad and the family of Muhammad as You have honoured Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace, "O Allah, bless Muhammad and the family of Muhammad as You have blessed Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace]
+[54] tasleemRight r4 motion trigger=head turn right yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the right" reprompt="Please turn right" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[55] tasleemLeft r4 motion trigger=head turn left yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the left" reprompt="Please turn left" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[56] r1QiyamFull r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand upright and put your hands by your side." reprompt="Please stand" exit=-
+    prayers=["Give your niyet for Dhuhr"@pace, "Allah is the Greatest"@pace, "All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Say: He is Allah, the One. Allah is Eternal and Absolute. He neither begets nor was He begotten. And there is none comparable to Him."@pace, "Allah is the Greatest"@pace]
+[57] r1Ruku r1 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[58] r1QiyamAfterRuku r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[59] r1SujoodFirst r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[60] r1JulusBetween r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[61] r1SujoodSecond r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[62] r2QiyamFull r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand for the second rak'ah" reprompt="Please stand" exit=-
+    prayers=["All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Indeed We have granted you abundance. So pray to your Lord and sacrifice. Indeed your enemy is the one cut off."@pace, "Allah is the Greatest"@pace]
+[63] r2Ruku r2 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[64] r2QiyamAfterRuku r2 motion trigger=upright yaw=true reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[65] r2SujoodFirst r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[66] r2JulusBetween r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[67] r2SujoodSecond r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[68] julusFull r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit for Tashahhud" reprompt="Please sit for Tashahhud" exit=-
+    prayers=["All greetings, prayers and goodness belong to Allah. Peace be upon you O Prophet, and the mercy of Allah and His blessings. Peace be upon us and upon all the righteous servants of Allah. I bear witness that there is no god but Allah, and I bear witness that Muhammad is His servant and messenger."@pace, "O Allah, honour Muhammad and the family of Muhammad as You have honoured Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace, "O Allah, bless Muhammad and the family of Muhammad as You have blessed Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace]
+[69] tasleemRight r2 motion trigger=head turn right yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the right" reprompt="Please turn right" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[70] tasleemLeft r2 motion trigger=head turn left yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
     entry="Turn your head to the left" reprompt="Please turn left" exit="Oh Allah, you are peace and peace comes from you. Blessed are You, O Possessor of Majesty and Honour"
     prayers=["Peace and mercy of Allah be upon you"@pace]
 
-=== asr (28 states) ===
+=== asr (56 states) ===
 [0] r1QiyamFull r1 timed trigger=- yaw=false reprompt=8 maxReprompts=- progressDuringWait=true
     label="Qiyam" ar="قِيَام" en="Standing"
     entry="This is the instructional prayer. You will be guided through all motions. The reciter will give you an instruction to move into a prayer position. When you are in the position, the recitation of the prayer will begin." reprompt=- exit=-
@@ -285,10 +517,122 @@
     prayers=["Peace and mercy of Allah be upon you"@pace]
 [27] tasleemLeft r4 motion trigger=head turn left yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
     label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the left" reprompt="Please turn left" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[28] r1QiyamFull r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand upright and put your hands by your side." reprompt="Please stand" exit=-
+    prayers=["Give your niyet for Asr"@pace, "Allah is the Greatest"@pace, "All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "By time — indeed mankind is in loss, except for those who believe, do righteous deeds, and counsel each other to truth and to patience."@pace, "Allah is the Greatest"@pace]
+[29] r1Ruku r1 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[30] r1QiyamAfterRuku r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[31] r1SujoodFirst r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[32] r1JulusBetween r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[33] r1SujoodSecond r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[34] r2QiyamFull r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand for the second rak'ah" reprompt="Please stand" exit=-
+    prayers=["All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Say: He is Allah, the One. Allah is Eternal and Absolute. He neither begets nor was He begotten. And there is none comparable to Him."@pace, "Allah is the Greatest"@pace]
+[35] r2Ruku r2 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[36] r2QiyamAfterRuku r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[37] r2SujoodFirst r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[38] r2JulusBetween r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[39] r2SujoodSecond r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[40] julusShort r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit for the short Tashahhud" reprompt="Please sit" exit=-
+    prayers=["All greetings, prayers and goodness belong to Allah. Peace be upon you O Prophet, and the mercy of Allah and His blessings. Peace be upon us and upon all the righteous servants of Allah. I bear witness that there is no god but Allah, and I bear witness that Muhammad is His servant and messenger."@pace]
+[41] r3QiyamFatiha r3 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand for the third rak'ah" reprompt="Please stand" exit=-
+    prayers=["All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Allah is the Greatest"@pace]
+[42] r3Ruku r3 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[43] r3QiyamAfterRuku r3 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[44] r3SujoodFirst r3 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[45] r3JulusBetween r3 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[46] r3SujoodSecond r3 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[47] r4QiyamFatiha r4 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand for the fourth rak'ah" reprompt="Please stand" exit=-
+    prayers=["All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Allah is the Greatest"@pace]
+[48] r4Ruku r4 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[49] r4QiyamAfterRuku r4 motion trigger=upright yaw=true reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[50] r4SujoodFirst r4 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[51] r4JulusBetween r4 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[52] r4SujoodSecond r4 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[53] julusFull r4 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit for Tashahhud" reprompt="Please sit for Tashahhud" exit=-
+    prayers=["All greetings, prayers and goodness belong to Allah. Peace be upon you O Prophet, and the mercy of Allah and His blessings. Peace be upon us and upon all the righteous servants of Allah. I bear witness that there is no god but Allah, and I bear witness that Muhammad is His servant and messenger."@pace, "O Allah, honour Muhammad and the family of Muhammad as You have honoured Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace, "O Allah, bless Muhammad and the family of Muhammad as You have blessed Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace]
+[54] tasleemRight r4 motion trigger=head turn right yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the right" reprompt="Please turn right" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[55] tasleemLeft r4 motion trigger=head turn left yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
     entry="Turn your head to the left" reprompt="Please turn left" exit="Oh Allah, you are peace and peace comes from you. Blessed are You, O Possessor of Majesty and Honour"
     prayers=["Peace and mercy of Allah be upon you"@pace]
 
-=== maghrib (22 states) ===
+=== maghrib (37 states) ===
 [0] r1QiyamFull r1 timed trigger=- yaw=false reprompt=8 maxReprompts=- progressDuringWait=true
     label="Qiyam" ar="قِيَام" en="Standing"
     entry="This is the instructional prayer. You will be guided through all motions. The reciter will give you an instruction to move into a prayer position. When you are in the position, the recitation of the prayer will begin." reprompt=- exit=-
@@ -375,10 +719,70 @@
     prayers=["Peace and mercy of Allah be upon you"@pace]
 [21] tasleemLeft r3 motion trigger=head turn left yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
     label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the left" reprompt="Please turn left" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[22] r1QiyamFull r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand upright and put your hands by your side." reprompt="Please stand" exit=-
+    prayers=["Give your niyet for Maghrib"@pace, "Allah is the Greatest"@pace, "All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Say: He is Allah, the One. Allah is Eternal and Absolute. He neither begets nor was He begotten. And there is none comparable to Him."@pace, "Allah is the Greatest"@pace]
+[23] r1Ruku r1 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[24] r1QiyamAfterRuku r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[25] r1SujoodFirst r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[26] r1JulusBetween r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[27] r1SujoodSecond r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[28] r2QiyamFull r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand for the second rak'ah" reprompt="Please stand" exit=-
+    prayers=["All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Say: I seek refuge with the Lord of the daybreak — from the evil of what He has created, from the evil of darkness when it settles, from the evil of those who blow on knots, and from the evil of an envier when he envies."@pace, "Allah is the Greatest"@pace]
+[29] r2Ruku r2 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[30] r2QiyamAfterRuku r2 motion trigger=upright yaw=true reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[31] r2SujoodFirst r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[32] r2JulusBetween r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[33] r2SujoodSecond r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[34] julusFull r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit for Tashahhud" reprompt="Please sit for Tashahhud" exit=-
+    prayers=["All greetings, prayers and goodness belong to Allah. Peace be upon you O Prophet, and the mercy of Allah and His blessings. Peace be upon us and upon all the righteous servants of Allah. I bear witness that there is no god but Allah, and I bear witness that Muhammad is His servant and messenger."@pace, "O Allah, honour Muhammad and the family of Muhammad as You have honoured Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace, "O Allah, bless Muhammad and the family of Muhammad as You have blessed Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace]
+[35] tasleemRight r2 motion trigger=head turn right yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the right" reprompt="Please turn right" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[36] tasleemLeft r2 motion trigger=head turn left yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
     entry="Turn your head to the left" reprompt="Please turn left" exit="Oh Allah, you are peace and peace comes from you. Blessed are You, O Possessor of Majesty and Honour"
     prayers=["Peace and mercy of Allah be upon you"@pace]
 
-=== isha (28 states) ===
+=== isha (65 states) ===
 [0] r1QiyamFull r1 timed trigger=- yaw=false reprompt=8 maxReprompts=- progressDuringWait=true
     label="Qiyam" ar="قِيَام" en="Standing"
     entry="This is the instructional prayer. You will be guided through all motions. The reciter will give you an instruction to move into a prayer position. When you are in the position, the recitation of the prayer will begin." reprompt=- exit=-
@@ -488,6 +892,154 @@
     entry="Turn your head to the right" reprompt="Please turn right" exit=-
     prayers=["Peace and mercy of Allah be upon you"@pace]
 [27] tasleemLeft r4 motion trigger=head turn left yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the left" reprompt="Please turn left" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[28] r1QiyamFull r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand upright and put your hands by your side." reprompt="Please stand" exit=-
+    prayers=["Give your niyet for Isha"@pace, "Allah is the Greatest"@pace, "All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Say: He is Allah, the One. Allah is Eternal and Absolute. He neither begets nor was He begotten. And there is none comparable to Him."@pace, "Allah is the Greatest"@pace]
+[29] r1Ruku r1 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[30] r1QiyamAfterRuku r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[31] r1SujoodFirst r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[32] r1JulusBetween r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[33] r1SujoodSecond r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[34] r2QiyamFull r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand for the second rak'ah" reprompt="Please stand" exit=-
+    prayers=["All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Say: I seek refuge with the Lord of mankind, the King of mankind, the God of mankind — from the evil of the retreating whisperer who whispers in the hearts of mankind, from among jinn and mankind."@pace, "Allah is the Greatest"@pace]
+[35] r2Ruku r2 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[36] r2QiyamAfterRuku r2 motion trigger=upright yaw=true reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[37] r2SujoodFirst r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[38] r2JulusBetween r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[39] r2SujoodSecond r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[40] julusFull r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit for Tashahhud" reprompt="Please sit for Tashahhud" exit=-
+    prayers=["All greetings, prayers and goodness belong to Allah. Peace be upon you O Prophet, and the mercy of Allah and His blessings. Peace be upon us and upon all the righteous servants of Allah. I bear witness that there is no god but Allah, and I bear witness that Muhammad is His servant and messenger."@pace, "O Allah, honour Muhammad and the family of Muhammad as You have honoured Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace, "O Allah, bless Muhammad and the family of Muhammad as You have blessed Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace]
+[41] tasleemRight r2 motion trigger=head turn right yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the right" reprompt="Please turn right" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[42] tasleemLeft r2 motion trigger=head turn left yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the left" reprompt="Please turn left" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[43] r1QiyamFull r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand upright and put your hands by your side." reprompt="Please stand" exit=-
+    prayers=["Give your niyet for Witr"@pace, "Allah is the Greatest"@pace, "All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Glorify the name of your Lord, the Most High — who created and proportioned, who destined and guided, who brings forth the pasture then makes it dark stubble. We will make you recite so you shall not forget, except what Allah wills. Indeed He knows what is declared and what is hidden. We will ease you toward ease. So remind, if the reminder should benefit. He who fears will be reminded, but the wretched will avoid it — he who will enter the great Fire, then neither die in it nor live. He has certainly succeeded who purifies himself, remembers the name of his Lord, and prays. But you prefer the life of this world, while the hereafter is better and more lasting. Indeed this is in the former scriptures — the scriptures of Ibrahim and Musa."@pace, "Allah is the Greatest"@pace]
+[44] r1Ruku r1 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[45] r1QiyamAfterRuku r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[46] r1SujoodFirst r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[47] r1JulusBetween r1 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[48] r1SujoodSecond r1 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[49] r2QiyamFull r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand for the second rak'ah" reprompt="Please stand" exit=-
+    prayers=["All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "Say: O disbelievers — I do not worship what you worship, nor do you worship what I worship. I will never worship what you worship, nor will you worship what I worship. Your religion is for you, and my religion is for me."@pace, "Allah is the Greatest"@pace]
+[50] r2Ruku r2 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[51] r2QiyamAfterRuku r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[52] r2SujoodFirst r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[53] r2JulusBetween r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[54] r2SujoodSecond r2 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[55] julusShort r2 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit for the short Tashahhud" reprompt="Please sit" exit=-
+    prayers=["All greetings, prayers and goodness belong to Allah. Peace be upon you O Prophet, and the mercy of Allah and His blessings. Peace be upon us and upon all the righteous servants of Allah. I bear witness that there is no god but Allah, and I bear witness that Muhammad is His servant and messenger."@pace]
+[56] r3QiyamFatiha r3 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Stand for the third rak'ah" reprompt="Please stand" exit=-
+    prayers=["All praise is for Allah, Lord of all worlds, the Most Compassionate, the Most Merciful, Master of the Day of Judgement. You alone we worship and You alone we ask for help. Guide us on the straight path — the path of those You have blessed, not those who have earned anger, nor those who have gone astray."@pace, "O Allah, guide me along with those You have guided"@pace, "Grant me well-being along with those You have granted well-being"@pace, "Take me as Your ally along with those You have taken as allies"@pace, "Bless what You have given me and protect me from the evil You have decreed"@pace, "You decree and none can decree over You, none is abased whom You befriend — blessed are You our Lord and exalted"@pace, "Allah is the Greatest"@pace]
+[57] r3Ruku r3 motion trigger=ruku yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Ruku" ar="رُكُوع" en="Bowing"
+    entry="Bow forward, hands on knees" reprompt="Please bow into Ruku" exit="Allah hears those who praise Him"
+    prayers=["Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace, "Glory be to my Lord, the Most Great"@pace]
+[58] r3QiyamAfterRuku r3 motion trigger=upright yaw=true reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Qiyam" ar="قِيَام" en="Standing"
+    entry="Rise to standing" reprompt="Please return to standing" exit="Allah is the Greatest"
+    prayers=["Our Lord, all praise is for You"@pace]
+[59] r3SujoodFirst r3 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate, forehead to ground" reprompt="Please lower into Sujood" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[60] r3JulusBetween r3 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit upright" reprompt="Please sit up" exit="Allah is the Greatest"
+    prayers=["My Lord, forgive me"@pace, "My Lord, forgive me"@pace]
+[61] r3SujoodSecond r3 motion trigger=sujood yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Sujood" ar="سُجُود" en="Prostration"
+    entry="Prostrate again" reprompt="Please lower into Sujood again" exit="Allah is the Greatest"
+    prayers=["Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace, "Glory be to my Lord, the Most High"@pace]
+[62] julusFull r3 motion trigger=upright yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Julus" ar="جُلُوس" en="Sitting"
+    entry="Sit for Tashahhud" reprompt="Please sit for Tashahhud" exit=-
+    prayers=["All greetings, prayers and goodness belong to Allah. Peace be upon you O Prophet, and the mercy of Allah and His blessings. Peace be upon us and upon all the righteous servants of Allah. I bear witness that there is no god but Allah, and I bear witness that Muhammad is His servant and messenger."@pace, "O Allah, honour Muhammad and the family of Muhammad as You have honoured Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace, "O Allah, bless Muhammad and the family of Muhammad as You have blessed Ibrahim and the family of Ibrahim. Indeed You are praiseworthy and glorious."@pace]
+[63] tasleemRight r3 motion trigger=head turn right yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
+    label="Tasleem" ar="تَسْلِيم" en="Salutation"
+    entry="Turn your head to the right" reprompt="Please turn right" exit=-
+    prayers=["Peace and mercy of Allah be upon you"@pace]
+[64] tasleemLeft r3 motion trigger=head turn left yaw=false reprompt=5 maxReprompts=- progressDuringWait=true
     label="Tasleem" ar="تَسْلِيم" en="Salutation"
     entry="Turn your head to the left" reprompt="Please turn left" exit="Oh Allah, you are peace and peace comes from you. Blessed are You, O Possessor of Majesty and Honour"
     prayers=["Peace and mercy of Allah be upon you"@pace]
