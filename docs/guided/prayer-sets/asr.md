@@ -21,7 +21,7 @@ Mode: `timed`
 
 | role | utterance | levels | duration |
 |---|---|---|---|
-| entry | I-1 | F | — |
+| entry | I-1 | F | 5s |
 | prayer | I-24 | F | 5s |
 | prayer | I-25 | F | 5s |
 | prayer | P-0 | F+P | 3s |

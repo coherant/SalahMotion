@@ -1,6 +1,6 @@
 {
   "instructions": [
-    { "id": "I-1",  "instruction": "Stand upright and raise your hands to your ears" },
+    { "id": "I-1",  "instruction": "This is the instructional prayer. You will be guided through all motions. The reciter will give you an instruction to move into a prayer position. When you are in the position, the recitation of the prayer will begin." },
     { "id": "I-2",  "instruction": "Stand for the second rak'ah" },
     { "id": "I-3",  "instruction": "Bow forward, hands on knees" },
     { "id": "I-4",  "instruction": "Rise to standing" },
@@ -23,7 +23,7 @@
     { "id": "I-21", "instruction": "Please sit for Tashahhud" },
     { "id": "I-22", "instruction": "Please turn right" },
     { "id": "I-23", "instruction": "Please turn left" },
-    { "id": "I-24", "instruction": "Listen to the Ezan" },
+    { "id": "I-24", "instruction": "Stand upright and put your hands by your side." },
     { "id": "I-25", "instruction": "Give your niyet for {prayer}" }
   ]
 }

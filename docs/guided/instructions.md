@@ -15,7 +15,7 @@ from a `prayer-sets/*.md` row by its `instruction-id` (e.g. `I-1`), exactly the 
 
 | instruction-id | instruction |
 |---|---|
-| I-1 | Stand upright and raise your hands to your ears |
+| I-1 | This is the instructional prayer. You will be guided through all motions. The reciter will give you an instruction to move into a prayer position. When you are in the position, the recitation of the prayer will begin. |
 | I-2 | Stand for the second rak'ah |
 | I-3 | Bow forward, hands on knees |
 | I-4 | Rise to standing |
@@ -38,5 +38,5 @@ from a `prayer-sets/*.md` row by its `instruction-id` (e.g. `I-1`), exactly the 
 | I-21 | Please sit for Tashahhud |
 | I-22 | Please turn right |
 | I-23 | Please turn left |
-| I-24 | Listen to the Ezan |
+| I-24 | Stand upright and put your hands by your side. |
 | I-25 | Give your niyet for {prayer} |
