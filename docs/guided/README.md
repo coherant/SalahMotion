@@ -22,7 +22,7 @@ scope here.
   and is shipped as `SalahMotion/Resources/prayers.json` (runtime), loaded by
   `Core/Language/PrayerLibrary.swift`. The two must stay in sync; the MD is master.
 - **Instructions** — every English-only spoken line that isn't canonical prayer text:
-  the `entry` / `reprompt` movement guidance plus the opening **Ezan / niyet** cues.
+  the `entry` / `reprompt` movement guidance plus the opening **stand-upright / niyet** cues.
   Spec in `docs/guided/instructions.md`, shipped as
   `SalahMotion/Resources/instructions.json` (runtime), loaded by
   `Core/Language/InstructionLibrary.swift`, keyed `I-1 … I-25`. English-only by design.
@@ -46,7 +46,7 @@ docs/guided/instructions.md      ──►    Resources/instructions.json  (load
 | Layer | File(s) | Owns |
 |---|---|---|
 | 1a. **Text library** | `../prayers/prayers.md` | Every prayer's Arabic / Turkish / English, keyed `P-0 … P-23`. Shipped as `Resources/prayers.json`. |
-| 1b. **Instruction library** | `instructions.md` | Every English-only spoken line that isn't prayer text — movement guidance (`entry` / `reprompt`) + opening Ezan / niyet cues, keyed `I-1 … I-25` (`I-25` templated). Shipped as `Resources/instructions.json`. |
+| 1b. **Instruction library** | `instructions.md` | Every English-only spoken line that isn't prayer text — movement guidance (`entry` / `reprompt`) + opening stand-upright / niyet cues, keyed `I-1 … I-25` (`I-25` templated). Shipped as `Resources/instructions.json`. |
 | 2. **Blocks** | `rakats.md` | Reusable position blocks — order, motion trigger, mode, reprompt. **No utterances.** |
 | 3. **Structure** | `master-prayer-state-machine.md` | Which blocks compose each prayer variant, rakat numbers, phase counts, yaw-baseline marks. |
 | 4. **Content** | `prayer-sets/{prayer}.md` | Per-prayer rows per position: `P-ids` (prayer text), `I-ids` (movement instructions), and guidance levels F / F+P. |
@@ -83,7 +83,7 @@ All in `Core/PrayerStateMachine/PrayerSequence.swift` unless noted:
 | Generator | `enum GuidedSequenceGenerator` — `generate(salat:language:)` |
 | Text lookup | `Core/Language/PrayerLibrary.swift` → `PrayerLibrary.text(_:_:)`, `enum PrayerID` |
 | Instruction lookup | `Core/Language/InstructionLibrary.swift` → `InstructionLibrary.text(_:)`, `enum InstructionID` |
-| Per-prayer content | `Tx` (resolved P-id strings) + `Content` (niyet, hasEzan, surahs) |
+| Per-prayer content | `Tx` (resolved P-id strings) + `Content` (niyet, hasOpeningCue, surahs) |
 
 The runtime engine (`PrayerStateMachine.swift`) consumes the `[PrayerState]` array;
 empty utterances/speech are skipped.
@@ -106,7 +106,7 @@ empty utterances/speech are skipped.
 
 ### Content per prayer (`makeContent`)
 
-| Prayer | hasEzan | niyet | rakat-1 surah | rakat-2 surah |
+| Prayer | hasOpeningCue | niyet | rakat-1 surah | rakat-2 surah |
 |---|---|---|---|---|
 | Fajr | yes | "Give your niyet for Fajr" | P-11 | P-12 |
 | Dhuhr | yes | …Dhuhr | P-11 | P-14 |
@@ -119,12 +119,16 @@ empty utterances/speech are skipped.
 
 ## 5. Invariants (must hold after any rebuild)
 
-1. **First Qiyam of a session is `timed`** with `.fixed` durations (Ezan 5s, niyet 5s,
-   P-0 3s, Fatiha 2s, surah 2s, P-0 2s). Every later position is `motion` with `.pace`.
-2. **Opening order:** `[Listen to the Ezan?] → niyet → P-0 → P-7 (Fatiha) → surah → P-0`.
-   Ezan row is present only when `hasEzan` (absent for Witr).
+1. **First Qiyam of a unit is `timed`** with `.fixed` durations. The per-unit opening
+   order is `niyet → P-0 → P-7 (Fatiha) → surah → P-0` (niyet 5s, P-0 3s, Fatiha 2s,
+   surah 2s, P-0 2s). Every later position is `motion` with `.pace`.
+2. **Observance-level openers** — the intro (`I-1`) and the stand-upright cue (`I-24`,
+   gated by `hasOpeningCue`, absent for Witr) play once at the start of the observance,
+   not per unit.
+   > ⚠ Spec↔code gap: the code still emits `I-24` inside every unit's opening
+   > (`if c.hasOpeningCue …`); relocating it is part of the observance/composition layer.
 3. **Yaw baseline** is captured at the last `qiyam-after-ruku` before `TASLEEM`, in the
-   same session (yaw is session-relative).
+   same unit (yaw is unit-relative).
 4. **Reprompt interval = 5s** for all guided motion positions (the `PrayerState`
    default of 8 is overridden everywhere in guided).
 5. **Closing dua** "Oh Allah, you are peace and peace comes from you" is the `exitSpeech`
@@ -149,7 +153,7 @@ To regenerate `GuidedSequenceGenerator`:
 3. **Utterances** — fill each position from the matching `prayer-sets/{prayer}.md` rows:
    `prayer` rows → `prayers`, substituting `P-id` → `tx.P{n}` (resolved text);
    `entry` / `reprompt` rows → `entrySpeech` / `repromptAudio`, substituting
-   `I-id` → `InstructionLibrary.text(.i{n})`. The opening **Ezan / niyet** cues are also
+   `I-id` → `InstructionLibrary.text(.i{n})`. The opening **stand-upright / niyet** cues are also
    `I-ids` (the niyet via `InstructionLibrary.text(.i25, prayer:)`), and the closing-dua
    `exit` row is `P-23`. Durations: `.fixed` only in the timed opening, `.pace` elsewhere.
 4. **Content** — encode `makeContent` from the per-prayer niyet + surah table (§4).
@@ -164,7 +168,7 @@ To regenerate `GuidedSequenceGenerator`:
 
 **Every spoken line now resolves through a library** — no prayer-content literals remain in
 `PrayerSequence.swift`. Prayer text → `P-ids` (`prayers.json`); movement guidance plus the
-opening **Ezan / niyet** cues → `I-ids` (`instructions.json`). The niyet is the single
+opening **stand-upright / niyet** cues → `I-ids` (`instructions.json`). The niyet is the single
 templated id **`I-25`** ("Give your niyet for {prayer}"); the closing dua is **`P-23`**. The
 only literals left in the guided generator are position **display labels** ("Qiyam", "Ruku", …).
 

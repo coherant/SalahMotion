@@ -192,7 +192,7 @@ enum GuidedSequenceGenerator {
     // Witr is a sunnah unit within Isha — exposed separately for future unit composition.
     static func witrSequence(language: Language = UserPreferences.shared.language) -> [PrayerState] {
         let tx = Tx(language: language)
-        let c  = Content(niyetText: InstructionLibrary.text(.i25, prayer: "Witr"), hasEzan: false,
+        let c  = Content(niyetText: InstructionLibrary.text(.i25, prayer: "Witr"), hasOpeningCue: false,
                          rakat1Surah: tx.P16, rakat2Surah: tx.P17)
         let qunut: [(utterance: String, duration: PrayerDuration)] = [
             (tx.P18, .pace), (tx.P19, .pace), (tx.P20, .pace), (tx.P21, .pace), (tx.P22, .pace)
@@ -243,7 +243,7 @@ enum GuidedSequenceGenerator {
 
     private struct Content {
         let niyetText: String
-        let hasEzan: Bool
+        let hasOpeningCue: Bool
         let rakat1Surah: String
         let rakat2Surah: String
     }
@@ -251,11 +251,11 @@ enum GuidedSequenceGenerator {
     private static func makeContent(for salat: SalatType, tx: Tx) -> Content {
         let niyet = InstructionLibrary.text(.i25, prayer: salat.displayName)
         switch salat {
-        case .fajr:    return Content(niyetText: niyet, hasEzan: true, rakat1Surah: tx.P11, rakat2Surah: tx.P12)
-        case .dhuhr:   return Content(niyetText: niyet, hasEzan: true, rakat1Surah: tx.P11, rakat2Surah: tx.P14)
-        case .asr:     return Content(niyetText: niyet, hasEzan: true, rakat1Surah: tx.P15, rakat2Surah: tx.P11)
-        case .maghrib: return Content(niyetText: niyet, hasEzan: true, rakat1Surah: tx.P11, rakat2Surah: tx.P13)
-        case .isha:    return Content(niyetText: niyet, hasEzan: true, rakat1Surah: tx.P11, rakat2Surah: tx.P12)
+        case .fajr:    return Content(niyetText: niyet, hasOpeningCue: true, rakat1Surah: tx.P11, rakat2Surah: tx.P12)
+        case .dhuhr:   return Content(niyetText: niyet, hasOpeningCue: true, rakat1Surah: tx.P11, rakat2Surah: tx.P14)
+        case .asr:     return Content(niyetText: niyet, hasOpeningCue: true, rakat1Surah: tx.P15, rakat2Surah: tx.P11)
+        case .maghrib: return Content(niyetText: niyet, hasOpeningCue: true, rakat1Surah: tx.P11, rakat2Surah: tx.P13)
+        case .isha:    return Content(niyetText: niyet, hasOpeningCue: true, rakat1Surah: tx.P11, rakat2Surah: tx.P12)
         }
     }
 
@@ -289,10 +289,10 @@ enum GuidedSequenceGenerator {
 
     // MARK: - Block generators
 
-    // RAKAT_FULL rakat 1 — timed opening (Qiyam with Ezan + niyet + surahs)
+    // RAKAT_FULL rakat 1 — timed opening (Qiyam with stand-upright cue + niyet + surahs)
     private static func rakat1Full(tx: Tx, c: Content) -> [PrayerState] {
         var openingPrayers: [(utterance: String, duration: PrayerDuration)] = []
-        if c.hasEzan { openingPrayers.append((InstructionLibrary.text(.i24), .fixed(5.0))) }
+        if c.hasOpeningCue { openingPrayers.append((InstructionLibrary.text(.i24), .fixed(5.0))) }
         openingPrayers += [
             (c.niyetText,    .fixed(5.0)),
             (tx.P0,          .fixed(3.0)),
