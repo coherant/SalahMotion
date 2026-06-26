@@ -187,6 +187,12 @@ Note: Witr includes Qunut dua in the final Qiyam — unique to this prayer set.
 |---|---|
 | `timed` | Plays entry speech, plays prayer rows in sequence, plays exit speech |
 | `motion` | Waits indefinitely for confirmed motion (reprompts every reprompt interval), plays entry speech, plays prayer rows in sequence, plays exit speech |
+| `listen` | **Container (Muezzin) row.** A single call/recitation (`callID`, no `motionTrigger`, no rakat) — auto-paced, advances when the recitation completes; tap-to-advance hatch. See `CONGREGATIONAL-CONTAINER.md` §4. |
+| `count` | **Container (Muezzin) row.** A counted dhikr (`callID`, `count` from `calls.json`) — the worshipper repeats to the count via the tasbīḥ counter; tap-to-advance hatch. |
+
+**Container rows are exempt from Silent Mode.** Silent Mode withdraws the voice *inside* the
+salah (the body is the clock); the Muezzin's frame *around* it is meant to be heard, so
+`listen`/`count` rows always run their own runner even when `guidanceLevel == .silent`.
 
 ## Motion detection thresholds
 

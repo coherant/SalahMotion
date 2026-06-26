@@ -54,6 +54,9 @@ final class PrayerStateMachine {
     private let participantName: String
     private let audioRoute: AudioRoute
     private let holdWindow: Double = 1.5
+    /// Interim dwell for a container `.listen` row until Stage 3 binds the Muezzin's voice
+    /// (then the dwell becomes the recitation's own length). Tap advances early regardless.
+    private let containerListenHold: Double = 4.0
 
     var isAvailable: Bool  { detector.isAvailable }
     var isSpeaking: Bool   { audioManager.isSpeaking }
@@ -84,6 +87,16 @@ final class PrayerStateMachine {
     /// Set by the UI tap; consumed by the wait loop to advance to the next posture.
     private var manualAdvanceRequested = false
     func requestManualAdvance() { manualAdvanceRequested = true }
+
+    // MARK: - Tasbīḥ counter (container `.count` rows — CONGREGATIONAL-CONTAINER.md §4)
+    /// Non-nil only during a `.count` dhikr phase: the number of repetitions still remaining.
+    /// The UI renders the counter and calls `tapTasbih()` once per dhikr; the runner advances
+    /// when it reaches 0. Reset to nil between phases.
+    private(set) var tasbihRemaining: Int? = nil
+    func tapTasbih() {
+        guard let remaining = tasbihRemaining, remaining > 0 else { return }
+        tasbihRemaining = remaining - 1
+    }
 
     /// Postures where the head is already upright at rest (seated). A following `.upright`
     /// (stand-up) trigger is therefore invisible to head-attitude detection — bridge it
@@ -132,6 +145,7 @@ final class PrayerStateMachine {
         sessionTask?.cancel()
         unitTransition = nil
         escapeHatchVisible = false
+        tasbihRemaining = nil
         audioManager.stop()
         detector.stop()
 #if canImport(UIKit)
@@ -182,7 +196,9 @@ final class PrayerStateMachine {
                          index + 1, states.count, state.id.rawValue, state.mode.rawValue,
                          Date().timeIntervalSince(sessionStart)))
 
-            if isSilent {
+            // Container (Muezzin) rows are exempt from Silent Mode — the frame is meant to be
+            // heard. Everything else in Silent Mode runs through runSilentPhase. See §4.
+            if isSilent && !state.isContainer {
                 await runSilentPhase(state, index: index)
             } else {
                 switch state.mode {
@@ -190,6 +206,8 @@ final class PrayerStateMachine {
                 case .timed:       await runTimedPhase(state)
                 case .motion:      await runMotionPhase(state)
                 case .timedMotion: await runTimedMotionPhase(state)
+                case .listen:      await runListenPhase(state)
+                case .count:       await runCountPhase(state)
                 }
             }
         }
@@ -255,6 +273,70 @@ final class PrayerStateMachine {
             if Date().timeIntervalSince(start) >= dwell { return }
             try? await Task.sleep(for: .milliseconds(50))
         }
+    }
+
+    // MARK: - Container (Muezzin) runners
+    // The congregational frame around the salah — exempt from Silent Mode (meant to be heard).
+    // Stage 2 builds these as structural shells: NOTHING is voiced yet (voice binding is
+    // Stage 3). `.listen` dwells on an interim hold; `.count` drives the tasbīḥ counter.
+    // See docs/guided/CONGREGATIONAL-CONTAINER.md §4.
+
+    /// A single call/recitation (adhān, iqāma, boundary du'ā, āyat al-Kursī, ṣalawāt, closing).
+    /// The Muezzin voices the call via the current TTS (the call's transliteration, spoken in
+    /// the user's language voice — consistent with the in-salah pipeline, which speaks the
+    /// romanized utterance, not Arabic script). A tap advances early; the row otherwise
+    /// advances when the speech completes. With no text it falls back to `containerListenHold`.
+    /// (Persona-specific Muezzin voices are still Stage 3 — this is the generic TTS tier.)
+    @MainActor
+    private func runListenPhase(_ state: PrayerState) async {
+        escapeHatchVisible = true
+        defer { escapeHatchVisible = false }
+        if await speakContainerCall(state) { return }   // false = no text → dwell below
+        guard !containerText(state).isEmpty else {
+            let start = Date()
+            while !Task.isCancelled {
+                if manualAdvanceRequested { manualAdvanceRequested = false; return }
+                if Date().timeIntervalSince(start) >= containerListenHold { return }
+                try? await Task.sleep(for: .milliseconds(50))
+            }
+            return
+        }
+    }
+
+    /// A counted dhikr — the Muezzin voices the phrase once, then the worshipper repeats to the
+    /// call's count via the tasbīḥ counter. The UI renders `tasbihRemaining` and calls
+    /// `tapTasbih()` per repetition; advance when it reaches 0. A "tap to continue" also
+    /// advances. A count of 0 degrades to a listen.
+    @MainActor
+    private func runCountPhase(_ state: PrayerState) async {
+        let total = state.callID.map { CallLibrary.count($0) } ?? 0
+        guard total > 0 else { await runListenPhase(state); return }
+        tasbihRemaining = total
+        escapeHatchVisible = true
+        defer { tasbihRemaining = nil; escapeHatchVisible = false }
+        if await speakContainerCall(state) { return }
+        while !Task.isCancelled {
+            if manualAdvanceRequested { manualAdvanceRequested = false; return }
+            if (tasbihRemaining ?? 0) <= 0 { return }
+            try? await Task.sleep(for: .milliseconds(50))
+        }
+    }
+
+    /// The text the Muezzin speaks for a container row: the call's transliteration.
+    private func containerText(_ state: PrayerState) -> String {
+        state.callID.map { CallLibrary.transliteration($0) } ?? ""
+    }
+
+    /// Speaks the container call via the current TTS. The calls are short, so the speech runs
+    /// to completion; a "tap to continue" that lands during it is consumed here (returns true →
+    /// caller advances) so it never leaks into the next row.
+    @MainActor
+    private func speakContainerCall(_ state: PrayerState) async -> Bool {
+        let text = containerText(state)
+        guard !text.isEmpty else { return false }
+        await audioManager.speak(text)
+        if manualAdvanceRequested { manualAdvanceRequested = false; return true }
+        return Task.isCancelled
     }
 
     // MARK: - Phase runners

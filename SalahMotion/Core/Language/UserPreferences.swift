@@ -33,6 +33,13 @@ final class UserPreferences {
         didSet { UserDefaults.standard.set(muezzinId, forKey: Keys.muezzin) }
     }
 
+    /// When on, the Muezzin's congregational frame (iqāma · boundary du'ā · dhikr seal)
+    /// wraps each guided prayer. Default off — the frame is silent until Stage 3 voice
+    /// binding, so it stays opt-in until then. See CONGREGATIONAL-CONTAINER.md §4.
+    var muezzinEnabled: Bool {
+        didSet { UserDefaults.standard.set(muezzinEnabled, forKey: Keys.muezzinEnabled) }
+    }
+
     private init() {
         let defaults = UserDefaults.standard
         language         = Language(rawValue:      defaults.string(forKey: Keys.language)  ?? "") ?? .english
@@ -41,6 +48,7 @@ final class UserPreferences {
         salatType        = SalatType(rawValue:     defaults.string(forKey: Keys.salatType) ?? "") ?? .maghrib
         selectedUnitIds  = Set(defaults.stringArray(forKey: Keys.unitIds) ?? [])
         muezzinId        = defaults.string(forKey: Keys.muezzin) ?? Muezzins.defaultID
+        muezzinEnabled   = defaults.object(forKey: Keys.muezzinEnabled) as? Bool ?? false
     }
 
     private enum Keys {
@@ -50,5 +58,6 @@ final class UserPreferences {
         static let salatType = "selectedSalatType"
         static let unitIds   = "selectedUnitIds"
         static let muezzin   = "selectedMuezzinId"
+        static let muezzinEnabled = "muezzinModeEnabled"
     }
 }

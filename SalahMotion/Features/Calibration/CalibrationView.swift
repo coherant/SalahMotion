@@ -75,6 +75,8 @@ private extension PrayerStateID {
             return .tasleemRight
         case .tasleemLeft:
             return .tasleemLeft
+        case .container:
+            return .qiyam   // unreachable — calibration emits no container (Muezzin) rows
         }
     }
 }

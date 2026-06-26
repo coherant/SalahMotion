@@ -35,6 +35,7 @@ struct GuidedSnapshotTests {
             let trig = s.motionTrigger.map { "\($0)" } ?? "-"
             out += "[\(i)] \(s.id.rawValue) r\(s.rakatNumber) \(s.mode.rawValue)"
             out += " unit=\(s.unitIndex):\(q(s.unitLabel))"
+            if let callID = s.callID { out += " call=\(callID.rawValue)" }  // container rows only
             out += " trigger=\(trig)"
             out += " reprompt=\(num(s.repromptInterval)) maxReprompts=\(s.maxReprompts.map(String.init) ?? "-")"
             out += " progressDuringWait=\(s.showProgressDuringWait)\n"
@@ -52,9 +53,11 @@ struct GuidedSnapshotTests {
             // Full observance: every unit selected, so the snapshot is independent of the
             // user's selectedUnitIds (which would otherwise be read from UserDefaults).
             let allUnits = Set(salat.units.map(\.id))
+            // container: true pins the Muezzin frame on regardless of the toggle default
+            // (UserPreferences.muezzinEnabled, default off), so the golden file is deterministic.
             parts.append(serialize(salat.rawValue,
                                    GuidedSequenceGenerator.generate(salat: salat, language: .english,
-                                                                    unitIds: allUnits)))
+                                                                    unitIds: allUnits, container: true)))
         }
         parts.append(serialize("witr", GuidedSequenceGenerator.witrSequence(language: .english)))
         return parts.joined(separator: "\n")

@@ -459,46 +459,55 @@ struct PrayerSetupView: View {
                     .foregroundStyle(DesignTokens.faint)
             }
 
-            // Featured card
-            HStack(spacing: 15) {
-                muezzinAvatar(muezzin, size: 56, fontSize: 25)
+            // Featured card — tapping it toggles Muezzin mode (UserPreferences.muezzinEnabled).
+            // OFF (default) → the card and the voice circles render disabled (desaturated +
+            // dimmed); tapping enables the congregational frame and restores the active colour
+            // scheme. See CONGREGATIONAL-CONTAINER.md §4.
+            Button { prefs.muezzinEnabled.toggle() } label: {
+                HStack(spacing: 15) {
+                    muezzinAvatar(muezzin, size: 56, fontSize: 25)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text(muezzin.latinName)
-                            .font(Typography.display(21, weight: .semibold))
-                            .foregroundStyle(DesignTokens.ink)
-                        Text(muezzin.arabicName)
-                            .font(Typography.arabic(15))
-                            .foregroundStyle(accent)
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text(muezzin.latinName)
+                                .font(Typography.display(21, weight: .semibold))
+                                .foregroundStyle(DesignTokens.ink)
+                            Text(muezzin.arabicName)
+                                .font(Typography.arabic(15))
+                                .foregroundStyle(accent)
+                        }
+                        Text(muezzinOn ? muezzin.style : "Tap to enable the Muezzin")
+                            .font(Typography.ui(12))
+                            .foregroundStyle(DesignTokens.muted)
+                            .padding(.top, 2)
+
+                        // Animated waveform bars
+                        waveformView
                     }
-                    Text(muezzin.style)
-                        .font(Typography.ui(12))
-                        .foregroundStyle(DesignTokens.muted)
-                        .padding(.top, 2)
-
-                    // Animated waveform bars
-                    waveformView
+                    Spacer()
                 }
-                Spacer()
-            }
-            .padding(15)
-            .background(
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(
-                        LinearGradient(
-                            colors: [accent.opacity(0.14), accent.opacity(0.03)],
-                            startPoint: .init(x: 0.2, y: 0.1),
-                            endPoint: .bottomTrailing
+                .padding(15)
+                .background(
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(
+                            LinearGradient(
+                                colors: [accent.opacity(0.14), accent.opacity(0.03)],
+                                startPoint: .init(x: 0.2, y: 0.1),
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18)
-                            .strokeBorder(accent.opacity(0.3), lineWidth: 1)
-                    )
-            )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18)
+                                .strokeBorder(accent.opacity(0.3), lineWidth: 1)
+                        )
+                )
+            }
+            .buttonStyle(.plain)
+            .saturation(muezzinOn ? 1 : 0)
+            .opacity(muezzinOn ? 1 : 0.5)
 
-            // Picker row
+            // Picker row — selecting a voice is only available once enabled. Not yet wired to
+            // playback (Stage 3); the current TTS voice is used regardless of selection.
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 14) {
                     ForEach(Muezzins.all) { m in
@@ -515,8 +524,14 @@ struct PrayerSetupView: View {
                     }
                 }
             }
+            .saturation(muezzinOn ? 1 : 0)
+            .opacity(muezzinOn ? 1 : 0.5)
+            .disabled(!muezzinOn)
         }
+        .animation(.easeInOut(duration: 0.25), value: muezzinOn)
     }
+
+    private var muezzinOn: Bool { prefs.muezzinEnabled }
 
     private func muezzinAvatar(_ m: Muezzin, size: CGFloat, fontSize: CGFloat) -> some View {
         let selected = m.id == muezzinId

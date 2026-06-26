@@ -155,6 +155,10 @@ struct GlobalCalibrationView: View {
                 Label("\(t.description) · timed", systemImage: "sensor.tag.radiowaves.forward")
                     .foregroundStyle(.purple)
             }
+        case .listen, .count:
+            // Container (Muezzin) rows never occur in calibration; badge for completeness.
+            Label("Muezzin", systemImage: "speaker.wave.2.fill")
+                .foregroundStyle(.teal)
         }
     }
 

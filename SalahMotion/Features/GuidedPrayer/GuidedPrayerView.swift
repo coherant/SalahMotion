@@ -102,6 +102,21 @@ struct GuidedPrayerView: View {
                 .padding(.bottom, 40)
             }
 
+            // Tasbīḥ counter — shown during a container `.count` dhikr row (display only;
+            // tap scaffolding is in the state machine, not yet bound). CONGREGATIONAL-CONTAINER.md §4.
+            if let remaining = session.tasbihRemaining {
+                VStack {
+                    TasbihCounterView(
+                        remaining: remaining,
+                        total: state.callID.map { CallLibrary.count($0) } ?? remaining,
+                        prayerTime: prayerTime
+                    )
+                    .padding(.top, 116)
+                    Spacer()
+                }
+                .transition(.opacity)
+            }
+
             // Silent Mode escape hatch — fades in after a long hold with no detected
             // movement, so a missed sensor read never strands the worshipper.
             // See docs/guided/CONGREGATIONAL-CONTAINER.md §3.
@@ -127,6 +142,7 @@ struct GuidedPrayerView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: session.unitTransition)
         .animation(.easeInOut(duration: 0.4), value: session.escapeHatchVisible)
+        .animation(.easeInOut(duration: 0.3), value: session.tasbihRemaining)
     }
 
     // MARK: - Complete

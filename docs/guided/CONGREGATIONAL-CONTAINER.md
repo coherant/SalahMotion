@@ -213,9 +213,49 @@ tap-to-advance hatch is the safety net beneath it. See `[[project_calibration_bu
 - Id-keyed content; the `PrayerLibrary` / `InstructionLibrary` seam.
 
 **New (additive; clean because everything is id-keyed):**
-- A **container phase type** — auto-played, Muezzin-voiced, *listen/follow* states (no
-  motion trigger, no rakat). Likely a small sibling to `PrayerState` or a new `PhaseMode`.
-  The dhikr may want a **tasbīḥ counter** UI.
+- A **container phase type — DECIDED (Stage 2b): extend `PhaseMode`, not a new struct.** A
+  container row is a `PrayerState` with `mode ∈ {.listen, .count}` and a new optional
+  `callID: CallID?` (nil for in-salah rows). This reuses the entire generator / snapshot /
+  tracker / CSV pipeline rather than forking a parallel row type.
+  - `.listen` — a single call/recitation, auto-paced, advances on completion (adhān, iqāma,
+    boundary du'ā, āyat al-Kursī, ṣalawāt, closing). `runListenPhase`.
+  - `.count` — a counted dhikr; the worshipper repeats to `CallLibrary.count(callID)` via a
+    **tasbīḥ counter** (`tasbihRemaining` published, `tapTasbih()` decrements). `runCountPhase`.
+  - Both carry a **tap-to-advance** hatch and are **exempt from Silent Mode** (the Muezzin's
+    frame is meant to be heard — the run loop routes container rows past `runSilentPhase`).
+  - **Stage 2b builds the runners as structural shells — nothing is voiced yet** (voice
+    binding is Stage 3); `.listen` dwells on an interim paced hold, `.count` drives the
+    counter. No container rows are generated until Stage 2c, so the golden snapshot stays
+    byte-identical through 2b.
+  - **Stage 2d — tasbīḥ counter: a clean DISPLAY first, tap wired later (decided).** A
+    non-interactive ring/number counter (`TasbihCounterView`) bound to `tasbihRemaining`
+    shows during `.count` rows; the **tap scaffolding is in place** (`tapTasbih()` already
+    decrements) but **not yet bound to a control**, so a `.count` row advances via the
+    existing "Tap to continue" hatch for now. Muezzin-row visual styling (distinct from
+    postures) is **deferred** — container rows reuse the posture orb/tracker chrome for now.
+  - **Stage 2e — container behind a toggle + voiced via current TTS (decided 2026-06-26,
+    default OFF).** A `UserPreferences.muezzinEnabled` flag (persisted; **default off** until
+    the frame can be heard) gates the whole frame.
+    `generate(…, container: Bool = UserPreferences.shared.muezzinEnabled)` wraps the entire 2c
+    injection (Iqāma + boundary du'ā + seal) in `if container`; **off → the byte-for-byte
+    pre-container sequence** (no `C-` rows emitted, so nothing downstream ever sees a
+    container). The golden snapshot pins `container: true` in the test, so it stays
+    byte-identical regardless of the default.
+  - **UI (decided): the Muezzin *card itself* is the toggle — no separate switch.** In
+    `PrayerSetupView`'s muezzinSection the large featured card is a `Button` that toggles
+    `muezzinEnabled`. **OFF (default) → the card and the voice-circle picker render disabled**
+    (desaturated `.saturation(0)` + `.opacity(0.5)`, picker also `.disabled`); tapping the card
+    enables the frame and restores the active accent scheme + selectable circles. The circles
+    choose the **persona** but are **not yet wired to playback**.
+  - **Voice (decided): enabling the Muezzin makes it SPEAK now, via the current TTS tier** — an
+    early down-payment on Stage 3, not the full persona-recording binding. `runListenPhase` /
+    `runCountPhase` call `speakContainerCall(state)` → `audioManager.speak(CallLibrary.
+    transliteration(callID))` in the user's language voice (consistent with the in-salah
+    pipeline, which speaks the romanized utterance, **not** Arabic script — also sidesteps the
+    unverified C-1/1F/2/5/11 Arabic). `.listen` advances when the speech finishes; `.count`
+    voices once then runs the counter. A tap during speech is consumed so it never leaks into
+    the next row. **Still pending for Stage 3:** persona-specific Muezzin voices/recordings (the
+    circle selection is inert until then).
 - A **third content namespace** (e.g. `C-…`) for what doesn't exist yet: Adhān, Iqāma, the
   post-salah tasbīḥāt, post-salah ṣalawāt, and the closing istighfār/du'ā. A distinct
   namespace makes it **structurally impossible** to confuse container content with salah

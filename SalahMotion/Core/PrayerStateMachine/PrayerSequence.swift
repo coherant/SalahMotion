@@ -5,6 +5,11 @@ enum PhaseMode: String {
     case timed        // speak entry, play prayers with durations, speak exit
     case motion       // wait for confirmed motion, speak entry, play prayers with durations, speak exit
     case timedMotion  // speak entry, play prayers with durations (motion detection runs throughout), speak exit
+    // Container (Muezzin) modes — the congregational frame around the salah. Carry a `callID`
+    // (C- namespace), no motionTrigger, no rakat. Exempt from Silent Mode (meant to be heard).
+    // See docs/guided/CONGREGATIONAL-CONTAINER.md §4.
+    case listen       // a single call/recitation, auto-paced, advances on completion (tap hatch)
+    case count        // a counted dhikr — repeat to CallLibrary.count via the tasbīḥ counter (tap hatch)
 }
 
 // MARK: - Motion triggers
@@ -73,6 +78,10 @@ enum PrayerStateID: String {
     // TASLEEM (all prayers)
     case tasleemRight
     case tasleemLeft
+
+    // CONTAINER (Muezzin frame — not a posture). The row's identity is its `callID`
+    // (printed alongside in logs/snapshot); rakatNumber is 0. See CONGREGATIONAL-CONTAINER.md §4.
+    case container
 }
 
 // MARK: - Prayer duration
@@ -112,6 +121,12 @@ struct PrayerState {
     // Single-unit sequences (calibration, witr standalone) leave the defaults.
     var unitIndex: Int
     var unitLabel: String
+    // Container (Muezzin) rows only — the C- call this row voices. Nil for in-salah rows.
+    // The fiqh boundary in the type system: a container row carries a C- id, never a P-id.
+    let callID: CallID?
+
+    // A Muezzin frame row (listen/count), not an in-salah posture. Exempt from Silent Mode.
+    var isContainer: Bool { mode == .listen || mode == .count }
 
     init(
         id: PrayerStateID,
@@ -129,7 +144,8 @@ struct PrayerState {
         maxReprompts: Int? = nil,
         showProgressDuringWait: Bool = true,
         unitIndex: Int = 0,
-        unitLabel: String = ""
+        unitLabel: String = "",
+        callID: CallID? = nil
     ) {
         self.id = id
         self.rakatNumber = rakatNumber
@@ -147,6 +163,7 @@ struct PrayerState {
         self.showProgressDuringWait = showProgressDuringWait
         self.unitIndex = unitIndex
         self.unitLabel = unitLabel
+        self.callID = callID
     }
 }
 
@@ -189,22 +206,67 @@ enum GuidedSequenceGenerator {
     static func generate(
         salat: SalatType = UserPreferences.shared.salatType,
         language: Language = UserPreferences.shared.language,
-        unitIds: Set<String> = UserPreferences.shared.selectedUnitIds
+        unitIds: Set<String> = UserPreferences.shared.selectedUnitIds,
+        container: Bool = UserPreferences.shared.muezzinEnabled
     ) -> [PrayerState] {
         let tx = Tx(language: language)
         // Farḍ is always included (never stored in selectedUnitIds); sunnah/witr units
         // only when selected. Execution order is SalatType.units' order. See observances.md.
         let chain = salat.units.filter { $0.isObligatory || unitIds.contains($0.id) }
+        // The Muezzin's congregational frame wraps the chain (CONGREGATIONAL-CONTAINER.md §4 +
+        // container-sets/*.md): Iqāma (C-2) opens immediately before the farḍ; the boundary
+        // du'ā (C-3 = P-23) marks the farḍ's exit; the dhikr + closing seal (C-4…C-11) closes
+        // after the LAST unit. Ezan (C-1/C-1F) is an optional pre-roll deferred to the
+        // prayer-times join (Stage 4). P-23 is now a post-salah container act, not in-salah.
+        // The frame is gated by the Muezzin toggle (UserPreferences.muezzinEnabled); when off
+        // the generator emits the pre-container sequence exactly — no C- rows downstream.
+        let fardIndex = chain.firstIndex { $0.isObligatory }
+        let lastIndex = chain.count - 1
         var states: [PrayerState] = []
         for (i, unit) in chain.enumerated() {
+            if container, i == fardIndex {
+                states.append(containerRow(.c2, index: i, label: unit.displayName))  // Iqāma
+            }
             let unitStates = generateUnit(unit,
                                           content: content(for: salat, unit: unit, tx: tx),
                                           tx: tx,
-                                          isFirst: i == 0,
-                                          isLast: i == chain.count - 1)
+                                          isFirst: i == 0)
             states += stamp(unitStates, index: i, label: unit.displayName)
+            if container, i == fardIndex {
+                states.append(containerRow(.c3, index: i, label: unit.displayName))  // boundary du'ā
+            }
+        }
+        if container {
+            states += containerSeal(index: lastIndex, label: chain.last?.displayName ?? "")
         }
         return states
+    }
+
+    // MARK: - Container (Muezzin) rows
+    // A container row is a PrayerState carrying a C- callID (the fiqh boundary in the type
+    // system). Mode follows the count: a repeated dhikr (>1) is `.count` (tasbīḥ counter),
+    // everything else `.listen` (single recitation). Content comes from CallLibrary; nothing
+    // is voiced until Stage 3. See CONGREGATIONAL-CONTAINER.md §4 and container-sets/*.md.
+    private static func containerRow(_ id: CallID, index: Int, label: String) -> PrayerState {
+        let mode: PhaseMode = CallLibrary.count(id) > 1 ? .count : .listen
+        return PrayerState(
+            id: .container,
+            rakatNumber: 0,
+            mode: mode,
+            displayLabel: CallLibrary.name(id),
+            arabic: CallLibrary.arabic(id),
+            englishMeaning: CallLibrary.meaning(id),
+            unitIndex: index,
+            unitLabel: label,
+            callID: id
+        )
+    }
+
+    // The post-salah seal after the last unit, in locked order: istighfār → Āyat al-Kursī →
+    // 33 · 33 · 33 → tahlīl → ṣalawāt → closing du'ā. See container-sets/fajr.md.
+    private static func containerSeal(index: Int, label: String) -> [PrayerState] {
+        [CallID.c4, .c5, .c6, .c7, .c8, .c9, .c10, .c11]
+            .map { containerRow($0, index: index, label: label) }
     }
 
     // Stamps unit identity (index + label) onto every state of a unit.
@@ -220,7 +282,7 @@ enum GuidedSequenceGenerator {
         let tx = Tx(language: language)
         let unit = PrayerUnit(id: "isha_witr", kind: .witr, rakats: 3)
         let states = generateUnit(unit, content: content(for: .isha, unit: unit, tx: tx), tx: tx,
-                                  isFirst: true, isLast: true)
+                                  isFirst: true)
         return stamp(states, index: 0, label: unit.displayName)
     }
 
@@ -276,13 +338,14 @@ enum GuidedSequenceGenerator {
         return false
     }
 
-    // Builds one unit's full [PrayerState]. isFirst / isLast place the unit within its
-    // observance: the first unit opens with the I-1 intro (timed); a later unit opens
-    // `motion` ("stand to begin"), no intro; the closing dua P-23 sounds only on the
-    // last unit's Tasleem. See observances.md. The yaw baseline is captured at runtime
-    // by the phase runner at the final sitting before this unit's Tasleem — not here.
+    // Builds one unit's full [PrayerState]. isFirst places the unit within its observance:
+    // the first unit opens with the I-1 intro (timed); a later unit opens `motion` ("stand
+    // to begin"), no intro. The post-salām boundary du'ā (P-23) is no longer emitted here —
+    // it is a container act (C-3), placed after the farḍ by generate(). See observances.md
+    // and CONGREGATIONAL-CONTAINER.md §4. The yaw baseline is captured at runtime by the
+    // phase runner at the final sitting before this unit's Tasleem — not here.
     private static func generateUnit(_ unit: PrayerUnit, content c: Content, tx: Tx,
-                                     isFirst: Bool, isLast: Bool) -> [PrayerState] {
+                                     isFirst: Bool) -> [PrayerState] {
         var states = rakat1Full(tx: tx, c: c, isFirst: isFirst)
         states += rakat2Full(tx: tx, c: c)
 
@@ -298,7 +361,7 @@ enum GuidedSequenceGenerator {
         }
 
         states += fullTashahhud(tx: tx, rakat: unit.rakats)
-        states += tasleem(tx: tx, rakat: unit.rakats, closingDua: isLast)
+        states += tasleem(tx: tx, rakat: unit.rakats)
         return states
     }
 
@@ -469,9 +532,10 @@ enum GuidedSequenceGenerator {
                repromptInterval: 5)]
     }
 
-    // TASLEEM — two head turns, closing supplication on left
-    // closingDua: the P-23 closing dua sounds only on the observance's final unit.
-    private static func tasleem(tx: Tx, rakat: Int, closingDua: Bool) -> [PrayerState] {
+    // TASLEEM — two head turns. The post-salām boundary du'ā (P-23) is no longer an in-salah
+    // `exit` here; it is handed to the Muezzin as container row C-3, placed after the farḍ
+    // by generate() (one source, re-voiced — not duplicated). See CONGREGATIONAL-CONTAINER.md §4.
+    private static func tasleem(tx: Tx, rakat: Int) -> [PrayerState] {
         [
             .init(id: .tasleemRight, rakatNumber: rakat, mode: .motion,
                   displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
@@ -484,7 +548,6 @@ enum GuidedSequenceGenerator {
                   displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
                   entrySpeech: InstructionLibrary.text(.i13),
                   prayers: [(tx.P6, .pace)],
-                  exitSpeech: closingDua ? tx.P23 : nil,
                   motionTrigger: .headTurnLeft,
                   repromptAudio: InstructionLibrary.text(.i23),
                   repromptInterval: 5),
