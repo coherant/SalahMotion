@@ -199,10 +199,13 @@ is not throwaway — it is the **seed of the Stage 3 `observances.md` spec**.
   placeholders. Snapshot regenerated (recitation-only diff, reviewed, green).
 - **Language refactor parked** (`ed2b21b`, `LANGUAGE-REFACTOR.md`): its own deferred
   track; absorbs the P-23 translation-verification item.
-- **Stage 6 ✅ committed** (`STAGE6_HASH`): validation & cleanup. Phase-count checksums,
+- **Stage 6 ✅ committed** (`9f10564`): validation & cleanup. Phase-count checksums,
   ID sync, and README invariants 2–5 all pass; two README doc drifts fixed (subsequent-unit
   takbīr P-0, stale `makeContent` ref); `witrSequence()` kept (not redundant — sole
   standalone-Witr path + cue-less-opener coverage) with comment relabelled. Snapshot green,
   no regen.
-- **The observance-sequencer arc is COMPLETE** (Stages 0–6). Remaining open work lives in
-  the parked language refactor (`LANGUAGE-REFACTOR.md`). No further observance stages.
+- **The observance-sequencer arc is COMPLETE** (Stages 0–6). No further observance stages.
+- **Next build arc → `CONGREGATIONAL-CONTAINER.md`** (THE vision this refactor was the
+  skeleton for): the Muezzin frames the salah (Ezan/Iqāma/boundary du'ā/post-salah dhikr)
+  but never recites it; **Silent Mode** = motion-gated, the worshipper's body is the clock.
+  Supersedes the recitation-hybrid and largely dissolves the language refactor.

@@ -100,7 +100,19 @@ goal, the Arabic field + `ar-SA` voice is the faithful source.
 - Is recitation audio (hear the Arabic spoken) a feature we want for **all** users,
   not just the Turkish path?
 
+## Superseded in large part by the Congregational Container
+
+The `CONGREGATIONAL-CONTAINER.md` vision **largely dissolves this refactor.** Once the
+Muezzin is out of the salah and in-salah recitation is shown as *text* (Arabic + meaning)
+for the worshipper to recite — Silent Mode — there is no synthesizer pretending to recite,
+which was the whole knot here. The axes land honestly: Adhān/Iqāma = Arabic (Muezzin);
+in-salah = displayed (Arabic + meaning); dhikr / closing du'ā = Muezzin voice; guidance =
+TTS in the user's language. Read that doc first; what (if anything) remains of this one is
+small.
+
 ## Related
 
+- **Congregational Container (the resolution): `CONGREGATIONAL-CONTAINER.md`.**
 - Observance arc: `REFACTOR-PLAN.md`, `observances.md` (§5 per-unit niyet + surahs).
-- Memory: `project_language_refactor`, `project_observance_refactor`, `feedback_md_first`.
+- Memory: `project_language_refactor`, `project_congregational_container`,
+  `project_observance_refactor`, `feedback_md_first`.
