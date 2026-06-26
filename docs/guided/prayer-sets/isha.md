@@ -1,6 +1,6 @@
 # Isha Prayer Set
 
-Used by: Isha Fard · Isha Sunnah After
+Used by: Isha Sunnah Before · Isha Fard · Isha Sunnah After
 Structure: `../master-prayer-state-machine.md` → Isha
 Prayers: `../../prayers/prayers.md`
 Surahs: rakat-1 `surah¹` · rakat-2 `surah²` — **per-unit**; assignments in `../observances.md` §5.

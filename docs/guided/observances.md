@@ -22,7 +22,7 @@ execution order:
 | Dhuhr | SunnahBefore-4 → Fard-4 → SunnahAfter-2 |
 | Asr | SunnahBefore-4 (ghair mu'akkadah) → Fard-4 |
 | Maghrib | Fard-3 → SunnahAfter-2 |
-| Isha | Fard-4 → SunnahAfter-2 → Witr-3 |
+| Isha | SunnahBefore-4 (ghair mu'akkadah) → Fard-4 → SunnahAfter-2 → Witr-3 |
 
 Hanafi-flavoured (3-rakat Witr; Asr sunnah ghair mu'akkadah) — **locked**; the unit
 model is not madhab-parameterised.
@@ -118,7 +118,8 @@ keeps its traditional Al-Aʿlā / Al-Kāfirūn.
 | | **Farḍ** (`asr_f`) | **Al-Ikhlas `P-11`** | Al-Kawthar `P-14` |
 | Maghrib | **Farḍ** (`maghrib_f`) | **Al-Ikhlas `P-11`** | Al-Falaq `P-13` |
 | | Sunnah after (`maghrib_sa`) | Al-Kāfirūn `P-17` | Al-Aʿlā `P-16` |
-| Isha | **Farḍ** (`isha_f`) | **Al-Ikhlas `P-11`** | Al-Nas `P-12` |
+| Isha | Sunnah before (`isha_sb`) | Al-ʿAsr `P-15` | Al-Kāfirūn `P-17` |
+| | **Farḍ** (`isha_f`) | **Al-Ikhlas `P-11`** | Al-Nas `P-12` |
 | | Sunnah after (`isha_sa`) | Al-Falaq `P-13` | Al-Kawthar `P-14` |
 | | Witr (`isha_witr`) | Al-Aʿlā `P-16` | Al-Kāfirūn `P-17` |
 

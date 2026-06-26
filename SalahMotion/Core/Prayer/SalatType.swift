@@ -129,6 +129,7 @@ enum SalatType: String, CaseIterable, Identifiable {
             ]
         case .isha:
             return [
+                PrayerUnit(id: "isha_sb",   kind: .sunnahBefore(emphasised: false), rakats: 4),
                 PrayerUnit(id: "isha_f",    kind: .fard,                            rakats: 4),
                 PrayerUnit(id: "isha_sa",   kind: .sunnahAfter(emphasised: true),   rakats: 2),
                 PrayerUnit(id: "isha_witr", kind: .witr,                            rakats: 3),

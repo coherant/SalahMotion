@@ -266,6 +266,7 @@ enum GuidedSequenceGenerator {
         case "asr_f":      return (tx.P11, tx.P14)
         case "maghrib_f":  return (tx.P11, tx.P13)
         case "maghrib_sa": return (tx.P17, tx.P16)
+        case "isha_sb":    return (tx.P15, tx.P17)
         case "isha_f":     return (tx.P11, tx.P12)
         case "isha_sa":    return (tx.P13, tx.P14)
         default:           return (tx.P11, tx.P12)
