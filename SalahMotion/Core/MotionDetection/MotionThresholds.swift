@@ -18,10 +18,10 @@ import Foundation
 //
 // Yaw     — the CMHeadphoneMotionManager reference frame resets each session start,
 //           so yaw values are not comparable across sessions. Tasleem detection
-//           compares against a baseline captured during the most recent Qiyam in
-//           the same session (capturesYawBaseline flag on position 9 of the sequence).
-//           The 30° offset default has not yet been validated with real data — tune
-//           after first live Tasleem test.
+//           compares against a baseline the phase runner captures at the final sitting,
+//           the instant before each unit's first Tasleem head-turn (after the unit's
+//           sujoods, so the heading hasn't drifted). The 30° offset default has not yet
+//           been validated with real data — tune after first live Tasleem test.
 
 struct MotionThresholds {
     let profile: UserCalibrationProfile?

@@ -192,12 +192,6 @@ final class PrayerStateMachine {
                 case .timedMotion: await runTimedMotionPhase(state)
                 }
             }
-
-            if state.capturesYawBaseline {
-                qiyamYawBaseline = yaw
-                print(String(format: "[PrayerSM] 📐 Yaw baseline: %.1f° (%@)",
-                             qiyamYawBaseline!, state.id.rawValue))
-            }
         }
 
         detector.stop()
@@ -230,6 +224,14 @@ final class PrayerStateMachine {
             // Invisible sit→stand (middle tashahhud → next rakʿah, or unit boundary).
             await timedSilentDwell(state)
         } else {
+            // Taslīm baseline (Silent): here the departure trigger *is* the first turn, so the
+            // current state (julusFull, final sitting) is forward-facing right now. Capture the
+            // reference before the wait; the next state (tasleemRight → headTurnLeft) keeps it.
+            // See the non-silent twin in runMotionPhase and CONGREGATIONAL-CONTAINER.md §6.
+            if nextTrigger == .headTurnRight {
+                qiyamYawBaseline = yaw
+                print(String(format: "[PrayerSM] 📐 Taslīm baseline: %.1f° (%@)", yaw, state.id.rawValue))
+            }
             // Visible departure — wait, indefinitely, for the worshipper to move on.
             await confirmMotion(trigger: nextTrigger,
                                 reprompt: nil,
@@ -305,6 +307,14 @@ final class PrayerStateMachine {
     @MainActor
     private func runMotionPhase(_ state: PrayerState) async {
         let pace = UserPreferences.shared.pace
+        // Taslīm is a yaw delta from facing-forward. Capture the forward reference here, at the
+        // final sitting the instant before the *first* turn — close to use, after the two
+        // sujoods that would otherwise drift the heading, and before any entry cue could prompt
+        // an early turn. tasleemLeft keeps this same baseline (head already turned by then).
+        if state.motionTrigger == .headTurnRight {
+            qiyamYawBaseline = yaw
+            print(String(format: "[PrayerSM] 📐 Taslīm baseline: %.1f° (%@)", yaw, state.id.rawValue))
+        }
         if guidanceLevel.playsEntryGuidance, let speech = state.entrySpeech {
             await audioManager.speak(speech)
         }

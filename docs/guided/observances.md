@@ -56,8 +56,9 @@ Qiyam is `timed`, plays the `I-1` instructional intro, then `I-24` (when
 (`isLast`). A non-final unit's `tasleem-left` carries no closing dua.
 
 Everything else is unit-local and unchanged: each unit is its own niyet→TASLEEM, the
-pie-timer opening restarts per unit, and the yaw baseline is captured at *that
-unit's* last `qiyam-after-ruku` before its TASLEEM.
+pie-timer opening restarts per unit, and the yaw baseline is captured at runtime at
+*that unit's* **final sitting**, the instant before its first TASLEEM head-turn (after
+the unit's sujoods, so the heading hasn't drifted).
 
 ---
 
@@ -65,9 +66,9 @@ unit's* last `qiyam-after-ruku` before its TASLEEM.
 
 The engine (`PrayerStateMachine`) runs the whole observance in one pass — it is
 array-driven, so the chained `[PrayerState]` needs no special iteration. The yaw
-baseline re-captures per unit (each unit's last `qiyam-after-ruku` sets it before
-that unit's TASLEEM); `status` becomes `.complete` only after the final TASLEEM; one
-session CSV covers the whole observance.
+baseline re-captures per unit (the phase runner captures it at each unit's **final
+sitting**, just before that unit's first TASLEEM head-turn); `status` becomes
+`.complete` only after the final TASLEEM; one session CSV covers the whole observance.
 
 Each `PrayerState` carries its **unit identity** (`unitIndex`, `unitLabel`), stamped
 by `generate`. From it the machine exposes `currentUnitIndex`, `unitCount`,

@@ -48,7 +48,7 @@ docs/guided/instructions.md      ──►    Resources/instructions.json  (load
 | 1a. **Text library** | `../prayers/prayers.md` | Every prayer's Arabic / Turkish / English, keyed `P-0 … P-23`. Shipped as `Resources/prayers.json`. |
 | 1b. **Instruction library** | `instructions.md` | Every English-only spoken line that isn't prayer text — movement guidance (`entry` / `reprompt`) + opening stand-upright / niyet cues, keyed `I-1 … I-25` (`I-25` templated). Shipped as `Resources/instructions.json`. |
 | 2. **Blocks** | `rakats.md` | Reusable position blocks — order, motion trigger, mode, reprompt. **No utterances.** |
-| 3. **Structure** | `master-prayer-state-machine.md` | Which blocks compose each prayer variant, rakat numbers, phase counts, yaw-baseline marks. |
+| 3. **Structure** | `master-prayer-state-machine.md` | Which blocks compose each prayer variant, rakat numbers, phase counts, and where the runtime yaw baseline is captured (final sitting before TASLEEM). |
 | 4. **Content** | `prayer-sets/{prayer}.md` | Per-prayer rows per position: `P-ids` (prayer text), `I-ids` (movement instructions), and guidance levels F / F+P. |
 
 Composition flows 4 → 3 → 2 → 1: a prayer-set fills the positions that the
@@ -117,13 +117,14 @@ determined by its `rakats` count (Qunut derived from `kind == .witr`):
 
 | rakats | Block sequence |
 |---|---|
-| 2 | `rakat1Full → rakat2Full(yaw) → fullTashahhud(2) → tasleem(2)` |
-| 3 | `rakat1Full → rakat2Full → shortTashahhud → rakat3FatihaOnly(yaw) → fullTashahhud(3) → tasleem(3)` |
-| 4 | `rakat1Full → rakat2Full → shortTashahhud → rakat3FatihaOnly → rakat4FatihaOnly(yaw) → fullTashahhud(4) → tasleem(4)` |
+| 2 | `rakat1Full → rakat2Full → fullTashahhud(2) → tasleem(2, yaw)` |
+| 3 | `rakat1Full → rakat2Full → shortTashahhud → rakat3FatihaOnly → fullTashahhud(3) → tasleem(3, yaw)` |
+| 4 | `rakat1Full → rakat2Full → shortTashahhud → rakat3FatihaOnly → rakat4FatihaOnly → fullTashahhud(4) → tasleem(4, yaw)` |
 | Witr (3) | as 3-rakat, but `rakat3FatihaOnly` carries the **Qunut** dua (`P-18…P-22`) |
 
-`(yaw)` marks the block whose `qiyam-after-ruku` sets `capturesYawBaseline: true`
-— always the **last** `qiyam-after-ruku` before that unit's Tasleem.
+`(yaw)` marks where the **phase runner** captures `qiyamYawBaseline` at runtime — the
+unit's **final sitting**, the instant before its first Tasleem head-turn (`headTurnRight`),
+after the unit's sujoods so the heading hasn't drifted. It is **not** a sequence flag.
 
 Unit-boundary behaviour (first vs subsequent unit openers, `P-23` placement) is in
 `observances.md`.
@@ -149,8 +150,10 @@ unit except Witr (`false`).
    - A **subsequent** unit's opening Qiyam is `motion` (`upright`): entry `I-24`, reprompt
      `I-14`, renewed niyet `I-25`, then `P-0 → P-7 → surah → P-0` at `.pace` — **no** `I-1`.
      See `observances.md`.
-2. **Yaw baseline** is captured at the last `qiyam-after-ruku` before `TASLEEM`, in the
-   same unit (yaw is unit-relative).
+2. **Yaw baseline** is captured at runtime (in the phase runner) at the unit's **final
+   sitting**, the instant before its first `TASLEEM` head-turn — after the unit's sujoods,
+   so the heading hasn't drifted. Yaw is unit-relative and re-captured each unit. It is
+   **not** a `PrayerState` flag (the old `capturesYawBaseline` was removed 2026-06-26).
 3. **Reprompt interval = 5s** for all guided motion positions (the `PrayerState`
    default of 8 is overridden everywhere in guided).
 4. **Closing dua** "Oh Allah, you are peace and peace comes from you" (`P-23`) is the
@@ -184,9 +187,9 @@ To regenerate `GuidedSequenceGenerator`:
 4. **Content** — encode `content(for:unit:)` (niyet via `niyetName`, the two opening
    surahs via `surahs(for:unit:)`) from the per-unit niyet + surah table (§5 / `observances.md`).
 5. **Compose** — `generateUnit(_:content:isFirst:isLast:)` wires the block order by
-   `rakats` (§4), setting `capturesYaw` on the last `qiyam-after-ruku`; apply the unit
-   opener / `P-23` boundary rules from `observances.md`. `generate(salat:…)` chains the
-   selected `SalatType.units`.
+   `rakats` (§4); apply the unit opener / `P-23` boundary rules from `observances.md`.
+   `generate(salat:…)` chains the selected `SalatType.units`. (The yaw baseline is **not**
+   wired here — the phase runner captures it at runtime at the final sitting before TASLEEM.)
 6. **Verify** — phase counts per variant must match `master-prayer-state-machine.md`
    (Fajr 15, Maghrib 22, 4-rakat 28, Witr 22), and the §5 invariants must hold.
 

@@ -10,7 +10,7 @@ Prayer text library: `../prayers/prayers.md`
 - The **first** unit of an observance opens `timed` — entry `I-1`, then `I-24` (when hasOpeningCue), the niyet, then Al-Fatiha + surah
 - A **subsequent** unit opens `motion` (stand to begin) — `I-24` cue + renewed niyet, **no** `I-1` intro; opening rows are `.pace`
 - All other Qiyams within a unit are `motion`
-- Yaw baseline is always captured at the last qiyam-after-ruku before each unit's TASLEEM
+- Yaw baseline is captured at runtime at each unit's **final sitting**, the instant before its first TASLEEM head-turn (after the unit's sujoods, so the AirPods heading hasn't drifted) — it is **not** a sequence flag
 - The `I-1` intro fires **once** per observance; the `P-23` closing dua sounds **once** at the observance's final TASLEEM
 
 ## Unit identity
@@ -40,10 +40,11 @@ A guided sequence is the **observance** — the selected units of `SalatType.uni
 chained in order (`observances.md`). Each unit's shape is fully determined by
 `rakats` and the derived Qunut flag:
 
-- `rakat1` RAKAT_FULL · `rakat2` RAKAT_FULL — yaw here when `rakats == 2`
+- `rakat1` RAKAT_FULL · `rakat2` RAKAT_FULL
 - if `rakats >= 3`: SHORT_TASHAHHUD, then RAKAT_FATIHA_ONLY rakats up to `rakats`
-  — yaw on the last one; Qunut folded into rakat 3 for Witr
-- FULL_TASHAHHUD then TASLEEM at `rakats`
+  — Qunut folded into rakat 3 for Witr
+- FULL_TASHAHHUD then TASLEEM at `rakats` — the yaw baseline is captured at the final
+  sitting just before TASLEEM (runtime, in the phase runner)
 
 ---
 
@@ -54,7 +55,7 @@ chained in order (`observances.md`). Each unit's shape is fully determined by
 | # | Block | Rakat |
 |---|---|---|
 | 1 | RAKAT_FULL | 1 |
-| 2 | RAKAT_FULL | 2 · yaw baseline |
+| 2 | RAKAT_FULL | 2 |
 | 3 | FULL_TASHAHHUD | 2 |
 | 4 | TASLEEM | 2 |
 
@@ -67,7 +68,7 @@ Content: `prayer-sets/fajr.md` · Phase count: 15
 | # | Block | Rakat |
 |---|---|---|
 | 1 | RAKAT_FULL | 1 |
-| 2 | RAKAT_FULL | 2 · yaw baseline |
+| 2 | RAKAT_FULL | 2 |
 | 3 | FULL_TASHAHHUD | 2 |
 | 4 | TASLEEM | 2 |
 
@@ -85,7 +86,7 @@ Content: `prayer-sets/fajr.md` · Phase count: 15
 | 2 | RAKAT_FULL | 2 |
 | 3 | SHORT_TASHAHHUD | 2 |
 | 4 | RAKAT_FATIHA_ONLY | 3 |
-| 5 | RAKAT_FATIHA_ONLY | 4 · yaw baseline |
+| 5 | RAKAT_FATIHA_ONLY | 4 |
 | 6 | FULL_TASHAHHUD | 4 |
 | 7 | TASLEEM | 4 |
 
@@ -132,7 +133,7 @@ Content: `prayer-sets/asr.md` · Phase count: 28
 | 1 | RAKAT_FULL | 1 |
 | 2 | RAKAT_FULL | 2 |
 | 3 | SHORT_TASHAHHUD | 2 |
-| 4 | RAKAT_FATIHA_ONLY | 3 · yaw baseline |
+| 4 | RAKAT_FATIHA_ONLY | 3 |
 | 5 | FULL_TASHAHHUD | 3 |
 | 6 | TASLEEM | 3 |
 
@@ -170,7 +171,7 @@ Content: `prayer-sets/isha.md` · Phase count: 15
 | 1 | RAKAT_FULL | 1 |
 | 2 | RAKAT_FULL | 2 |
 | 3 | SHORT_TASHAHHUD | 2 |
-| 4 | RAKAT_FATIHA_ONLY | 3 · yaw baseline |
+| 4 | RAKAT_FATIHA_ONLY | 3 |
 | 5 | FULL_TASHAHHUD | 3 |
 | 6 | TASLEEM | 3 |
 

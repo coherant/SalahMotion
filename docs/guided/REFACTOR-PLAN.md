@@ -57,7 +57,7 @@ is not throwaway — it is the **seed of the Stage 3 `observances.md` spec**.
   remove it from the tables or annotate as non-timed).
 - Sharpen #3: add the FATIHA_ONLY inheritance rule to `rakats.md`.
 - Build the **golden snapshot test**: emit every `SalatType` + Witr, assert the
-  array (id, mode, utterances, durations, motionTrigger, capturesYaw, rakatNumber)
+  array (id, mode, utterances, durations, motionTrigger, rakatNumber)
   against a checked-in fixture.
 - **Exit:** live spec self-consistent and faithful to code; snapshot green; a
   from-spec reader of one unit has zero legal forks.

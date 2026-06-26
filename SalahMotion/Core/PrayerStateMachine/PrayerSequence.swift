@@ -104,7 +104,6 @@ struct PrayerState {
     let motionTrigger: MotionTrigger?
     let repromptAudio: String?
     let repromptInterval: Double
-    let capturesYawBaseline: Bool
     let maxReprompts: Int?
     // Calibration sets this false — arc fills only during the hold phase, not motion wait.
     // Guided leaves it true (default) — arc fills during reprompt countdown as before.
@@ -127,7 +126,6 @@ struct PrayerState {
         motionTrigger: MotionTrigger? = nil,
         repromptAudio: String? = nil,
         repromptInterval: Double = 8,
-        capturesYawBaseline: Bool = false,
         maxReprompts: Int? = nil,
         showProgressDuringWait: Bool = true,
         unitIndex: Int = 0,
@@ -145,7 +143,6 @@ struct PrayerState {
         self.motionTrigger = motionTrigger
         self.repromptAudio = repromptAudio
         self.repromptInterval = repromptInterval
-        self.capturesYawBaseline = capturesYawBaseline
         self.maxReprompts = maxReprompts
         self.showProgressDuringWait = showProgressDuringWait
         self.unitIndex = unitIndex
@@ -282,21 +279,21 @@ enum GuidedSequenceGenerator {
     // Builds one unit's full [PrayerState]. isFirst / isLast place the unit within its
     // observance: the first unit opens with the I-1 intro (timed); a later unit opens
     // `motion` ("stand to begin"), no intro; the closing dua P-23 sounds only on the
-    // last unit's Tasleem. See observances.md. The yaw baseline is always the last
-    // qiyam-after-ruku before this unit's Tasleem.
+    // last unit's Tasleem. See observances.md. The yaw baseline is captured at runtime
+    // by the phase runner at the final sitting before this unit's Tasleem — not here.
     private static func generateUnit(_ unit: PrayerUnit, content c: Content, tx: Tx,
                                      isFirst: Bool, isLast: Bool) -> [PrayerState] {
         var states = rakat1Full(tx: tx, c: c, isFirst: isFirst)
-        states += rakat2Full(tx: tx, c: c, capturesYaw: unit.rakats == 2)
+        states += rakat2Full(tx: tx, c: c)
 
         if unit.rakats >= 3 {
             states += shortTashahhud(tx: tx)
             let qunut: [(utterance: String, duration: PrayerDuration)] = hasQunut(unit)
                 ? [(tx.P18, .pace), (tx.P19, .pace), (tx.P20, .pace), (tx.P21, .pace), (tx.P22, .pace)]
                 : []
-            states += rakat3FatihaOnly(tx: tx, extraPrayers: qunut, capturesYaw: unit.rakats == 3)
+            states += rakat3FatihaOnly(tx: tx, extraPrayers: qunut)
             if unit.rakats == 4 {
-                states += rakat4FatihaOnly(tx: tx, capturesYaw: true)
+                states += rakat4FatihaOnly(tx: tx)
             }
         }
 
@@ -383,7 +380,7 @@ enum GuidedSequenceGenerator {
         return [
             qiyam,
             ruku(id: .r1Ruku, rakat: 1, tx: tx),
-            qiyamAfterRuku(id: .r1QiyamAfterRuku, rakat: 1, tx: tx, capturesYaw: false),
+            qiyamAfterRuku(id: .r1QiyamAfterRuku, rakat: 1, tx: tx),
             sujoodFirst(id: .r1SujoodFirst, rakat: 1, tx: tx),
             julusBetween(id: .r1JulusBetween, rakat: 1, tx: tx),
             sujoodSecond(id: .r1SujoodSecond, rakat: 1, tx: tx),
@@ -391,7 +388,7 @@ enum GuidedSequenceGenerator {
     }
 
     // RAKAT_FULL rakat 2 — motion (Qiyam with Fatiha + surah)
-    private static func rakat2Full(tx: Tx, c: Content, capturesYaw: Bool) -> [PrayerState] {
+    private static func rakat2Full(tx: Tx, c: Content) -> [PrayerState] {
         [
             .init(id: .r2QiyamFull, rakatNumber: 2, mode: .motion,
                   displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
@@ -401,7 +398,7 @@ enum GuidedSequenceGenerator {
                   repromptAudio: InstructionLibrary.text(.i14),
                   repromptInterval: 5),
             ruku(id: .r2Ruku, rakat: 2, tx: tx),
-            qiyamAfterRuku(id: .r2QiyamAfterRuku, rakat: 2, tx: tx, capturesYaw: capturesYaw),
+            qiyamAfterRuku(id: .r2QiyamAfterRuku, rakat: 2, tx: tx),
             sujoodFirst(id: .r2SujoodFirst, rakat: 2, tx: tx),
             julusBetween(id: .r2JulusBetween, rakat: 2, tx: tx),
             sujoodSecond(id: .r2SujoodSecond, rakat: 2, tx: tx),
@@ -422,8 +419,7 @@ enum GuidedSequenceGenerator {
     // RAKAT_FATIHA_ONLY rakat 3 — motion (Fatiha only, optional extra prayers for Witr Qunut)
     private static func rakat3FatihaOnly(
         tx: Tx,
-        extraPrayers: [(utterance: String, duration: PrayerDuration)],
-        capturesYaw: Bool
+        extraPrayers: [(utterance: String, duration: PrayerDuration)]
     ) -> [PrayerState] {
         var qiyamPrayers: [(utterance: String, duration: PrayerDuration)] = [(tx.P7, .pace)]
         qiyamPrayers += extraPrayers
@@ -437,7 +433,7 @@ enum GuidedSequenceGenerator {
                   repromptAudio: InstructionLibrary.text(.i14),
                   repromptInterval: 5),
             ruku(id: .r3Ruku, rakat: 3, tx: tx),
-            qiyamAfterRuku(id: .r3QiyamAfterRuku, rakat: 3, tx: tx, capturesYaw: capturesYaw),
+            qiyamAfterRuku(id: .r3QiyamAfterRuku, rakat: 3, tx: tx),
             sujoodFirst(id: .r3SujoodFirst, rakat: 3, tx: tx),
             julusBetween(id: .r3JulusBetween, rakat: 3, tx: tx),
             sujoodSecond(id: .r3SujoodSecond, rakat: 3, tx: tx),
@@ -445,7 +441,7 @@ enum GuidedSequenceGenerator {
     }
 
     // RAKAT_FATIHA_ONLY rakat 4 — motion (Fatiha only)
-    private static func rakat4FatihaOnly(tx: Tx, capturesYaw: Bool) -> [PrayerState] {
+    private static func rakat4FatihaOnly(tx: Tx) -> [PrayerState] {
         [
             .init(id: .r4QiyamFatiha, rakatNumber: 4, mode: .motion,
                   displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
@@ -455,7 +451,7 @@ enum GuidedSequenceGenerator {
                   repromptAudio: InstructionLibrary.text(.i14),
                   repromptInterval: 5),
             ruku(id: .r4Ruku, rakat: 4, tx: tx),
-            qiyamAfterRuku(id: .r4QiyamAfterRuku, rakat: 4, tx: tx, capturesYaw: capturesYaw),
+            qiyamAfterRuku(id: .r4QiyamAfterRuku, rakat: 4, tx: tx),
             sujoodFirst(id: .r4SujoodFirst, rakat: 4, tx: tx),
             julusBetween(id: .r4JulusBetween, rakat: 4, tx: tx),
             sujoodSecond(id: .r4SujoodSecond, rakat: 4, tx: tx),
@@ -508,7 +504,7 @@ enum GuidedSequenceGenerator {
               repromptInterval: 5)
     }
 
-    private static func qiyamAfterRuku(id: PrayerStateID, rakat: Int, tx: Tx, capturesYaw: Bool) -> PrayerState {
+    private static func qiyamAfterRuku(id: PrayerStateID, rakat: Int, tx: Tx) -> PrayerState {
         .init(id: id, rakatNumber: rakat, mode: .motion,
               displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
               entrySpeech: InstructionLibrary.text(.i4),
@@ -516,8 +512,7 @@ enum GuidedSequenceGenerator {
               exitSpeech: tx.P0,
               motionTrigger: .upright,
               repromptAudio: InstructionLibrary.text(.i16),
-              repromptInterval: 5,
-              capturesYawBaseline: capturesYaw)
+              repromptInterval: 5)
     }
 
     private static func sujoodFirst(id: PrayerStateID, rakat: Int, tx: Tx) -> PrayerState {
@@ -650,7 +645,7 @@ enum CalibrationSequenceGenerator {
               motionTrigger: .upright,
               repromptAudio: "Stand upright.",
               repromptInterval: 5,
-              capturesYawBaseline: true, maxReprompts: 3),
+              maxReprompts: 3),
 
         // Position 10
         .init(id: .r2SujoodFirst, rakatNumber: 2, mode: .motion,
