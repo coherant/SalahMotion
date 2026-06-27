@@ -20,14 +20,23 @@ struct CelestialArcGeometry: Equatable {
     /// Pulls the rise/set points in from the corners if needed (0 = corner-to-corner).
     var horizontalInset: CGFloat = 0
 
-    /// θ = π − 2π·t  →  t=0 left corner, .25 peak, .5 right corner, .75 nadir.
+    /// Direction of travel. A Northern-Hemisphere observer faces south: bodies rise
+    /// in the east (left) and set in the west (right) → left→right (`t=0` = left).
+    /// A Southern observer faces north, so the arc is horizontally mirrored: rise
+    /// in the east is on the *right*, set in the west on the *left* → right→left.
+    /// (Distinct from the Moon's bright-limb mirror, which the view applies.)
+    var isNorthernHemisphere: Bool = true
+
+    /// θ = π − 2π·t  →  t=0 left corner, .25 peak, .5 right corner, .75 nadir
+    /// (Northern). For the Southern Hemisphere the x is mirrored, so t=0 = right.
     func angle(forDayPhase t: Double) -> Double { .pi - 2 * .pi * t }
 
     func point(forDayPhase t: Double, in size: CGSize) -> CGPoint {
         let theta = angle(forDayPhase: t)
         let rx = size.width / 2 - horizontalInset
         let ry = size.height - bodyRadius - topGap
-        let x = size.width / 2 + rx * CGFloat(cos(theta))
+        let dx = rx * CGFloat(cos(theta))
+        let x = size.width / 2 + (isNorthernHemisphere ? dx : -dx)
         let y = size.height - ry * CGFloat(sin(theta))
         return CGPoint(x: x, y: y)
     }

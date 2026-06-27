@@ -59,6 +59,18 @@ A body is **above the horizon** when `sin(θ) > 0`.
 This `position(phase:in:) -> CGPoint` is a **pure function** — no SwiftUI — and is
 the one piece that gets a unit test.
 
+### Two independent hemisphere mirrors (don't conflate)
+1. **Arc direction (position).** Northern observers face south → bodies travel
+   **left→right** (rise east = left). Southern observers face north → the arc is
+   **mirrored, right→left** (rise east = right). Implemented in
+   `CelestialArcGeometry` via `isNorthernHemisphere` flipping the `x`.
+2. **Moon bright-limb (face).** The lit limb also flips below the equator;
+   applied in the view as a `.scaleEffect(x:)` on the moon shape only.
+
+Both are driven by `ObserverLocation.isNorthernHemisphere`. We initially shipped
+only #2 and forgot #1 — a rising moon in Melbourne wrongly appeared bottom-left
+(Northern convention) instead of bottom-right.
+
 Because the card is wide and short, this is an **ellipse**, not a true circle: a
 real circle of radius `W/2` would tower far above the card.
 

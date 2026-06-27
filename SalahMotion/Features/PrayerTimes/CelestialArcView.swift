@@ -44,10 +44,18 @@ struct CelestialArcView: View {
         }
     }
 
+    /// Positioning geometry with the arc-direction mirror applied for the
+    /// observer's hemisphere (separate from the Moon's bright-limb mirror below).
+    private var arcGeometry: CelestialArcGeometry {
+        var g = geometry
+        g.isNorthernHemisphere = sky.location.isNorthernHemisphere
+        return g
+    }
+
     @ViewBuilder
     private func bodyView(_ body: CelestialBody, state: SkyState, in size: CGSize) -> some View {
-        let radius = geometry.bodyRadius
-        let point = geometry.point(forDayPhase: state.dayPhase, in: size)
+        let radius = arcGeometry.bodyRadius
+        let point = arcGeometry.point(forDayPhase: state.dayPhase, in: size)
         Group {
             switch body {
             case .sun:
