@@ -20,11 +20,15 @@ import Observation
 final class PrayerTimesEngine {
     static let shared = PrayerTimesEngine()
 
-    /// London — matches LocationManager's default city, used until the device
-    /// reports a real location so times are sensible from launch.
-    static let defaultCoordinate = CLLocationCoordinate2D(latitude: 51.5074, longitude: -0.1278)
+    /// Melbourne, Australia — where SalahMotion was made. Used until the device
+    /// reports a real location, so times are sensible from launch. 🇦🇺
+    static let defaultCoordinate = CLLocationCoordinate2D(latitude: -37.8136, longitude: 144.9631)
+    static let defaultTimeZone = TimeZone(identifier: "Australia/Melbourne") ?? .current
 
     private(set) var coordinate = PrayerTimesEngine.defaultCoordinate
+    /// Timezone of the current location. Prayer instants are absolute UTC, so this
+    /// is what renders/schedules them at the location's wall-clock time.
+    private(set) var timeZone = PrayerTimesEngine.defaultTimeZone
     private(set) var usingDeviceLocation = false
 
     /// Today's computed times, keyed by prayer. Empty only if computation failed.
@@ -49,9 +53,19 @@ final class PrayerTimesEngine {
         recompute()
     }
 
+    /// Update to the location's timezone (from reverse-geocoding) and recompute,
+    /// so times render/schedule at the location's wall-clock time.
+    func setTimeZone(_ tz: TimeZone) {
+        guard tz != timeZone else { return }
+        timeZone = tz
+        recompute()
+    }
+
     /// Recompute if the calendar day has rolled over (call from a periodic timer).
     func refreshIfNeeded(now: Date = Date()) {
-        let day = Calendar.current.startOfDay(for: now)
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = timeZone
+        let day = cal.startOfDay(for: now)
         if computedForDay != day { recompute(now: now) }
     }
 
@@ -65,7 +79,8 @@ final class PrayerTimesEngine {
         params.madhab = settings.madhab
         params.adjustments = settings.prayerAdjustments
 
-        let cal = Calendar(identifier: .gregorian)
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = timeZone
         let comps = cal.dateComponents([.year, .month, .day], from: now)
 
         guard let pt = PrayerTimes(coordinates: coords, date: comps, calculationParameters: params) else {

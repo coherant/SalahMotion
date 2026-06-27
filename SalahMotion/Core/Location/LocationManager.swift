@@ -38,10 +38,15 @@ final class LocationManager: NSObject {
 
     private func reverseGeocode(_ location: CLLocation) {
         geocoder.reverseGeocodeLocation(location) { [weak self] placemarks, _ in
-            let city = placemarks?.first?.locality
-                    ?? placemarks?.first?.administrativeArea
+            let placemark = placemarks?.first
+            let city = placemark?.locality
+                    ?? placemark?.administrativeArea
                     ?? "Unknown"
-            DispatchQueue.main.async { self?.cityName = city }
+            let tz = placemark?.timeZone
+            DispatchQueue.main.async {
+                self?.cityName = city
+                if let tz { PrayerTimesEngine.shared.setTimeZone(tz) }
+            }
         }
     }
 }
@@ -69,6 +74,6 @@ extension LocationManager: CLLocationManagerDelegate {
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        cityName = "London"
+        cityName = "Melbourne"
     }
 }

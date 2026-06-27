@@ -194,6 +194,28 @@ Note: Witr includes Qunut dua in the final Qiyam — unique to this prayer set.
 salah (the body is the clock); the Muezzin's frame *around* it is meant to be heard, so
 `listen`/`count` rows always run their own runner even when `guidanceLevel == .silent`.
 
+## Recitation audio (clip identity)
+
+Each prayer line in a state carries an optional **clip identity** alongside its rendered text:
+
+`PrayerLine = (clipID: PrayerID?, utterance: String, duration: PrayerDuration)`
+
+- `clipID` — the recitation's canonical id (a `P-` id, e.g. `P-7` Al-Fātiḥa, `P-11` Al-Ikhlāṣ).
+  Present for Qur'an/prayer recitations; `nil` for coaching cues, niyet, and calibration prompts
+  (those are guidance — TTS only, never a recorded clip).
+- `utterance` — the rendered, translated text (used for display, the golden snapshot, and TTS).
+- `duration` — a **pause after** the utterance, not a budget the audio must fit inside.
+
+At runtime the speaker resolves `clipID` → a recorded file
+(`Resources/recitations/<reciterId>/<P-id>.m4a`); if a clip is installed it is **played and
+awaited to completion** (the teacher leads), otherwise it **falls back to TTS** of `utterance`.
+A missing clip is expected, not an error — so recordings can be dropped in incrementally and
+partial sets work. The await-to-completion contract is what keeps recitation from being
+truncated by the `.pace` pause regardless of clip length.
+
+The golden snapshot serialises `clip=<P-id>` only when non-nil, so adding clip identity is a
+behaviour-preserving enrichment of the existing sequence (no timing/structure change).
+
 ## Motion detection thresholds
 
 See `../calibration/master-prayer-state-machine.md` for calibrated threshold values.

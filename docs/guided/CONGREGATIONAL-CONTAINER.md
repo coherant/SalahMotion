@@ -9,6 +9,24 @@ language refactor (`LANGUAGE-REFACTOR.md`) — see *Relationship to other tracks
 > Same discipline when we build it: **MD-first**, **golden-snapshot-protected**, small
 > reversible stages. See `feedback_md_first`.
 
+> ⚠️ **Scope — CORE ONLY. This doc describes the state machine, not the view.** The state
+> machine is the canonical, idempotent core; the view merely renders it. Document here only
+> *behavior and the model*: phase modes, generator/injection, content namespaces, the fiqh
+> binding policy, advancement/timing, published state. **Do NOT add view-layer rendering**
+> — colours, hex values, fonts, spacing, SwiftUI modifiers (`.opacity`, `.saturation`, …),
+> component names used *as styling*, layout, animation, "looks like / chrome." Those live in
+> the feature's Claude Design SPEC (`docs/features/guided-prayer/SPEC.md`), never here.
+>
+> **Litmus test:** if a line would change when only the *appearance* changes, it does not
+> belong in this doc. ("Fades in" fails — strip it; "60s with no motion → allow manual
+> advance" passes — keep it.)
+>
+> **Allowed for traceability:** naming the **published state** (`tasbihRemaining`,
+> `isSpeaking`, `visitedStates`, …) and **the view that consumes it** (e.g. "`runSilentPhase`
+> is driven from `GuidedPrayerView`"). The rule is about **appearance, not references** —
+> describe the data/behavior and where it is read, never how it looks. See
+> `feedback_core_vs_view`.
+
 ---
 
 ## 1. The core idea — the fiqh boundary *is* an architectural boundary
@@ -227,12 +245,11 @@ tap-to-advance hatch is the safety net beneath it. See `[[project_calibration_bu
     binding is Stage 3); `.listen` dwells on an interim paced hold, `.count` drives the
     counter. No container rows are generated until Stage 2c, so the golden snapshot stays
     byte-identical through 2b.
-  - **Stage 2d — tasbīḥ counter: a clean DISPLAY first, tap wired later (decided).** A
-    non-interactive ring/number counter (`TasbihCounterView`) bound to `tasbihRemaining`
-    shows during `.count` rows; the **tap scaffolding is in place** (`tapTasbih()` already
-    decrements) but **not yet bound to a control**, so a `.count` row advances via the
-    existing "Tap to continue" hatch for now. Muezzin-row visual styling (distinct from
-    postures) is **deferred** — container rows reuse the posture orb/tracker chrome for now.
+  - **Stage 2d — tasbīḥ counter scaffolding: tap wired later (decided).** A `.count` row
+    publishes `tasbihRemaining`; the **tap scaffolding is in place** (`tapTasbih()` already
+    decrements) but is **not yet bound to a control**, so a `.count` row advances via the
+    existing tap-to-advance hatch for now. (Counter presentation is view-layer — out of scope
+    for this doc.)
   - **Stage 2e — container behind a toggle + voiced via current TTS (decided 2026-06-26,
     default OFF).** A `UserPreferences.muezzinEnabled` flag (persisted; **default off** until
     the frame can be heard) gates the whole frame.
@@ -241,12 +258,6 @@ tap-to-advance hatch is the safety net beneath it. See `[[project_calibration_bu
     pre-container sequence** (no `C-` rows emitted, so nothing downstream ever sees a
     container). The golden snapshot pins `container: true` in the test, so it stays
     byte-identical regardless of the default.
-  - **UI (decided): the Muezzin *card itself* is the toggle — no separate switch.** In
-    `PrayerSetupView`'s muezzinSection the large featured card is a `Button` that toggles
-    `muezzinEnabled`. **OFF (default) → the card and the voice-circle picker render disabled**
-    (desaturated `.saturation(0)` + `.opacity(0.5)`, picker also `.disabled`); tapping the card
-    enables the frame and restores the active accent scheme + selectable circles. The circles
-    choose the **persona** but are **not yet wired to playback**.
   - **Voice (decided): enabling the Muezzin makes it SPEAK now, via the current TTS tier** — an
     early down-payment on Stage 3, not the full persona-recording binding. `runListenPhase` /
     `runCountPhase` call `speakContainerCall(state)` → `audioManager.speak(CallLibrary.

@@ -32,6 +32,7 @@ Three screens, one at a time, switched by `SettingsViewModel.screen`
   "Advanced" → advanced screen.
 - **Prayer Alerts** — header "NOTIFICATIONS / Prayer Alerts", back chevron.
 - **Advanced** — header "CONFIGURATION / Advanced", back chevron.
+- **Muezzin** - header "MUEZZIN" / Muezzin Settings", back chevron.
 
 **Theme** (fixed dark palette; see `SettingsPalette`):
 - Background gradient `#1a1730 → #131120 → #100e1b`.
@@ -108,6 +109,13 @@ DESCRIPTION: Prayer time adjustments off the master prayer times table
         --[list-item] Turkish
         --[list-item] Arabic
 -[function] Rate this app **[BUILT]** -> Connects to the apple ratings system (`SKStoreReviewController`)
+
+# Muezzin
+-[setting] Langage to display in prayer session
+    - [setting] Arabic
+    - [setting] English
+    - [setting] Turkish
+
 
 ## Prayer Calculation Method
 DESCRIPTION: Prayer time calculation method **[BUILT]** — bound to `PrayerCalculationSettings.method`

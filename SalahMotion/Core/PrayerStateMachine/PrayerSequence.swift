@@ -98,6 +98,16 @@ enum PrayerDuration {
     }
 }
 
+// MARK: - Prayer line
+// One spoken line within a state: an optional recitation clip identity (recorded audio;
+// nil = guidance/TTS-only), the rendered text (display + TTS + golden snapshot), and the
+// post-utterance pause. `clipID` lets the runner play a recorded recitation when one is
+// installed, falling back to TTS otherwise. See master-prayer-state-machine.md.
+typealias PrayerLine = (clipID: PrayerID?, utterance: String, duration: PrayerDuration)
+
+// A clip-less spoken line — coaching cues, niyet, calibration prompts: TTS only, never a clip.
+private func spoken(_ text: String, _ duration: PrayerDuration) -> PrayerLine { (nil, text, duration) }
+
 // MARK: - State definition
 
 struct PrayerState {
@@ -108,7 +118,7 @@ struct PrayerState {
     let arabic: String
     let englishMeaning: String
     let entrySpeech: String?
-    let prayers: [(utterance: String, duration: PrayerDuration)]
+    let prayers: [PrayerLine]
     let exitSpeech: String?
     let motionTrigger: MotionTrigger?
     let repromptAudio: String?
@@ -136,7 +146,7 @@ struct PrayerState {
         arabic: String,
         englishMeaning: String,
         entrySpeech: String? = nil,
-        prayers: [(utterance: String, duration: PrayerDuration)] = [],
+        prayers: [PrayerLine] = [],
         exitSpeech: String? = nil,
         motionTrigger: MotionTrigger? = nil,
         repromptAudio: String? = nil,
@@ -292,7 +302,7 @@ enum GuidedSequenceGenerator {
     // surahs, both per-unit. Witr has no opening cue. See observances.md §5.
     private static func content(for salat: SalatType, unit: PrayerUnit, tx: Tx) -> Content {
         let isWitr: Bool = { if case .witr = unit.kind { return true } else { return false } }()
-        let (s1, s2) = surahs(for: unit, tx: tx)
+        let (s1, s2) = surahs(for: unit)
         return Content(
             niyetText: InstructionLibrary.text(.i25, prayer: niyetName(for: unit, salat: salat)),
             hasOpeningCue: !isWitr,
@@ -313,22 +323,22 @@ enum GuidedSequenceGenerator {
 
     // Per-unit surahs (rakat 1, rakat 2), keyed by unit id. Every Farḍ unit opens with
     // Al-Ikhlas (P-11); Witr keeps P-16/P-17. Authoritative table: observances.md §5.
-    private static func surahs(for unit: PrayerUnit, tx: Tx) -> (String, String) {
-        if case .witr = unit.kind { return (tx.P16, tx.P17) }
+    private static func surahs(for unit: PrayerUnit) -> (PrayerID, PrayerID) {
+        if case .witr = unit.kind { return (.p16, .p17) }
         switch unit.id {
-        case "fajr_sb":    return (tx.P16, tx.P17)
-        case "fajr_f":     return (tx.P11, tx.P13)
-        case "dhuhr_sb":   return (tx.P14, tx.P12)
-        case "dhuhr_f":    return (tx.P11, tx.P15)
-        case "dhuhr_sa":   return (tx.P13, tx.P16)
-        case "asr_sb":     return (tx.P17, tx.P12)
-        case "asr_f":      return (tx.P11, tx.P14)
-        case "maghrib_f":  return (tx.P11, tx.P13)
-        case "maghrib_sa": return (tx.P17, tx.P16)
-        case "isha_sb":    return (tx.P15, tx.P17)
-        case "isha_f":     return (tx.P11, tx.P12)
-        case "isha_sa":    return (tx.P13, tx.P14)
-        default:           return (tx.P11, tx.P12)
+        case "fajr_sb":    return (.p16, .p17)
+        case "fajr_f":     return (.p11, .p13)
+        case "dhuhr_sb":   return (.p14, .p12)
+        case "dhuhr_f":    return (.p11, .p15)
+        case "dhuhr_sa":   return (.p13, .p16)
+        case "asr_sb":     return (.p17, .p12)
+        case "asr_f":      return (.p11, .p14)
+        case "maghrib_f":  return (.p11, .p13)
+        case "maghrib_sa": return (.p17, .p16)
+        case "isha_sb":    return (.p15, .p17)
+        case "isha_f":     return (.p11, .p12)
+        case "isha_sa":    return (.p13, .p14)
+        default:           return (.p11, .p12)
         }
     }
 
@@ -351,8 +361,9 @@ enum GuidedSequenceGenerator {
 
         if unit.rakats >= 3 {
             states += shortTashahhud(tx: tx)
-            let qunut: [(utterance: String, duration: PrayerDuration)] = hasQunut(unit)
-                ? [(tx.P18, .pace), (tx.P19, .pace), (tx.P20, .pace), (tx.P21, .pace), (tx.P22, .pace)]
+            let qunut: [PrayerLine] = hasQunut(unit)
+                ? [tx.line(.p18, .pace), tx.line(.p19, .pace), tx.line(.p20, .pace),
+                   tx.line(.p21, .pace), tx.line(.p22, .pace)]
                 : []
             states += rakat3FatihaOnly(tx: tx, extraPrayers: qunut)
             if unit.rakats == 4 {
@@ -368,10 +379,18 @@ enum GuidedSequenceGenerator {
     // MARK: - Prayer text bundle
 
     private struct Tx {
+        let language: Language
         let P0, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10: String
         let P11, P12, P13, P14, P15, P16, P17: String
         let P18, P19, P20, P21, P22, P23: String
+
+        // A recitation line: carries the clip identity (for recorded audio) + rendered text.
+        func line(_ id: PrayerID, _ duration: PrayerDuration) -> PrayerLine {
+            (id, PrayerLibrary.text(id, language), duration)
+        }
+
         init(language: Language) {
+            self.language = language
             P0  = PrayerLibrary.text(.p0,  language)
             P1  = PrayerLibrary.text(.p1,  language)
             P2  = PrayerLibrary.text(.p2,  language)
@@ -404,8 +423,8 @@ enum GuidedSequenceGenerator {
     private struct Content {
         let niyetText: String
         let hasOpeningCue: Bool
-        let rakat1Surah: String
-        let rakat2Surah: String
+        let rakat1Surah: PrayerID
+        let rakat2Surah: PrayerID
     }
 
     // MARK: - Block generators
@@ -417,14 +436,14 @@ enum GuidedSequenceGenerator {
     private static func rakat1Full(tx: Tx, c: Content, isFirst: Bool) -> [PrayerState] {
         let qiyam: PrayerState
         if isFirst {
-            var openingPrayers: [(utterance: String, duration: PrayerDuration)] = []
-            if c.hasOpeningCue { openingPrayers.append((InstructionLibrary.text(.i24), .fixed(5.0))) }
+            var openingPrayers: [PrayerLine] = []
+            if c.hasOpeningCue { openingPrayers.append(spoken(InstructionLibrary.text(.i24), .fixed(5.0))) }
             openingPrayers += [
-                (c.niyetText,    .fixed(5.0)),
-                (tx.P0,          .fixed(3.0)),
-                (tx.P7,          .fixed(2.0)),
-                (c.rakat1Surah,  .fixed(2.0)),
-                (tx.P0,          .fixed(2.0)),
+                spoken(c.niyetText,        .fixed(5.0)),
+                tx.line(.p0,               .fixed(3.0)),
+                tx.line(.p7,               .fixed(2.0)),
+                tx.line(c.rakat1Surah,     .fixed(2.0)),
+                tx.line(.p0,               .fixed(2.0)),
             ]
             qiyam = .init(id: .r1QiyamFull, rakatNumber: 1, mode: .timed,
                   displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
@@ -434,8 +453,8 @@ enum GuidedSequenceGenerator {
             qiyam = .init(id: .r1QiyamFull, rakatNumber: 1, mode: .motion,
                   displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
                   entrySpeech: InstructionLibrary.text(.i24),
-                  prayers: [(c.niyetText, .pace), (tx.P0, .pace), (tx.P7, .pace),
-                            (c.rakat1Surah, .pace), (tx.P0, .pace)],
+                  prayers: [spoken(c.niyetText, .pace), tx.line(.p0, .pace), tx.line(.p7, .pace),
+                            tx.line(c.rakat1Surah, .pace), tx.line(.p0, .pace)],
                   motionTrigger: .upright,
                   repromptAudio: InstructionLibrary.text(.i14),
                   repromptInterval: 5)
@@ -456,7 +475,7 @@ enum GuidedSequenceGenerator {
             .init(id: .r2QiyamFull, rakatNumber: 2, mode: .motion,
                   displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
                   entrySpeech: InstructionLibrary.text(.i2),
-                  prayers: [(tx.P7, .pace), (c.rakat2Surah, .pace), (tx.P0, .pace)],
+                  prayers: [tx.line(.p7, .pace), tx.line(c.rakat2Surah, .pace), tx.line(.p0, .pace)],
                   motionTrigger: .upright,
                   repromptAudio: InstructionLibrary.text(.i14),
                   repromptInterval: 5),
@@ -473,7 +492,7 @@ enum GuidedSequenceGenerator {
         [.init(id: .julusShort, rakatNumber: 2, mode: .motion,
                displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
                entrySpeech: InstructionLibrary.text(.i8),
-               prayers: [(tx.P8, .pace)],
+               prayers: [tx.line(.p8, .pace)],
                motionTrigger: .upright,
                repromptAudio: InstructionLibrary.text(.i20),
                repromptInterval: 5)]
@@ -482,11 +501,11 @@ enum GuidedSequenceGenerator {
     // RAKAT_FATIHA_ONLY rakat 3 — motion (Fatiha only, optional extra prayers for Witr Qunut)
     private static func rakat3FatihaOnly(
         tx: Tx,
-        extraPrayers: [(utterance: String, duration: PrayerDuration)]
+        extraPrayers: [PrayerLine]
     ) -> [PrayerState] {
-        var qiyamPrayers: [(utterance: String, duration: PrayerDuration)] = [(tx.P7, .pace)]
+        var qiyamPrayers: [PrayerLine] = [tx.line(.p7, .pace)]
         qiyamPrayers += extraPrayers
-        qiyamPrayers.append((tx.P0, .pace))
+        qiyamPrayers.append(tx.line(.p0, .pace))
         return [
             .init(id: .r3QiyamFatiha, rakatNumber: 3, mode: .motion,
                   displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
@@ -509,7 +528,7 @@ enum GuidedSequenceGenerator {
             .init(id: .r4QiyamFatiha, rakatNumber: 4, mode: .motion,
                   displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
                   entrySpeech: InstructionLibrary.text(.i9),
-                  prayers: [(tx.P7, .pace), (tx.P0, .pace)],
+                  prayers: [tx.line(.p7, .pace), tx.line(.p0, .pace)],
                   motionTrigger: .upright,
                   repromptAudio: InstructionLibrary.text(.i14),
                   repromptInterval: 5),
@@ -526,7 +545,7 @@ enum GuidedSequenceGenerator {
         [.init(id: .julusFull, rakatNumber: rakat, mode: .motion,
                displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
                entrySpeech: InstructionLibrary.text(.i11),
-               prayers: [(tx.P8, .pace), (tx.P9, .pace), (tx.P10, .pace)],
+               prayers: [tx.line(.p8, .pace), tx.line(.p9, .pace), tx.line(.p10, .pace)],
                motionTrigger: .upright,
                repromptAudio: InstructionLibrary.text(.i21),
                repromptInterval: 5)]
@@ -540,14 +559,14 @@ enum GuidedSequenceGenerator {
             .init(id: .tasleemRight, rakatNumber: rakat, mode: .motion,
                   displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
                   entrySpeech: InstructionLibrary.text(.i12),
-                  prayers: [(tx.P6, .pace)],
+                  prayers: [tx.line(.p6, .pace)],
                   motionTrigger: .headTurnRight,
                   repromptAudio: InstructionLibrary.text(.i22),
                   repromptInterval: 5),
             .init(id: .tasleemLeft, rakatNumber: rakat, mode: .motion,
                   displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
                   entrySpeech: InstructionLibrary.text(.i13),
-                  prayers: [(tx.P6, .pace)],
+                  prayers: [tx.line(.p6, .pace)],
                   motionTrigger: .headTurnLeft,
                   repromptAudio: InstructionLibrary.text(.i23),
                   repromptInterval: 5),
@@ -560,7 +579,7 @@ enum GuidedSequenceGenerator {
         .init(id: id, rakatNumber: rakat, mode: .motion,
               displayLabel: "Ruku", arabic: Arabic.ruku, englishMeaning: Meaning.bowing,
               entrySpeech: InstructionLibrary.text(.i3),
-              prayers: [(tx.P1, .pace), (tx.P1, .pace), (tx.P1, .pace)],
+              prayers: [tx.line(.p1, .pace), tx.line(.p1, .pace), tx.line(.p1, .pace)],
               exitSpeech: tx.P3,
               motionTrigger: .ruku,
               repromptAudio: InstructionLibrary.text(.i15),
@@ -571,7 +590,7 @@ enum GuidedSequenceGenerator {
         .init(id: id, rakatNumber: rakat, mode: .motion,
               displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
               entrySpeech: InstructionLibrary.text(.i4),
-              prayers: [(tx.P4, .pace)],
+              prayers: [tx.line(.p4, .pace)],
               exitSpeech: tx.P0,
               motionTrigger: .upright,
               repromptAudio: InstructionLibrary.text(.i16),
@@ -582,7 +601,7 @@ enum GuidedSequenceGenerator {
         .init(id: id, rakatNumber: rakat, mode: .motion,
               displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
               entrySpeech: InstructionLibrary.text(.i5),
-              prayers: [(tx.P2, .pace), (tx.P2, .pace), (tx.P2, .pace)],
+              prayers: [tx.line(.p2, .pace), tx.line(.p2, .pace), tx.line(.p2, .pace)],
               exitSpeech: tx.P0,
               motionTrigger: .sujood,
               repromptAudio: InstructionLibrary.text(.i17),
@@ -593,7 +612,7 @@ enum GuidedSequenceGenerator {
         .init(id: id, rakatNumber: rakat, mode: .motion,
               displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
               entrySpeech: InstructionLibrary.text(.i6),
-              prayers: [(tx.P5, .pace), (tx.P5, .pace)],
+              prayers: [tx.line(.p5, .pace), tx.line(.p5, .pace)],
               exitSpeech: tx.P0,
               motionTrigger: .upright,
               repromptAudio: InstructionLibrary.text(.i18),
@@ -604,7 +623,7 @@ enum GuidedSequenceGenerator {
         .init(id: id, rakatNumber: rakat, mode: .motion,
               displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
               entrySpeech: InstructionLibrary.text(.i7),
-              prayers: [(tx.P2, .pace), (tx.P2, .pace), (tx.P2, .pace)],
+              prayers: [tx.line(.p2, .pace), tx.line(.p2, .pace), tx.line(.p2, .pace)],
               exitSpeech: tx.P0,
               motionTrigger: .sujood,
               repromptAudio: InstructionLibrary.text(.i19),
@@ -626,14 +645,14 @@ enum CalibrationSequenceGenerator {
         .init(id: .r1QiyamFull, rakatNumber: 1, mode: .timed,
               displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
               entrySpeech: "Calibration starting. You have fifteen positions to complete. Stand upright — this is Qiyam.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to bow into Ruku."),
 
         // Position 2
         .init(id: .r1Ruku, rakatNumber: 1, mode: .motion,
               displayLabel: "Ruku", arabic: Arabic.ruku, englishMeaning: Meaning.bowing,
               entrySpeech: "Ruku. Bow forward and place both hands on your knees.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to stand upright into Qiyam.",
               motionTrigger: .ruku,
               repromptAudio: "Bow forward and place both hands on your knees.",
@@ -643,7 +662,7 @@ enum CalibrationSequenceGenerator {
         .init(id: .r1QiyamAfterRuku, rakatNumber: 1, mode: .motion,
               displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
               entrySpeech: "Qiyam. Return to standing upright.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to lower into Sujood.",
               motionTrigger: .upright,
               repromptAudio: "Stand upright.",
@@ -653,7 +672,7 @@ enum CalibrationSequenceGenerator {
         .init(id: .r1SujoodFirst, rakatNumber: 1, mode: .motion,
               displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
               entrySpeech: "Sujood. Lower into prostration with your forehead touching the ground.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to sit upright into Julus.",
               motionTrigger: .sujood,
               repromptAudio: "Lower into prostration with your forehead touching the ground.",
@@ -663,7 +682,7 @@ enum CalibrationSequenceGenerator {
         .init(id: .r1JulusBetween, rakatNumber: 1, mode: .motion,
               displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
               entrySpeech: "Julus. Sit upright on your knees.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to lower into Sujood again.",
               motionTrigger: .upright,
               repromptAudio: "Sit upright on your knees.",
@@ -673,7 +692,7 @@ enum CalibrationSequenceGenerator {
         .init(id: .r1SujoodSecond, rakatNumber: 1, mode: .motion,
               displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
               entrySpeech: "Sujood. Lower into prostration again with your forehead touching the ground.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to stand upright for the second rakat.",
               motionTrigger: .sujood,
               repromptAudio: "Lower into prostration with your forehead touching the ground.",
@@ -683,7 +702,7 @@ enum CalibrationSequenceGenerator {
         .init(id: .r2QiyamFull, rakatNumber: 2, mode: .motion,
               displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
               entrySpeech: "Qiyam. Stand upright for the second rakat.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to bow into Ruku.",
               motionTrigger: .upright,
               repromptAudio: "Stand upright.",
@@ -693,7 +712,7 @@ enum CalibrationSequenceGenerator {
         .init(id: .r2Ruku, rakatNumber: 2, mode: .motion,
               displayLabel: "Ruku", arabic: Arabic.ruku, englishMeaning: Meaning.bowing,
               entrySpeech: "Ruku. Bow forward and place both hands on your knees.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to stand upright into Qiyam.",
               motionTrigger: .ruku,
               repromptAudio: "Bow forward and place both hands on your knees.",
@@ -703,7 +722,7 @@ enum CalibrationSequenceGenerator {
         .init(id: .r2QiyamAfterRuku, rakatNumber: 2, mode: .motion,
               displayLabel: "Qiyam", arabic: Arabic.qiyam, englishMeaning: Meaning.standing,
               entrySpeech: "Qiyam. Return to standing upright.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to lower into Sujood.",
               motionTrigger: .upright,
               repromptAudio: "Stand upright.",
@@ -714,7 +733,7 @@ enum CalibrationSequenceGenerator {
         .init(id: .r2SujoodFirst, rakatNumber: 2, mode: .motion,
               displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
               entrySpeech: "Sujood. Lower into prostration with your forehead touching the ground.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to sit upright into Julus.",
               motionTrigger: .sujood,
               repromptAudio: "Lower into prostration with your forehead touching the ground.",
@@ -724,7 +743,7 @@ enum CalibrationSequenceGenerator {
         .init(id: .r2JulusBetween, rakatNumber: 2, mode: .motion,
               displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
               entrySpeech: "Julus. Sit upright on your knees.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to lower into Sujood again.",
               motionTrigger: .upright,
               repromptAudio: "Sit upright on your knees.",
@@ -734,7 +753,7 @@ enum CalibrationSequenceGenerator {
         .init(id: .r2SujoodSecond, rakatNumber: 2, mode: .motion,
               displayLabel: "Sujood", arabic: Arabic.sujood, englishMeaning: Meaning.prostration,
               entrySpeech: "Sujood. Lower into prostration again with your forehead touching the ground.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to sit for Tashahhud.",
               motionTrigger: .sujood,
               repromptAudio: "Lower into prostration with your forehead touching the ground.",
@@ -744,7 +763,7 @@ enum CalibrationSequenceGenerator {
         .init(id: .julusFull, rakatNumber: 2, mode: .motion,
               displayLabel: "Julus", arabic: Arabic.julus, englishMeaning: Meaning.sitting,
               entrySpeech: "Julus. Sit upright for Tashahhud.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to turn your head to the right for Tasleem.",
               motionTrigger: .upright,
               repromptAudio: "Sit upright on your knees.",
@@ -754,7 +773,7 @@ enum CalibrationSequenceGenerator {
         .init(id: .tasleemRight, rakatNumber: 2, mode: .motion,
               displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
               entrySpeech: "Tasleem. Turn your head to the right.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Get ready to turn your head to the left.",
               motionTrigger: .headTurnRight,
               repromptAudio: "Turn your head to the right.",
@@ -764,7 +783,7 @@ enum CalibrationSequenceGenerator {
         .init(id: .tasleemLeft, rakatNumber: 2, mode: .motion,
               displayLabel: "Tasleem", arabic: Arabic.tasleem, englishMeaning: Meaning.salutation,
               entrySpeech: "Tasleem. Turn your head to the left.",
-              prayers: [("Hold this position for five seconds.", .fixed(5.0))],
+              prayers: [spoken("Hold this position for five seconds.", .fixed(5.0))],
               exitSpeech: "Calibration complete. You may move freely.",
               motionTrigger: .headTurnLeft,
               repromptAudio: "Turn your head to the left.",

@@ -341,13 +341,25 @@ final class PrayerStateMachine {
 
     // MARK: - Phase runners
 
+    /// Voices one prayer line: plays its recorded recitation clip if installed (awaited to
+    /// completion — the teacher leads, never truncated), otherwise falls back to TTS of the
+    /// rendered text. A missing clip is expected (recordings land incrementally); empty text
+    /// is a no-op.
+    @MainActor
+    private func utter(_ line: PrayerLine) async {
+        if let id = line.clipID, let url = RecitationClips.url(for: id), await audioManager.play(url) {
+            return
+        }
+        if !line.utterance.isEmpty { await audioManager.speak(line.utterance) }
+    }
+
     @MainActor
     private func runAutoPhase(_ state: PrayerState) async {
         let pace = UserPreferences.shared.pace
         if let speech = state.entrySpeech { await audioManager.speak(speech) }
         for prayer in state.prayers {
             guard !Task.isCancelled else { return }
-            if !prayer.utterance.isEmpty { await audioManager.speak(prayer.utterance) }
+            await utter(prayer)
             guard !Task.isCancelled else { return }
             let d = prayer.duration.seconds(pace: pace)
             if d > 0 { try? await Task.sleep(for: .seconds(d)) }
@@ -367,7 +379,7 @@ final class PrayerStateMachine {
         if guidanceLevel.playsPrayers {
             for prayer in state.prayers {
                 guard !Task.isCancelled else { return }
-                if !prayer.utterance.isEmpty { await audioManager.speak(prayer.utterance) }
+                await utter(prayer)
                 guard !Task.isCancelled else { return }
                 let duration = prayer.duration.seconds(pace: pace)
                 let start = Date()
@@ -406,7 +418,7 @@ final class PrayerStateMachine {
         if guidanceLevel.playsPrayers {
             for prayer in state.prayers {
                 guard !Task.isCancelled else { return }
-                if !prayer.utterance.isEmpty { await audioManager.speak(prayer.utterance) }
+                await utter(prayer)
                 guard !Task.isCancelled else { return }
                 let holdDuration = prayer.duration.seconds(pace: pace)
                 if holdDuration > 0 {
@@ -437,7 +449,7 @@ final class PrayerStateMachine {
 
         for prayer in state.prayers {
             guard !Task.isCancelled else { return }
-            if !prayer.utterance.isEmpty { await audioManager.speak(prayer.utterance) }
+            await utter(prayer)
             guard !Task.isCancelled else { return }
 
             let phaseDuration = prayer.duration.seconds(pace: pace)

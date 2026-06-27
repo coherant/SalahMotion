@@ -3,7 +3,6 @@ import SwiftUI
 struct AudioPulseView: View {
     let isActive: Bool
     let prayerTime: PrayerTime
-
     // Opacity bounds — tune these to adjust the visual intensity
     var opacityMin: Double = 0.10
     var opacityMax: Double = 0.45
@@ -14,7 +13,7 @@ struct AudioPulseView: View {
     @State private var pulseTask: Task<Void, Never>?
 
     var body: some View {
-        // Solid red core — layout anchor, matches pie chart size exactly
+        // Solid accent core — layout anchor, matches pie chart size exactly
         Circle()
             .fill(accent)
             .frame(width: 16, height: 16)

@@ -9,6 +9,28 @@ enum NotificationManager {
         "salahmotion.prayer.\(prayer.rawValue)"
     }
 
+    // MARK: - Foreground presentation
+
+    // Retained delegate so notifications still present while the app is open.
+    // Without a UNUserNotificationCenterDelegate, iOS silently suppresses
+    // foreground notifications (no banner, no sound) — they only land in the
+    // notification list. Set this once at launch.
+    private static let presenter = ForegroundPresenter()
+
+    static func configurePresentation() {
+        UNUserNotificationCenter.current().delegate = presenter
+    }
+
+    private final class ForegroundPresenter: NSObject, UNUserNotificationCenterDelegate {
+        func userNotificationCenter(
+            _ center: UNUserNotificationCenter,
+            willPresent notification: UNNotification,
+            withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+        ) {
+            completionHandler([.banner, .sound, .list])
+        }
+    }
+
     // MARK: - Permission
 
     static func requestAuthorization() {
@@ -58,6 +80,18 @@ enum NotificationManager {
 
     // MARK: - Scheduling
 
+    // Daily hour/minute components in the LOCATION's timezone, so a repeating
+    // trigger fires at the prayer's wall-clock time there (not the device's tz).
+    // Prayer instants are absolute UTC; this projects them into the location tz.
+    private static func dailyComponents(for date: Date) -> DateComponents {
+        let tz = PrayerTimesEngine.shared.timeZone
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = tz
+        var components = cal.dateComponents([.hour, .minute], from: date)
+        components.timeZone = tz
+        return components
+    }
+
     private static func scheduleEnabled() {
         let enabled = enabledPrayers()
         let allIds = PrayerTime.allCases.map { identifier(for: $0) }
@@ -72,8 +106,7 @@ enum NotificationManager {
         content.body  = "It is time for prayer."
         content.sound = .default
 
-        let components = Calendar.current.dateComponents([.hour, .minute], from: prayer.scheduledDate)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dailyComponents(for: prayer.scheduledDate), repeats: true)
         let request = UNNotificationRequest(identifier: identifier(for: prayer), content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)
     }
@@ -106,8 +139,7 @@ enum NotificationManager {
         content.body  = "About 15 minutes until Fajr."
         content.sound = .default
 
-        let components = Calendar.current.dateComponents([.hour, .minute], from: remindAt)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dailyComponents(for: remindAt), repeats: true)
         let request = UNNotificationRequest(identifier: suhoorId, content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)
     }

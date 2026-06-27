@@ -56,8 +56,9 @@ struct PrayerSetupView: View {
             .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                header
-                ScrollView(showsIndicators: false) {
+                ScrollBehindScreen(scrim: Color(hex: "#181426")) {
+                    header
+                } content: {
                     VStack(alignment: .leading, spacing: 20) {
                         heroCard
                         languageSection
@@ -101,28 +102,21 @@ struct PrayerSetupView: View {
             }
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.85), value: sheetOpen)
+        // Default the shown prayer to the current valid window (engine-backed).
+        // Re-snaps each time the setup screen appears; a manual pick via the
+        // sheet still overrides for the rest of the visit.
+        .onAppear { prefs.salatType = .current() }
     }
 
     // MARK: - Header
 
     private var header: some View {
-        HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text("New session")
-                    .font(.system(size: 10.5, weight: .semibold))
-                    .tracking(2.5)
-                    .textCase(.uppercase)
-                    .foregroundStyle(accent)
-                Text("Guided Prayer")
-                    .font(Typography.display(26, weight: .medium))
-                    .foregroundStyle(DesignTokens.ink)
-            }
-
-            Spacer()
-        }
-        .padding(.horizontal, 22)
-        .padding(.top, 8)
-        .padding(.bottom, 0)
+        ScreenHeader(
+            eyebrow: "New session",
+            title: "Guided Prayer",
+            accent: accent,
+            ink: DesignTokens.ink
+        )
     }
 
     // MARK: - Hero card

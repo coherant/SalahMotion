@@ -30,7 +30,9 @@ enum PrayerTime: String, CaseIterable, Identifiable {
     }
 
     var displayTime: String {
-        Self.timeFormatter.string(from: scheduledDate)
+        // Prayer instants are absolute UTC; render at the location's wall-clock time.
+        Self.timeFormatter.timeZone = PrayerTimesEngine.shared.timeZone
+        return Self.timeFormatter.string(from: scheduledDate)
     }
 
     private static let timeFormatter: DateFormatter = {

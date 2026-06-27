@@ -105,7 +105,9 @@ struct CalibrationView: View {
     @State private var calibrationProfile: UserCalibrationProfile?
     @State private var activeProfile: UserCalibrationProfile? = UserCalibrationProfile.load()
     @State private var prayerTime: PrayerTime = .current
-    private var accent: Color { prayerTime.theme.accent }
+    // Restrained setup-wash accent per spec (calibration-ruku.md §4) — NOT the
+    // vivid in-prayer theme.accent. Same family as the Setup screen.
+    private var accent: Color { prayerTime.setupAccent }
 
     private var currentStep: CalibrationStep { session.currentState.id.calibrationStep }
 
@@ -120,11 +122,10 @@ struct CalibrationView: View {
 
     var body: some View {
         ZStack {
-            prayerTime.backgroundGradient.ignoresSafeArea()
+            background
 
             VStack(spacing: 0) {
                 header
-                    .padding(.top, 8)
                 Spacer(minLength: 0)
                 hatifBar
                     .padding(.horizontal, 22)
@@ -155,25 +156,33 @@ struct CalibrationView: View {
         }
     }
 
+    // MARK: - Background
+    // Fixed dark setup ground + top accent glow (calibration-ruku.md §4). A
+    // utility/setup screen — NOT themed by the time-of-day prayer gradient, so
+    // the light-on-dark chrome stays legible at every prayer time.
+    private var background: some View {
+        ZStack(alignment: .top) {
+            DesignTokens.setupGround
+            RadialGradient(
+                colors: [accent.opacity(0.16), .clear],
+                center: UnitPoint(x: 0.5, y: 0.0),
+                startRadius: 0,
+                endRadius: 300
+            )
+            .frame(maxHeight: .infinity, alignment: .top)
+        }
+        .ignoresSafeArea()
+    }
+
     // MARK: - Header
 
     private var header: some View {
-        HStack(spacing: 14) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Calibration")
-                    .font(.system(size: 10.5, weight: .semibold))
-                    .tracking(2.5)
-                    .textCase(.uppercase)
-                    .foregroundStyle(accent)
-                Text("Tune your movements")
-                    .font(Typography.display(26, weight: .medium))
-                    .foregroundStyle(DesignTokens.ink)
-            }
-
-            Spacer()
-
-        }
-        .padding(.horizontal, 22)
+        ScreenHeader(
+            eyebrow: "Calibration",
+            title: "Tune your movements",
+            accent: accent,
+            ink: DesignTokens.ink
+        )
     }
 
     // MARK: - Hātif voice bar

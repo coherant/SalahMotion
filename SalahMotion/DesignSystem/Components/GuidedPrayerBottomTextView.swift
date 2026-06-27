@@ -28,13 +28,10 @@ struct GuidedPrayerBottomTextView: View {
 
             Spacer().frame(height: 10)
 
-            Text(recitationText)
-                .font(Typography.recitation)
-                .italic()
-                .foregroundStyle(theme.ink.opacity(0.65))
-
-            Spacer().frame(height: 6)
-
+            // Recitation text intentionally not shown — the experience is sound + recitation
+            // in earphones, so we don't pull the user's attention to reading (and a long sūra
+            // would push the layout up). The `recitationText` parameter is kept plumbed so it
+            // is a one-line restore when wanted.
             Text(instruction)
                 .font(Typography.labelSm)
                 .foregroundStyle(theme.ink.opacity(0.38))
@@ -50,7 +47,7 @@ struct GuidedPrayerBottomTextView: View {
                 Task {
                     try? await Task.sleep(for: .milliseconds(250))
                     pulsing = true
-                    try? await Task.sleep(for: .seconds(3))
+                    try? await Task.sleep(for: .seconds(2))
                     onNavigate()
                 }
             } label: {

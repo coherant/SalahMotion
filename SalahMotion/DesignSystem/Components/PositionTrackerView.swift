@@ -6,6 +6,9 @@ struct TrackerPosition: Identifiable, Equatable {
     let id: Int
     let transliteration: String
     let arabic: String
+    /// True for a Muezzin (container) row — rendered distinctly: the spoken
+    /// Arabic, tinted in the Muezzin hue, never confused with a posture.
+    var isMuezzin: Bool = false
 }
 
 // MARK: - Pie progress shape
@@ -60,6 +63,7 @@ struct PositionTrackerView: View {
                 let isActive = index == visible.count - 1
                 let isFirst  = index == 0
                 let dimness  = isActive ? 1.0 : (index == visible.count - 2 ? 0.45 : 0.25)
+                let dotColor = accent
 
                 HStack(alignment: .top, spacing: 10) {
                     // Dot + connecting line column
@@ -75,11 +79,11 @@ struct PositionTrackerView: View {
                         ZStack {
                             if isActive {
                                 Circle()
-                                    .fill(accent.opacity(0.28))
+                                    .fill(dotColor.opacity(0.28))
                                     .frame(width: 20, height: 20)
                             }
                             Circle()
-                                .fill(isActive ? accent : accent.opacity(0.30))
+                                .fill(isActive ? dotColor : dotColor.opacity(0.30))
                                 .frame(
                                     width:  isActive ? 9 : 5,
                                     height: isActive ? 9 : 5
@@ -94,8 +98,11 @@ struct PositionTrackerView: View {
                                 .frame(width: 1.5, height: 20)
 
                             if isSpeaking {
-                                // Audio pulse — shown while TTS is playing
-                                AudioPulseView(isActive: isSpeaking, prayerTime: prayerTime)
+                                // Audio pulse — shown while TTS is playing.
+                                AudioPulseView(
+                                    isActive: isSpeaking,
+                                    prayerTime: prayerTime
+                                )
                             } else {
                                 // Pie chart — shown during motion confirmation hold
                                 PieProgress(progress: progress)
@@ -114,16 +121,30 @@ struct PositionTrackerView: View {
                         }
                     }
 
-                    // Labels
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(position.transliteration)
-                            .font(isActive ? Typography.bodyDisplay : Typography.captionDisplay)
-                            .fontWeight(isActive ? .semibold : .regular)
-                            .foregroundStyle(ink.opacity(dimness))
-                        Text(position.arabic)
-                            .font(isActive ? Typography.arabicLabel : Typography.arabicCaption)
-                            .environment(\.layoutDirection, .rightToLeft)
-                            .foregroundStyle(ink.opacity(dimness * 0.65))
+                    // Labels — Arabic right-justified (trailing). Muezzin rows show
+                    // only the spoken Arabic, tinted in the Muezzin hue; posture rows
+                    // show the position name with its Arabic beneath.
+                    VStack(alignment: .trailing, spacing: 2) {
+                        if position.isMuezzin {
+                            // Spoken Arabic — theme ink.
+                            Text(position.arabic)
+                                .font(isActive ? Typography.arabicLabel : Typography.arabicCaption)
+                                .environment(\.layoutDirection, .rightToLeft)
+                                .multilineTextAlignment(.trailing)
+                                .lineLimit(2)
+                                .truncationMode(.tail)
+                                .frame(maxWidth: 200, alignment: .trailing)
+                                .foregroundStyle(ink.opacity(isActive ? 0.9 : dimness * 0.65))
+                        } else {
+                            Text(position.transliteration)
+                                .font(isActive ? Typography.bodyDisplay : Typography.captionDisplay)
+                                .fontWeight(isActive ? .semibold : .regular)
+                                .foregroundStyle(ink.opacity(dimness))
+                            Text(position.arabic)
+                                .font(isActive ? Typography.arabicLabel : Typography.arabicCaption)
+                                .environment(\.layoutDirection, .rightToLeft)
+                                .foregroundStyle(ink.opacity(dimness * 0.65))
+                        }
                     }
                     .padding(.top, isFirst ? 4 : 54)
                 }

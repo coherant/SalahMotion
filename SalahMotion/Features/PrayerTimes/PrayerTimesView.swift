@@ -1,8 +1,10 @@
 import SwiftUI
+import CoreLocation
 
 struct PrayerTimesView: View {
 
     @Environment(Router.self) private var router
+    @Environment(\.scenePhase) private var scenePhase
     @State private var vm = PrayerTimesViewModel()
     @State private var enabledNotifications: Set<String> = NotificationManager.enabledPrayers()
     @State private var ctaPulsing = false
@@ -14,6 +16,21 @@ struct PrayerTimesView: View {
     private var muted: Color { theme.muted }
     private var faint: Color { theme.faint }
     private var isLight: Bool { theme.isLight }
+
+    private let cardCorner: CGFloat = 24
+
+    // Celestial complication — driven by the engine's coordinate (Melbourne
+    // until the device reports).
+    private var celestialSky: CelestialSky {
+        let c = PrayerTimesEngine.shared.coordinate
+        let location = ObserverLocation(latitude: c.latitude, longitude: c.longitude)
+        // ⚠️ TEMPORARY: full moon-phase sweep demo. Revert to `.concept(location: location)`.
+        return .moonPhaseDemo(location: location)
+    }
+    // Animate only while this tab is foreground & active.
+    private var isCelestialActive: Bool {
+        router.selectedTab == .prayerTimes && scenePhase == .active
+    }
 
     // Neutral colours that adapt to light (Dhuhr) vs dark themes
     private var neutralFill: Color {
@@ -27,23 +44,27 @@ struct PrayerTimesView: View {
     }
 
     var body: some View {
+        // Structurally identical to CalibrationView (the proven-on-device static
+        // screen): gradient as a ZStack sibling, header at the top of the VStack.
+        // No .safeAreaPadding / .padding(.bottom,) — those were the divergence that
+        // mispositioned the header on device while the simulator looked fine.
         ZStack {
             prayerTime.backgroundGradient.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                header
-                    .padding(.top, 8)
-                upNextCard
-                    .padding(.top, 22)
-                prayerList
-                    .padding(.top, 22)
-                Spacer()
-                ctaButton
-                    .padding(.bottom, 32)
+                header   // ScreenHeader owns its own 22pt gutter + top padding
+
+                VStack(spacing: 0) {
+                    upNextCard
+                        .padding(.top, 22)
+                    prayerList
+                        .padding(.top, 22)
+                    Spacer()
+                    ctaButton
+                        .padding(.bottom, 32)
+                }
+                .padding(.horizontal, 22)
             }
-            .safeAreaPadding(.top)
-            .padding(.horizontal, 22)
-            .padding(.bottom, 80)
         }
         .onAppear { vm.location.requestLocation() }
     }
@@ -51,20 +72,13 @@ struct PrayerTimesView: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("\(vm.hijriDate) · \(prayerTime.phase)")
-                    .eyebrowStyle()
-                    .tracking(1.5)
-                    .foregroundStyle(accent)
-                Text(vm.gregorianDate)
-                    .font(Typography.display(27, weight: .medium))
-                    .foregroundStyle(ink)
-            }
-            Spacer()
-            locationPill.padding(.top, 4)
-        }
-        .padding(.horizontal, 4)
+        ScreenHeader(
+            eyebrow: "\(vm.hijriDate) · \(prayerTime.phase)",
+            title: vm.gregorianDate,
+            accent: accent,
+            ink: ink,
+            trailing: { locationPill }
+        )
     }
 
     private var locationPill: some View {
@@ -99,10 +113,10 @@ struct PrayerTimesView: View {
                         .tracking(2.5)
                         .foregroundStyle(neutralText)
                     HStack(alignment: .lastTextBaseline, spacing: 10) {
-                        Text(prayerTime.arabic)
+                        Text(vm.upNext.prayer.arabic)
                             .arabicStyle(size: 34)
                             .foregroundStyle(ink)
-                        Text(prayerTime.displayName)
+                        Text(vm.upNext.prayer.displayName)
                             .font(Typography.display(26, weight: .medium))
                             .foregroundStyle(muted)
                     }
@@ -113,7 +127,7 @@ struct PrayerTimesView: View {
                     Text(vm.countdown)
                         .font(Typography.ui(18, weight: .semibold))
                         .foregroundStyle(accent)
-                    Text(prayerTime.displayTime)
+                    Text(vm.upNext.prayer.displayTime)
                         .font(Typography.ui(13))
                         .foregroundStyle(isLight ? Color(hex: "#2b3a4a").opacity(0.5) : Color.white.opacity(0.5))
                 }
@@ -122,14 +136,21 @@ struct PrayerTimesView: View {
         }
         .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(LinearGradient(
-                    colors: [accent.opacity(0.16), accent.opacity(0.04)],
-                    startPoint: UnitPoint(x: 0.15, y: 0),
-                    endPoint: UnitPoint(x: 0.85, y: 1)
-                ))
-                .overlay(RoundedRectangle(cornerRadius: 24)
-                    .strokeBorder(accent.opacity(0.24), lineWidth: 1))
+            // Single clip authority (§3): gradient + celestial bodies clipped to
+            // the card silhouette, the stroke laid on AFTER the clip. The arc sits
+            // in the background, behind every fixture above.
+            ZStack {
+                RoundedRectangle(cornerRadius: cardCorner)
+                    .fill(LinearGradient(
+                        colors: [accent.opacity(0.16), accent.opacity(0.04)],
+                        startPoint: UnitPoint(x: 0.15, y: 0),
+                        endPoint: UnitPoint(x: 0.85, y: 1)
+                    ))
+                CelestialArcView(sky: celestialSky, isActive: isCelestialActive)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: cardCorner))
+            .overlay(RoundedRectangle(cornerRadius: cardCorner)
+                .strokeBorder(accent.opacity(0.24), lineWidth: 1))
         )
     }
 

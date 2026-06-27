@@ -49,9 +49,25 @@ struct GuidedPrayerView: View {
 
     private var runningView: some View {
         let state = session.currentState
-        let trackerPositions = session.visitedStates.enumerated().map { i, s in
-            TrackerPosition(id: i, transliteration: s.displayLabel, arabic: s.arabic)
-        }
+        // The orb and the position label hold the worshipper's posture. During a Muezzin
+        // (container) row they keep the most recent posture rather than letting the call
+        // recitation/name take over — the Muezzin's Arabic lives on the rail only.
+        let heldPosture = state.isContainer
+            ? session.visitedStates.last { !$0.isContainer }
+            : state
+        let orbArabic = heldPosture?.arabic ?? ""
+        // The rail shows postures plus the Muezzin's own line. Posture rows keep their
+        // position name (Ruku/Sujood/…); container (Muezzin) rows are flagged isMuezzin so
+        // the tracker renders them distinctly — the spoken Arabic in the Muezzin hue.
+        let trackerPositions = session.visitedStates
+            .enumerated().map { i, s in
+                TrackerPosition(
+                    id: i,
+                    transliteration: s.displayLabel,
+                    arabic: s.arabic,
+                    isMuezzin: s.isContainer
+                )
+            }
 
         return ZStack {
             prayerTime.backgroundGradient
@@ -71,7 +87,7 @@ struct GuidedPrayerView: View {
                 Spacer()
 
                 ZStack(alignment: .leading) {
-                    PositionOrbView(arabicText: state.arabic, prayerTime: prayerTime)
+                    PositionOrbView(arabicText: orbArabic, prayerTime: prayerTime)
                         .frame(maxWidth: .infinity)
                         .offset(x: 58)
                     PositionTrackerView(
@@ -87,8 +103,8 @@ struct GuidedPrayerView: View {
                 Spacer()
 
                 GuidedPrayerBottomTextView(
-                    positionName: state.displayLabel,
-                    positionMeaning: state.englishMeaning,
+                    positionName: heldPosture?.displayLabel ?? "",
+                    positionMeaning: heldPosture?.englishMeaning ?? "",
                     recitationText: state.prayers.first?.utterance ?? "",
                     instruction: state.motionTrigger != nil ? "awaiting motion" : "timed",
                     prayerTime: prayerTime,

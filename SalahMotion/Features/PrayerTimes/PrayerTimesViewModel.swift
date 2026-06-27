@@ -49,41 +49,46 @@ final class PrayerTimesViewModel {
         return f.string(from: now)
     }
 
+    /// True while the up-next prayer's 15-minute window is open — the only time
+    /// the CTA is tappable. `upNext` keeps a prayer selected only through its
+    /// window, so a non-future `upNext.date` means we're inside that window.
     var isInPrayerWindow: Bool {
-        let start = prayerTime.scheduledDate
-        return now >= start && now < start.addingTimeInterval(15 * 60)
+        upNext.date <= now
     }
 
-    var nextPrayer: PrayerTime {
+    /// The prayer the "Up next" card tracks, paired with the absolute instant to
+    /// count down to. It's the next prayer whose 15-minute window hasn't elapsed
+    /// (so a prayer still reads "now" through its window); once *every* window has
+    /// passed — the stretch between Isha and the next dawn — it wraps to tomorrow's
+    /// Fajr. Without the wrap the night counts down to a stale Isha, which after
+    /// midnight (engine recomputed for the new day) reads as ~19h away.
+    var upNext: (prayer: PrayerTime, date: Date) {
         let all = PrayerTime.allCases
-        let next = (all.firstIndex(of: prayerTime) ?? 0) + 1
-        return all[next % all.count]
-    }
-
-    var isBeforeNextPrayer: Bool {
-        var nextDate = nextPrayer.scheduledDate
-        if prayerTime == .isha && nextPrayer == .fajr {
-            nextDate = nextDate.addingTimeInterval(24 * 60 * 60)
+        if let p = all.first(where: { now < $0.scheduledDate.addingTimeInterval(15 * 60) }) {
+            return (p, p.scheduledDate)
         }
-        let windowStart = nextDate.addingTimeInterval(-15 * 60)
-        return now >= windowStart && now < nextDate
+        return (.fajr, PrayerTime.fajr.scheduledDate.addingTimeInterval(24 * 60 * 60))
     }
 
+    /// CTA copy, driven entirely by `upNext` so the button always agrees with the
+    /// countdown card. Cascade by time remaining until that prayer:
+    ///   • window already reached  → "Pray X"
+    ///   • within 15 min before    → "Prepare for X"
+    ///   • otherwise               → "Waiting for X"
     var ctaLabel: String {
-        if isBeforeNextPrayer {
-            return "Prepare for \(nextPrayer.displayName)"
+        let (prayer, date) = upNext
+        let secondsUntil = date.timeIntervalSince(now)
+        if secondsUntil <= 0 {
+            return "Pray \(prayer.displayName)"
         }
-        if now >= prayerTime.scheduledDate {
-            return "Pray \(prayerTime.displayName)"
+        if secondsUntil <= 15 * 60 {
+            return "Prepare for \(prayer.displayName)"
         }
-        if prayerTime == .fajr {
-            return "Waiting for sunrise"
-        }
-        return "Waiting for \(prayerTime.displayName)"
+        return "Waiting for \(prayer.displayName)"
     }
 
     var countdown: String {
-        let interval = prayerTime.scheduledDate.timeIntervalSince(now)
+        let interval = upNext.date.timeIntervalSince(now)
         guard interval > 0 else { return "now" }
         let totalMinutes = Int(interval / 60)
         let hours = totalMinutes / 60

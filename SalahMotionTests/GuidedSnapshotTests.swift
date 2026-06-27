@@ -41,7 +41,10 @@ struct GuidedSnapshotTests {
             out += " progressDuringWait=\(s.showProgressDuringWait)\n"
             out += "    label=\(q(s.displayLabel)) ar=\(q(s.arabic)) en=\(q(s.englishMeaning))\n"
             out += "    entry=\(q(s.entrySpeech)) reprompt=\(q(s.repromptAudio)) exit=\(q(s.exitSpeech))\n"
-            let prayers = s.prayers.map { "\(q($0.utterance))@\(dur($0.duration))" }.joined(separator: ", ")
+            let prayers = s.prayers.map { line -> String in
+                let clip = line.clipID.map { " clip=\($0.rawValue)" } ?? ""
+                return "\(q(line.utterance))@\(dur(line.duration))\(clip)"
+            }.joined(separator: ", ")
             out += "    prayers=[\(prayers)]\n"
         }
         return out

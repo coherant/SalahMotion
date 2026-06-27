@@ -17,21 +17,19 @@ struct SettingsView: View {
         ZStack {
             SettingsPalette.background.ignoresSafeArea()
 
-            VStack(spacing: 0) {
+            ScrollBehindScreen(scrim: Color(hex: "#1a1730")) {
                 header
-
-                ScrollView {
-                    Group {
-                        switch viewModel.screen {
-                        case .main:     mainScreen
-                        case .alerts:   alertsScreen
-                        case .advanced: advancedScreen
-                        }
+            } content: {
+                Group {
+                    switch viewModel.screen {
+                    case .main:     mainScreen
+                    case .alerts:   alertsScreen
+                    case .advanced: advancedScreen
                     }
-                    .padding(.horizontal, 22)
-                    .padding(.bottom, 28)
-                    .transition(.opacity)
                 }
+                .padding(.horizontal, 22)
+                .padding(.bottom, 28)
+                .transition(.opacity)
             }
         }
     }
@@ -39,36 +37,27 @@ struct SettingsView: View {
     // MARK: - Header
 
     private var header: some View {
-        HStack(spacing: 14) {
-            if viewModel.screen != .main {
-                Button {
-                    withAnimation(navAnim) { viewModel.goBack() }
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(SettingsPalette.muted)
-                        .frame(width: 36, height: 36)
-                        .background(Circle().fill(Color.white.opacity(0.06)))
-                        .overlay(Circle().strokeBorder(Color.white.opacity(0.10), lineWidth: 1))
-                }
-                .buttonStyle(.plain)
-            }
+        ScreenHeader(
+            eyebrow: eyebrow,
+            title: title,
+            accent: accent,
+            ink: SettingsPalette.ink,
+            leading: { if viewModel.screen != .main { backButton } }
+        )
+    }
 
-            VStack(alignment: .leading, spacing: 1) {
-                Text(eyebrow)
-                    .font(Typography.ui(10.5, weight: .semibold))
-                    .tracking(2.5)
-                    .textCase(.uppercase)
-                    .foregroundStyle(accent)
-                Text(title)
-                    .font(Typography.display(28, weight: .medium))
-                    .foregroundStyle(SettingsPalette.ink)
-            }
-            Spacer()
+    private var backButton: some View {
+        Button {
+            withAnimation(navAnim) { viewModel.goBack() }
+        } label: {
+            Image(systemName: "chevron.left")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(SettingsPalette.muted)
+                .frame(width: 36, height: 36)
+                .background(Circle().fill(Color.white.opacity(0.06)))
+                .overlay(Circle().strokeBorder(Color.white.opacity(0.10), lineWidth: 1))
         }
-        .padding(.top, 54)
-        .padding(.horizontal, 22)
-        .padding(.bottom, 16)
+        .buttonStyle(.plain)
     }
 
     private var eyebrow: String {
