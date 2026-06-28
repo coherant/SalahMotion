@@ -65,26 +65,46 @@ final class AudioManager {
 // MARK: - Audio clips
 //
 // Resolves a liturgical id to a bundled recording, or nil when none is installed (→ TTS
-// fallback). Two voices, two folders:
-//   • in-salah recitation:  recitations/<reciterId>/<P-id>.m4a   (e.g. recitations/default/P-7.m4a)
-//   • Muezzin call:          muezzin/<muezzinId>/<C-id>.m4a       (e.g. muezzin/bilal/C-1.m4a)
-// Add each folder to the app target as a FOLDER REFERENCE so the per-voice subdirectories are
-// preserved in the bundle. Missing clips are expected — drop files in incrementally; partial
-// sets just work, and anything absent falls back to TTS.
+// fallback). Files are FLAT, uniquely-named resources — so synced-folder flattening is a
+// feature, not a problem (no subfolders to preserve, no name collisions):
+//   • in-salah recitation:  "<reciterId>-<language>-<P-id>.m4a"  (e.g. sawt-ai-ar-P-7.m4a)
+//   • Muezzin call:          "<muezzinId>-<C-id>.m4a"            (e.g. bilal-C-1.m4a)
+// Drop the files anywhere under the app's synced Resources; they bundle by name. Either
+// .m4a or .caf is accepted (Ṣawt AI ships as .m4a, AAC). Missing clips are expected —
+// partial sets just work, and anything absent falls back to TTS.
 enum AudioClips {
     /// Active reciter folder for in-salah recitation. Defaults until a reciter picker is wired.
-    static var reciterId: String = "default"
+    /// `sawt-ai` = "Ṣawt AI" — the AI-generated Arabic recitation voice (صوت = "voice").
+    static var reciterId: String = "sawt-ai"
 
-    static func recitation(_ id: PrayerID, reciterId: String = AudioClips.reciterId) -> URL? {
-        clip(id.rawValue, in: "recitations/\(reciterId)")
+    static func recitation(_ id: PrayerID,
+                           reciterId: String = AudioClips.reciterId,
+                           language: Language = UserPreferences.shared.language) -> URL? {
+        // Flat key "<reciter>-<language>-<P-id>" (e.g. "sawt-ai-ar-P-7"). Missing →
+        // nil → the caller's TTS fallback, so an Arabic-only reciter still works when
+        // any language is picked.
+        clip("\(reciterId)-\(language.rawValue)-\(id.rawValue)")
     }
 
     static func call(_ id: CallID, muezzinId: String) -> URL? {
-        clip(id.rawValue, in: "muezzin/\(muezzinId)")
+        clip("\(muezzinId)-\(id.rawValue)")
     }
 
-    private static func clip(_ name: String, in subdir: String) -> URL? {
-        Bundle.main.url(forResource: name, withExtension: "m4a", subdirectory: subdir)
+    // Accept .m4a (the Ṣawt AI set) or .caf. Names are globally unique, so we look in
+    // the bundle root AND the likely preserved subfolders — covers both a synced folder
+    // that flattens resources and one that keeps the `recitations/` (or `muezzin/`) path.
+    private static let clipExtensions = ["m4a", "caf"]
+    private static let clipSubdirs: [String?] = [nil, "recitations", "muezzin", "Resources/recitations"]
+
+    private static func clip(_ name: String) -> URL? {
+        for sub in clipSubdirs {
+            for ext in clipExtensions {
+                if let url = Bundle.main.url(forResource: name, withExtension: ext, subdirectory: sub) {
+                    return url
+                }
+            }
+        }
+        return nil
     }
 
 #if DEBUG
