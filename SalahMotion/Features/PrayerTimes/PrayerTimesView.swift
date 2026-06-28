@@ -56,6 +56,48 @@ struct PrayerTimesView: View {
         return min(1, max(0, altitude / 0.35))          // full once the sun is well up
     }
 
+    // Darkness (1 = deep night) for the meteor layer — the inverse of daylight, so
+    // birds fade out and meteors fade in around dusk. Engages once the sun is well
+    // down (daylight < 0.1), handing the sky over to the starfield + the occasional
+    // shooting star.
+    private var nightFactor: Double { 1 - min(1, birdDaylight / 0.1) }
+
+    // MARK: - Meteor shower (Tier 2)
+
+    private var locationCalendar: Calendar {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = PrayerTimesEngine.shared.timeZone
+        return cal
+    }
+
+    /// Project a shower's radiant to a normalized screen point in the upper sky, or
+    /// nil if it's below ~8° altitude (not worth showing). Altitude → height,
+    /// azimuth → a stylised east-west x (E left, matching the celestial arc).
+    private func radiantScreenPoint(_ shower: MeteorShower) -> CGPoint? {
+        let (alt, az) = MeteorShowers.radiantAltAz(shower, location: celestialSky.location, date: vm.now)
+        guard alt > 8 else { return nil }
+        let y = max(0.04, min(0.5, 0.5 - (alt / 90) * 0.42))   // horizon→0.5, zenith→~0.08
+        let x = 0.5 - 0.42 * sin(az * .pi / 180)
+        return CGPoint(x: x, y: y)
+    }
+
+    /// The active shower for the meteor layer: the egg (stage 3) forces one on
+    /// demand regardless of date; otherwise a real shower inside its date window
+    /// whose radiant is above the horizon for this location.
+    private var meteorShowerContext: MeteorShowerContext {
+        if timeMachine.meteorShowerActive {
+            let shower = MeteorShowers.active(on: vm.now, calendar: locationCalendar)
+                      ?? MeteorShowers.nearest(to: vm.now, calendar: locationCalendar)
+            let radiant = radiantScreenPoint(shower) ?? CGPoint(x: 0.5, y: 0.14)   // fallback upper-centre
+            return MeteorShowerContext(radiant: radiant, rate: 30)
+        }
+        if let shower = MeteorShowers.active(on: vm.now, calendar: locationCalendar),
+           let radiant = radiantScreenPoint(shower) {
+            return MeteorShowerContext(radiant: radiant, rate: max(6, shower.zhr / 8))
+        }
+        return .none
+    }
+
     // Neutral colours that adapt to light (Dhuhr) vs dark themes
     private var neutralFill: Color {
         isLight ? Color(hex: "#2b3a4a").opacity(0.12) : Color.white.opacity(0.05)
@@ -75,10 +117,26 @@ struct PrayerTimesView: View {
         ZStack {
             blend.background.ignoresSafeArea()
 
+            // Aurora — glows over the night sky/starfield, beneath birds & meteors.
+            // The egg's stage-4 forces it on demand any time. See aurora.md.
+            AuroraView(isActive: isCelestialActive,
+                       night: timeMachine.auroraActive ? 1 : nightFactor,
+                       forced: timeMachine.auroraActive)
+                .ignoresSafeArea()
+
             // Ambient sky birds — far back, behind every fixture, glimpsed in the
             // open sky around the header and between cards. See ambient-sky-birds.md.
             SkyBirdsView(isActive: isCelestialActive, tint: ink, daylight: birdDaylight,
                          murmuration: timeMachine.murmurationActive)
+                .ignoresSafeArea()
+
+            // Night meteors — the after-dark counterpart to the birds; a rare
+            // shooting star among the stars. See night-meteors.md.
+            // The egg's stage-3 shower forces darkness so it shows on demand any time.
+            NightMeteorsView(isActive: isCelestialActive,
+                             night: timeMachine.meteorShowerActive ? 1 : nightFactor,
+                             tint: ink,
+                             shower: meteorShowerContext)
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -176,6 +234,14 @@ struct PrayerTimesView: View {
         }
         // Stage 2 (murmuration) gets its own heavy thump as the flock floods in.
         .sensoryFeedback(trigger: timeMachine.murmurationActive) { _, active in
+            active ? .impact(weight: .heavy) : nil
+        }
+        // Stage 3 (meteor shower) likewise.
+        .sensoryFeedback(trigger: timeMachine.meteorShowerActive) { _, active in
+            active ? .impact(weight: .heavy) : nil
+        }
+        // Stage 4 (aurora) likewise.
+        .sensoryFeedback(trigger: timeMachine.auroraActive) { _, active in
             active ? .impact(weight: .heavy) : nil
         }
     }

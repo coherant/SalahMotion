@@ -28,6 +28,12 @@ enum TimeMachineConfig {
     /// Egg stage 2: how long the murmuration swirls before it streams off (s).
     static var murmurationDuration: TimeInterval = 40
 
+    /// Egg stage 3: how long the on-demand meteor shower runs (s).
+    static var meteorShowerDuration: TimeInterval = 40
+
+    /// Egg stage 4: how long the on-demand aurora lingers (s).
+    static var auroraDuration: TimeInterval = 28
+
     /// When true, every egg press goes straight to the murmuration, skipping the
     /// celestial sweep (used while tuning the flock). False = the two-stage egg.
     static var eggOnlyMurmuration = false
@@ -45,6 +51,11 @@ final class TimeMachine {
     /// Egg stage 2: true while the hidden murmuration is dancing. The birds layer
     /// observes this and floods in / disperses on its edges.
     private(set) var murmurationActive = false
+    /// Egg stage 3: true while the on-demand meteor shower runs. The meteor layer
+    /// observes this and forces shower mode regardless of the date.
+    private(set) var meteorShowerActive = false
+    /// Egg stage 4: true while the on-demand aurora lingers.
+    private(set) var auroraActive = false
 
     private var task: Task<Void, Never>?
     // Celestial sweep is driven by a CADisplayLink (vsync-aligned) — NOT a
@@ -54,14 +65,14 @@ final class TimeMachine {
     private var linkProxy: DisplayLinkProxy?
     private var celestialStart: CFTimeInterval = 0   // 0 = set on first frame
 
-    /// The egg is a two-press secret: press 1 sweeps the sky (celestial rewind),
-    /// press 2 summons the murmuration. Each press advances the stage; a press is
-    /// ignored while either is already playing.
-    private enum Stage { case celestial, birds }
+    /// The egg is a four-press secret: press 1 sweeps the sky (celestial rewind),
+    /// press 2 summons the murmuration, press 3 calls a meteor shower, press 4 an
+    /// aurora. Each press advances the stage; a press is ignored while any is playing.
+    private enum Stage { case celestial, birds, meteor, aurora }
     private var nextStage: Stage = .celestial
 
     func play() {
-        guard !isRunning, !murmurationActive else { return }
+        guard !isRunning, !murmurationActive, !meteorShowerActive, !auroraActive else { return }
         if TimeMachineConfig.eggOnlyMurmuration {   // TEMP: tuning the murmuration
             playBirds()
             return
@@ -71,8 +82,14 @@ final class TimeMachine {
             nextStage = .birds
             playCelestial()
         case .birds:
-            nextStage = .celestial
+            nextStage = .meteor
             playBirds()
+        case .meteor:
+            nextStage = .aurora
+            playMeteorShower()
+        case .aurora:
+            nextStage = .celestial
+            playAurora()
         }
     }
 
@@ -121,6 +138,24 @@ final class TimeMachine {
         task = Task { @MainActor in
             try? await Task.sleep(nanoseconds: UInt64(TimeMachineConfig.murmurationDuration * 1_000_000_000))
             murmurationActive = false
+        }
+    }
+
+    /// Stage 3 — flag the meteor-shower window; the meteor layer owns the visuals.
+    private func playMeteorShower() {
+        meteorShowerActive = true
+        task = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: UInt64(TimeMachineConfig.meteorShowerDuration * 1_000_000_000))
+            meteorShowerActive = false
+        }
+    }
+
+    /// Stage 4 — flag the aurora window; the aurora layer owns the visuals.
+    private func playAurora() {
+        auroraActive = true
+        task = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: UInt64(TimeMachineConfig.auroraDuration * 1_000_000_000))
+            auroraActive = false
         }
     }
 
