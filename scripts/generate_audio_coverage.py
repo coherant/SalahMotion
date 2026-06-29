@@ -18,6 +18,7 @@ OUT  = os.path.join(ROOT, "docs", "audio-coverage.md")
 
 RECITER = "muallim-ai"       # reciter voice → recitation (P)   (Muʿallim AI)
 MUEZZIN = "munadi-ai"        # muezzin voice → calls (C)        (Munādī AI)
+GUIDER  = "murshid-ai"       # guider voice → guidance (I)      (Murshid AI)
 LANGS   = ["ar", "en", "tr"] # active recitation languages
 EXTS    = ("m4a", "caf")
 FORMAT  = "AAC `.m4a`, mono, 24 kHz, ~64 kbps"
@@ -39,6 +40,9 @@ prayers = load("prayers.json")["prayers"]
 p_ids = [p["id"] for p in prayers]
 p_missing = {l: [pid for pid in p_ids if not installed(f"{RECITER}-{l}-{pid}")] for l in LANGS}
 p_total, p_have = len(p_ids) * len(LANGS), sum(len(p_ids) - len(p_missing[l]) for l in LANGS)
+i_ids = [e["id"] for e in ins]
+i_missing = {l: [iid for iid in i_ids if not installed(f"{GUIDER}-{l}-{iid}")] for l in LANGS}
+i_total, i_have = len(i_ids) * len(LANGS), sum(len(i_ids) - len(i_missing[l]) for l in LANGS)
 for c in calls:
     c["file"] = f"{MUEZZIN}-{c['id']}.m4a"
     c["recorded"] = installed(f"{MUEZZIN}-{c['id']}")
@@ -53,14 +57,14 @@ add(f"> **GENERATED** by `scripts/generate_audio_coverage.py` — do not edit by
 add("## Conventions\n"
     f"- **Recitation (P):** `{RECITER}-<lang>-<P-id>.m4a` — languages: {', '.join(LANGS)}\n"
     f"- **Muezzin call (C):** `{MUEZZIN}-<C-id>.m4a` — **Arabic only**\n"
-    f"- **Guidance (I):** **TTS-only by design** (no recordings)\n"
+    f"- **Guidance (I):** `{GUIDER}-<lang>-<I-id>.m4a` — languages: {', '.join(LANGS)}\n"
     f"- **Format:** {FORMAT}\n")
 add("## Summary\n")
 add("| Family | ids | recorded | outstanding |")
 add("|---|---|---|---|")
 add(f"| P — recitation | {len(p_ids)} (×{len(LANGS)} = {p_total}) | {p_have} | {p_total - p_have} |")
 add(f"| C — Muezzin calls | {len(calls)} | {c_have} | {len(calls) - c_have} |")
-add(f"| I — guidance | {len(ins)} | 0 | {len(ins)} (by design) |\n")
+add(f"| I — guidance | {len(i_ids)} (×{len(LANGS)} = {i_total}) | {i_have} | {i_total - i_have} |\n")
 
 add(f"## C — Muezzin calls (record in Arabic → `{MUEZZIN}-<id>.m4a`)\n")
 add("| id | name | file | recorded? |")
@@ -81,7 +85,13 @@ for l in LANGS:
         + ("✅" if not miss else f"— missing: {', '.join(miss)}"))
 add("\n> Parked (recordings exist in source, not imported): German, Turkish-transliteration.\n")
 
-add("## I — guidance (no audio; TTS by design)\n")
+add(f"## I — guidance (record per language → `{GUIDER}-<lang>-<I-id>.m4a`)\n")
+for l in LANGS:
+    miss = i_missing[l]
+    add(f"- **{l}**: {len(i_ids) - len(miss)}/{len(i_ids)} "
+        + ("✅" if not miss else f"— missing: {', '.join(miss)}"))
+add("\n> Parked (text only, not a supported `Language`): German.\n")
+add("### Text to record — English · Arabic · Türkçe (· Deutsch parked)\n")
 add("| id | English | Arabic | Türkçe | Deutsch |")
 add("|---|---|---|---|---|")
 for e in ins:
@@ -92,4 +102,4 @@ add("")
 with open(OUT, "w", encoding="utf-8") as f:
     f.write("\n".join(L))
 print("wrote", os.path.relpath(OUT, ROOT))
-print(f"P {p_have}/{p_total} | C {c_have}/{len(calls)} | I 0/{len(ins)}")
+print(f"P {p_have}/{p_total} | C {c_have}/{len(calls)} | I {i_have}/{i_total}")

@@ -7,7 +7,7 @@
 ## Conventions
 - **Recitation (P):** `muallim-ai-<lang>-<P-id>.m4a` — languages: ar, en, tr
 - **Muezzin call (C):** `munadi-ai-<C-id>.m4a` — **Arabic only**
-- **Guidance (I):** **TTS-only by design** (no recordings)
+- **Guidance (I):** `murshid-ai-<lang>-<I-id>.m4a` — languages: ar, en, tr
 - **Format:** AAC `.m4a`, mono, 24 kHz, ~64 kbps
 
 ## Summary
@@ -16,7 +16,7 @@
 |---|---|---|---|
 | P — recitation | 24 (×3 = 72) | 72 | 0 |
 | C — Muezzin calls | 14 | 0 | 14 |
-| I — guidance | 52 | 0 | 52 (by design) |
+| I — guidance | 52 (×3 = 156) | 0 | 156 |
 
 ## C — Muezzin calls (record in Arabic → `munadi-ai-<id>.m4a`)
 
@@ -117,7 +117,15 @@
 
 > Parked (recordings exist in source, not imported): German, Turkish-transliteration.
 
-## I — guidance (no audio; TTS by design)
+## I — guidance (record per language → `murshid-ai-<lang>-<I-id>.m4a`)
+
+- **ar**: 0/52 — missing: I-1, I-2, I-3, I-4, I-5, I-6, I-7, I-8, I-9, I-10, I-11, I-12, I-13, I-14, I-15, I-16, I-17, I-18, I-19, I-20, I-21, I-22, I-23, I-24, I-25, I-26, I-27, I-28, I-29, I-30, I-31, I-32, I-33, I-34, I-35, I-36, I-37, I-38, I-39, I-40, I-41, I-42, I-43, I-44, I-45, I-46, I-47, I-48, I-49, I-50, I-51, I-52
+- **en**: 0/52 — missing: I-1, I-2, I-3, I-4, I-5, I-6, I-7, I-8, I-9, I-10, I-11, I-12, I-13, I-14, I-15, I-16, I-17, I-18, I-19, I-20, I-21, I-22, I-23, I-24, I-25, I-26, I-27, I-28, I-29, I-30, I-31, I-32, I-33, I-34, I-35, I-36, I-37, I-38, I-39, I-40, I-41, I-42, I-43, I-44, I-45, I-46, I-47, I-48, I-49, I-50, I-51, I-52
+- **tr**: 0/52 — missing: I-1, I-2, I-3, I-4, I-5, I-6, I-7, I-8, I-9, I-10, I-11, I-12, I-13, I-14, I-15, I-16, I-17, I-18, I-19, I-20, I-21, I-22, I-23, I-24, I-25, I-26, I-27, I-28, I-29, I-30, I-31, I-32, I-33, I-34, I-35, I-36, I-37, I-38, I-39, I-40, I-41, I-42, I-43, I-44, I-45, I-46, I-47, I-48, I-49, I-50, I-51, I-52
+
+> Parked (text only, not a supported `Language`): German.
+
+### Text to record — English · Arabic · Türkçe (· Deutsch parked)
 
 | id | English | Arabic | Türkçe | Deutsch |
 |---|---|---|---|---|
