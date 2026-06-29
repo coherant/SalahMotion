@@ -85,7 +85,7 @@ struct PrayerSetupView: View {
                                                current: prefs.guidanceLanguage,
                                                isPresented: dismissBinding) { prefs.guidanceLanguage = $0 }
                         case .reciterLanguage:
-                            VoiceLanguageSheet(title: reciter.latinName, arabic: reciter.arabicName,
+                            VoiceLanguageSheet(title: "Muʿallim", arabic: "معلّم",
                                                current: prefs.recitationLanguage,
                                                isPresented: dismissBinding) { prefs.recitationLanguage = $0 }
                         case .reciterVoice:
@@ -205,13 +205,12 @@ struct PrayerSetupView: View {
                           active: guidance.playsEntryGuidance,
                           language: prefs.guidanceLanguage,
                           openLanguage: { activeSheet = .guideLanguage })
-                voiceCard(name: reciter.latinName, arabic: reciter.arabicName, tag: "RECITER",
-                          desc: "Recites the prayer",
+                voiceCard(name: "Muʿallim", arabic: "معلّم", tag: "RECITER",
+                          desc: "\(reciter.latinName) · Recites the prayer",
                           active: guidance.playsPrayers,
                           language: prefs.recitationLanguage,
                           openLanguage: { activeSheet = .reciterLanguage },
-                          openVoice: { activeSheet = .reciterVoice },
-                          voicePillLabel: reciter.latinName)
+                          openVoice: { activeSheet = .reciterVoice })
             }
         }
     }
@@ -222,8 +221,7 @@ struct PrayerSetupView: View {
     private func voiceCard(name: String, arabic: String, tag: String, desc: String,
                            active: Bool, language: Language,
                            openLanguage: @escaping () -> Void,
-                           openVoice: (() -> Void)? = nil,
-                           voicePillLabel: String = "Voice") -> some View {
+                           openVoice: (() -> Void)? = nil) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(name).font(Typography.display(20, weight: .semibold)).foregroundStyle(DesignTokens.ink)
@@ -252,7 +250,7 @@ struct PrayerSetupView: View {
             HStack(spacing: 6) {
                 changePill(languageLabel(language), disabled: !active, action: openLanguage)
                 if let openVoice {
-                    changePill(voicePillLabel, disabled: !active, action: openVoice)
+                    changePill("Voice", disabled: !active, action: openVoice)
                 }
             }
             .padding(.top, 2)
