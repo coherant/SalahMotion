@@ -242,7 +242,10 @@ struct PrayerSetupView: View {
                 .font(Typography.ui(11.5))
                 .foregroundStyle(DesignTokens.faint)
                 .lineSpacing(1.4)
-                .fixedSize(horizontal: false, vertical: true)
+                // Always reserve a 2nd row so the card height stays fixed when a long
+                // reciter name wraps the desc onto two lines (both cards match).
+                .lineLimit(2, reservesSpace: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             // Pills — themed like the hero "Change" pill, side by side: Language (left),
             // and on the reciter card a Voice picker (right) showing the selected reciter,
