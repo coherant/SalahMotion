@@ -206,9 +206,13 @@ Each prayer line in a state carries an optional **clip identity** alongside its 
 - `utterance` — the rendered, translated text (used for display, the golden snapshot, and TTS).
 - `duration` — a **pause after** the utterance, not a budget the audio must fit inside.
 
-At runtime the speaker resolves `clipID` → a recorded file
-(`Resources/recitations/<reciterId>/<P-id>.m4a`); if a clip is installed it is **played and
-awaited to completion** (the teacher leads), otherwise it **falls back to TTS** of `utterance`.
+At runtime the speaker resolves `clipID` → a recorded file named
+**`<reciterId>-<language>-<P-id>.m4a`** (e.g. `sawt-ai-ar-P-7.m4a`) — a reciter can be
+multilingual, so the selected **Language** picks the track. Files are **flat and uniquely
+named** in `Resources/recitations/`, so the synced-folder bundle resolves them by name (the
+resolver also checks a `recitations/` subfolder); `.m4a` or `.caf` are accepted. If a clip is
+installed it is **played and awaited to completion** (the teacher leads), otherwise it **falls
+back to TTS** of `utterance`.
 A missing clip is expected, not an error — so recordings can be dropped in incrementally and
 partial sets work. The await-to-completion contract is what keeps recitation from being
 truncated by the `.pace` pause regardless of clip length.

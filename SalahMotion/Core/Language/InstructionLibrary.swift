@@ -28,6 +28,16 @@ enum InstructionID: String {
     case i23 = "I-23"
     case i24 = "I-24"
     case i25 = "I-25"
+
+    // Calibration coaching (entry / exit "get ready" / reprompt / hold). Same
+    // movement-guidance family as I-1…I-25; previously hardcoded in the calibration
+    // sequence. See PrayerSequence.CalibrationSequenceGenerator.
+    case i26 = "I-26", i27 = "I-27", i28 = "I-28", i29 = "I-29", i30 = "I-30"
+    case i31 = "I-31", i32 = "I-32", i33 = "I-33", i34 = "I-34", i35 = "I-35"
+    case i36 = "I-36", i37 = "I-37", i38 = "I-38", i39 = "I-39", i40 = "I-40"
+    case i41 = "I-41", i42 = "I-42", i43 = "I-43", i44 = "I-44", i45 = "I-45"
+    case i46 = "I-46", i47 = "I-47", i48 = "I-48", i49 = "I-49", i50 = "I-50"
+    case i51 = "I-51", i52 = "I-52"
 }
 
 // MARK: - Instruction Library

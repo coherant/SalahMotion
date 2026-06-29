@@ -365,10 +365,20 @@ final class PrayerStateMachine {
     @MainActor
     private func utter(_ line: PrayerLine) async {
         if let id = line.clipID {
-            if let url = AudioClips.recitation(id), await audioManager.play(url) { return }
-            #if DEBUG
-            print("[AudioClips] ⚠️ recitation \(id.rawValue) (reciter=\(AudioClips.reciterId)) — TTS fallback")
-            #endif
+            if let url = AudioClips.recitation(id) {
+                #if DEBUG
+                print("[AudioClips] ▶︎ recitation \(id.rawValue) → \(url.lastPathComponent)")
+                #endif
+                if await audioManager.play(url) { return }
+                #if DEBUG
+                print("[AudioClips] ⚠️ recitation \(id.rawValue) — clip found but failed to play → TTS")
+                #endif
+            } else {
+                #if DEBUG
+                print("[AudioClips] ⚠️ recitation \(id.rawValue) (reciter=\(AudioClips.reciterId), "
+                      + "lang=\(UserPreferences.shared.language.rawValue)) — no clip found → TTS")
+                #endif
+            }
         }
         if !line.utterance.isEmpty { await audioManager.speak(line.utterance) }
     }
